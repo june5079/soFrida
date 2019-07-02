@@ -4,20 +4,31 @@ import os,sys
 import subprocess
 import xml.etree.ElementTree as ET
 import json,time
-from adb.client import Client as AdbClient
 import re
+import logging
+from threading import Thread
+from adb.client import Client as AdbClient
 from termcolor import colored, cprint
 
 APKTOOL_PATH = "/usr/local/bin/apktool"
 
 class soFrida:
-    def __init__(self, mode='usb', host=None):
+    def __init__(self, pkgid, mode='usb', host=None ):
         if mode == 'usb':
             self.device = frida.get_usb_device()
             cprint("[*] USB Connected", 'green')
         elif mode == 'host':
             self.device = frida.get_device_manager().add_remote_device(host)
             cprint("[*] Host Connect", 'green')
+        self.pkgid = pkgid
+        self.logger = logging.getLogger("soLogger")
+        self.logger.setLevel(logging.INFO)
+        file_handler = logging.FileHandler(self.pkgid + ".log")
+        self.logger.addHandler(file_handler)
+        
+        self.logger.info("[+] Vulnerable PKG_ID : " + self.pkgid)
+        self.logger.info("[!] Logging Start")
+        
         self.acc_key_list = set()
         self.sec_key_list = set()
         self.session_token = set()
@@ -145,6 +156,7 @@ class soFrida:
             for accesskey in list(self.acc_key_list):
                 cprint("\t[-] %s" % accesskey, 'green')
                 subprocess.call("aws configure set aws_access_key_id %s"%accesskey, shell=True)
+                self.logger.info("[+] AccessKeyId : " + accesskey)
                  
         if len(self.sec_key_list) == 0:
             cprint("[*] No Secret Key", 'red')
@@ -153,6 +165,8 @@ class soFrida:
             for secretkey in list(self.sec_key_list):
                 cprint("\t[-] %s" % secretkey, 'green')
                 subprocess.call("aws configure set aws_secret_access_key %s"%secretkey, shell=True)
+                self.logger.info("[+] SecretAceessKey : " + secretkey)
+
     
         if len(self.session_token) == 0:
             cprint("[*] No SessionToken", 'red')
@@ -161,25 +175,32 @@ class soFrida:
             for sessiontoken in list(self.session_token):
                 cprint("\t[-] %s" % sessiontoken, 'green')
                 subprocess.call("aws configure set aws_session_token %s"%sessiontoken, shell=True)
+                self.logger.info("[+] SessionToken : " + sessiontoken)
+
     
     def clear_logcat(self):
         adb_command = self.base_adb_command[:] 
         adb_command.append('logcat')
         adb_command.append('-c')
-        adb_clear = subprocess.Popen(adb_command)
-        time.sleep(1)
-        cprint("[+] Logcat sucessfully cleared")
+        try :
+                
+            adb_clear = subprocess.Popen(adb_command)
+            # Wait for cleaning logcat
+            time.sleep(1)
+            cprint("[+] Logcat sucessfully cleared", 'green')
+        except :
+            cprint ("[!] Error occured wuth cleaning logcat",'red')
     
-    def save_logcat(self, process):
-        # adb_command = self.base_adb_command[:]
-        # adb_command.append('logcat | grep amazonaws | grep {0} > {1}\.txt'.format(process, process))        
-        # adb_save_logcat = subprocess.Popen(adb_command, shell=True)
-        proc = subprocess.Popen(['adb', 'logcat'], stdout=subprocess.PIPE)
-        for line in proc.stdout:
-            if process and "amazonaws" in line.decode():
-                print (line)
-                # break
-        proc.wait()
+    def save_logcat(self, process, status):
+        adb_command = self.base_adb_command[:]
+        adb_command.append('logcat')
+        proc = subprocess.Popen(adb_command, stdout=subprocess.PIPE)
+        while(status == 'True'):
+            for line in proc.stdout:
+                if process and "amazonaws" in line.decode('utf-8'):
+                    print (line)    
+                    self.logger.info(line.decode('utf-8'))
+        exit()
 
     def aws_autoconfig(self):
         cprint ("[*] Setting Up AWS Configuration" , "yellow")
@@ -199,17 +220,20 @@ ap.add_argument('-H', '--host', dest='host', nargs='?', default='', required=Fal
 
 args = ap.parse_args()
 
-
 if args.usb and args.host == None:
     cprint("Usage : %s -U -t [target] or %s -H [frida_listen_ip] -t [target]" % (sys.argv[0], sys.argv[0]), 'red')
 elif args.usb:
-    sf = soFrida('usb')
+    sf = soFrida(args.process, 'usb' )
 elif args.H != None:
     sf = soFrida('host', args.host)
 
+# Clear Logcat
 sf.clear_logcat()
 time.sleep(1)
+t = Thread(target=sf.save_logcat, args=(args.process, "True"))
+t.start()
 sf.process = args.process
 sf.get_class_maketrace()
 sf.print_key()
-sf.save_logcat(args.process)
+sf.save_logcat("", "False")
+cprint ("[+] Done")
