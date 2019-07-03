@@ -1,8 +1,11 @@
 import requests
 import time, sys
+import json
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from pathos.multiprocessing import ProcessingPool
+from tqdm import tqdm
 
 # HOW to Use 
 # from getapklist import Getlists
@@ -19,7 +22,7 @@ class Getlists:
         self.play_search_basic = "https://play.google.com/store/search?q="
         self.play_search_pkgid = "https://play.google.com/store/apps/details?id="
         self.play_search_devid = "https://play.google.com/store/apps/dev?id="
-
+        self.apklist = []
         self.result = dict()
         self.reslist = []
 
@@ -36,7 +39,7 @@ class Getlists:
             exit()
     
     def init_request(self):
-        self.f = open ("apklist_{0}.txt".format(self.search_keyword),"w")
+        # self.f = open ("apklist_{0}.txt".format(self.search_keyword),"w")
         self.options = Options()
         self.options.headless = False
         self.browser = webdriver.Chrome('./chromedriver', chrome_options=self.options)
@@ -60,10 +63,11 @@ class Getlists:
         
         for x in self.s:
             if "details?id" in x:
-                self.f.write(x.split("=")[1]+"\n")
+                self.apklist.append(x.split("=")[1])
+                # self.f.write(x.split("=")[1]+"\n")
                 #print (x.split("=")[1]) 
-        self.f.close()
-        print ("Done Grabbing APK Lists")
+        # self.f.close()
+        print ("[+] Done Grabbing APK Lists")
         self.browser.close()
         time.sleep(2)                
 
@@ -82,13 +86,11 @@ class Getlists:
         self.click_more()
     
     def get_pkginfo(self):
-        ff = open("apklist_{0}.txt".format(self.search_keyword), 'r')
-        # get reuest
-        l = ff.readlines()
-
-        for x in l:
+        l = self.apklist
+   
+        for x in tqdm(l):
             try:
-                # print (x)
+                print (x)
                 r = requests.get(self.play_search_pkgid + x.strip("\n"))
                 res = r.text
 
@@ -108,30 +110,15 @@ class Getlists:
                 fin_title=''.join(str(g) for g in pop_title)
                 fin_title2 = fin_title.split('>')[1].split('<')[0] 
 
-                # mailtos = soup.select('a[href^=mailto]')
-                # mailtoss = ''.join(str(u) for u in mailtos)
-                # print (x.strip("\n") + " : " + fin_pop + " : " + fin_cat2 + " : " + fin_title2 + " : " + mailtoss)
-                
-                self.result["pkgid"] = x.strip("\n")
-                self.result["popular"] = fin_pop
-                self.result["category"] = fin_cat2
-                self.result["title"] = fin_title2
-                # self.result["mail"] = mailtoss
-
-                self.reslist.append(self.result)
-
-                # print (self.result)          
-                time.sleep(0.5)
-                # return self.result
+                self.result[x] = []
+                self.result[x].append({"popular":fin_pop, "category":fin_cat2, "title":fin_title2})
 
             except:
                 print (x.strip("\n") + " : " + "ERROR\n")
                 pass
-            
-        ff.close()
 
-        for y in self.reslist:
-            print (y)
+        # print (self.result)
+        with open ("apklist_{0}.json".format(self.search_keyword), 'w') as outfile:
+            json.dump(self.result, outfile)
 
 
-    
