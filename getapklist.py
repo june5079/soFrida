@@ -20,14 +20,17 @@ class Getlists:
         self.play_search_pkgid = "https://play.google.com/store/apps/details?id="
         self.play_search_devid = "https://play.google.com/store/apps/dev?id="
 
+        self.result = dict()
+        self.reslist = []
+
         if self.option == "basic" :
-            self.request_url = self.play_search_basic
+            self.request_url = self.play_search_basic + self.search_keyword + "&c=apps"
             print (self.request_url)
         elif self.option == "pkgid" :
-            self.request_url = self.play_search_pkgid
+            self.request_url = self.play_search_pkgid + self.search_keyword
             print (self.request_url)
-        elif self.category == "devid" :
-            self.request_url = self.play_search_devid
+        elif self.option == "devid" :
+            self.request_url = self.play_search_devid + self.search_keyword
         else :
             print ("Wrong categories")
             exit()
@@ -35,7 +38,7 @@ class Getlists:
     def init_request(self):
         self.f = open ("apklist_{0}.txt".format(self.search_keyword),"w")
         self.options = Options()
-        self.options.headless = True
+        self.options.headless = False
         self.browser = webdriver.Chrome('./chromedriver', chrome_options=self.options)
         self.make_connection()
 
@@ -78,10 +81,10 @@ class Getlists:
             time.sleep(2)
         self.click_more()
     
-    def get_result(self):
-        f = open("apklist_{0}.txt".format(self.search_keyword), 'r')
+    def get_pkginfo(self):
+        ff = open("apklist_{0}.txt".format(self.search_keyword), 'r')
         # get reuest
-        l = f.readlines()
+        l = ff.readlines()
 
         for x in l:
             try:
@@ -105,13 +108,30 @@ class Getlists:
                 fin_title=''.join(str(g) for g in pop_title)
                 fin_title2 = fin_title.split('>')[1].split('<')[0] 
 
-                mailtos = soup.select('a[href^=mailto]')
-                mailtoss = ''.join(str(u) for u in mailtos)
-                print (x.strip("\n") + " : " + fin_pop + " : " + fin_cat2 + " : " + fin_title2 + " : " + mailtoss)
+                # mailtos = soup.select('a[href^=mailto]')
+                # mailtoss = ''.join(str(u) for u in mailtos)
+                # print (x.strip("\n") + " : " + fin_pop + " : " + fin_cat2 + " : " + fin_title2 + " : " + mailtoss)
+                
+                self.result["pkgid"] = x.strip("\n")
+                self.result["popular"] = fin_pop
+                self.result["category"] = fin_cat2
+                self.result["title"] = fin_title2
+                # self.result["mail"] = mailtoss
+
+                self.reslist.append(self.result)
+
+                # print (self.result)          
+                time.sleep(0.5)
+                # return self.result
 
             except:
                 print (x.strip("\n") + " : " + "ERROR\n")
                 pass
+            
+        ff.close()
+
+        for y in self.reslist:
+            print (y)
 
 
     
