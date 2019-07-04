@@ -14,17 +14,13 @@ def home():
 def apk_download_layout():
     return render_template("apk_download.html")
 
-def event_stream():
-    global getlist
-    yield getlist.get_pkginfo()
-
 @app.route('/stream')
 def stream():
     global getlist
     if getlist == "":
       return Response("data: "+json.dumps({"EXIT":{"msg":"close"}})+"\n\n", mimetype="text/event-stream")
     else:
-      return Response(getlist.get_pkginfo(), mimetype="text/event-stream")
+      return Response(getlist.get_pkginfo_for_GUI(), mimetype="text/event-stream")
 
 @app.route("/search", methods=["POST"])
 def search():

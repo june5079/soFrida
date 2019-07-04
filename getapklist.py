@@ -124,7 +124,7 @@ class Getlists:
     def get_pkginfo_for_GUI(self):
         l = self.apklist
         try:
-            for x in tqdm(l):
+            for x in l:
                 try:
                     print (x)
                     r = requests.get(self.play_search_pkgid + x.strip("\n"))
