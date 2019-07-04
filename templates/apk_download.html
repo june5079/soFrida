@@ -1,0 +1,86 @@
+{% extends "layout.html" %}
+{% block title %}
+APK Downloader
+{% endblock %}
+{% block content %}
+<script type='text/javascript'>
+    $(function(){
+		$(document).ready(function(){
+			$("#search_mode_button").on("click", function(){
+				$("#search_mode_button").html($(this).text()+" <span style=\"transform: rotate(180deg);\" class=\"caret\"></span>");
+			});
+			$(".dropdown-menu a").on("click", function(){
+				$("#search_mode_button").html($(this).text()+" <span class=\"caret\"></span>");
+			});
+			$("#search_form").on('keyup', function(e){
+				if(e.keyCode == 13){
+					var mode = $("#search_mode_button").text();
+					var text = $(this).val();
+					search(mode, text);
+				}
+			});
+			function search(mode, text){
+				$.ajax({
+					url:'/search',
+					type:'POST',
+					contentType: "application/json; charset=utf-8",
+					data:JSON.stringify({"mode":mode, "text":text}),
+					success:function(res){
+						$("#apk_table tbody").html("");
+						result_table(res.list);
+					},
+					error:function(error){
+						console.log(error);
+					}
+				});
+			}
+			function result_table(list){
+				console.log("start result table");
+				var source = new EventSource('/stream');
+				source.onmessage = function (event) {
+					var pkg = JSON.parse(event.data);
+					for(var key in pkg){
+						if(key == "EXIT"){
+							this.close();
+						}else if(key != "ERROR"){
+							info = pkg[key];
+							data = "<tr><td>"+key+"</td><td>"+info['title']+"</td><td>"+info['popular']+"</td><td>"+info['category']+"</td></tr>";
+							$("#apk_table tbody").append(data);
+						}
+					}
+				};
+			}			
+		});
+	
+	});
+</script>
+<div class="page-header">
+	<h1>APK Downloader</h1>
+</div>
+<ul class="nav nav-tabs" role="tablist" id="tabs">
+	<li role="presentation" class="active"><a href="{{ url_for('apk_download_layout') }}" >APK Downloader</a></li>
+	<li role="presentation"><a href="{{ url_for('apk_download_layout') }}" >Asset</a></li>
+	<li role="presentation"><a href="{{ url_for('apk_download_layout') }}" >Key List</a></li>
+</ul>
+<div id="search_pane">
+	<div class="input-group" style="margin-top:20px">
+		<div class="input-group-btn">
+			<button class="btn btn-primary dropdown-toggle" type="button" id="search_mode_button" data-toggle="dropdown" aria-expanded="true">
+				Search Mode <span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu" role="menu" aria-labelledby="search_mode_button">
+				<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Basic</a></li>
+				<li role="presentation"><a role="menuitem" tabindex="-1" href="#">PkgID</a></li>
+				<li role="presentation"><a role="menuitem" tabindex="-1" href="#">DevID</a></li>
+			</ul>
+		</div>
+		<input type="text" class="form-control" placeholder="Input Search Text" id="search_form">
+	</div>
+	<div style="margin-top:10px" class="table-responsive" id="apk_list">
+		<table class="table" id="apk_table">
+			<thead><th>PKGID</th><th>TITLE</th><th>POPULAR</th><th>CATEGORY</th></thead>
+			<tbody></tbody>
+		</table>
+	</div>
+</div>
+{% endblock %}

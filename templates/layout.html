@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>{% block title %}{% endblock %}</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css')}}" />
+        <script type='text/javascript' src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
+        <script type='text/javascript' src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+        
+    </head>
+    <body>
+        <div class="container theme-showcase" role="main">
+            {% block content %}
+            {% endblock %}
+        
+            <footer>
+                <p>&copy; soFrida 2019</p>
+            </footer>
+        </div>
+    </body>
+</html>

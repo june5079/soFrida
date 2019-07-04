@@ -121,4 +121,39 @@ class Getlists:
         with open ("apklist_{0}.json".format(self.search_keyword), 'w') as outfile:
             json.dump(self.result, outfile)
 
+    def get_pkginfo_for_GUI(self):
+        l = self.apklist
+        try:
+            for x in tqdm(l):
+                try:
+                    print (x)
+                    r = requests.get(self.play_search_pkgid + x.strip("\n"))
+                    res = r.text
+
+                    soup = BeautifulSoup(res, "html.parser" )
+
+                    pop = (soup.select ('div[class=IQ1z0d]'))[2]
+                    pop_cat = (soup.select ('span > a'))
+                    pop_title = (soup.select('h1 > span'))
+
+                    
+                    fin=''.join(str(e) for e in pop)  
+                    fin_pop = fin.split('+')[0].split('>')[1]
+                    
+                    fin_cat=''.join(str(k) for k in pop_cat)  
+                    fin_cat2 = fin_cat.split("category/")[1].split('"')[0]
+
+                    fin_title=''.join(str(g) for g in pop_title)
+                    fin_title2 = fin_title.split('>')[1].split('<')[0] 
+
+                    self.result[x] = []
+                    self.result[x].append({"popular":fin_pop, "category":fin_cat2, "title":fin_title2})
+                    yield "data: "+json.dumps({x:{"popular":fin_pop, "category":fin_cat2, "title":fin_title2}})+"\n\n"
+                except Exception as e:
+                    print (x.strip("\n") + " : " + "ERROR\n")
+                    #pass
+            raise GeneratorExit("complete")
+        except GeneratorExit as e:
+            print (x.strip("\n") + " : " + "EXIT\n")
+            yield "data: "+json.dumps({"EXIT":{"msg":str(e)}})+"\n\n"
 
