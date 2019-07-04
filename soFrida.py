@@ -42,6 +42,8 @@ class soFrida:
                                     %s
                                 });
                             }, 0);"""
+        # User can add aws service which is supported with awscli
+        self.aws_servicelist = ['s3', 'lambda', 'kinesis', 'cognito', 'sns', 'dynamodb', 'simpledb']
 
     def analyze_apk(self, path):
         self.path = path
@@ -191,16 +193,30 @@ class soFrida:
         except :
             cprint ("[!] Error occured wuth cleaning logcat",'red')
     
-    def save_logcat(self, process, status):
+    # def save_logcat(self, process, status):
+    #     adb_command = self.base_adb_command[:]
+    #     adb_command.append('logcat')
+    #     proc = subprocess.Popen(adb_command, stdout=subprocess.PIPE)
+    #     while(status == 'True'):
+    #         for line in proc.stdout:
+    #             if process and "amazonaws" in line.decode('utf-8'):
+    #                 print (line)    
+    #                 self.logger.info(line.decode('utf-8'))
+    #     exit()
+    def save_logcat(self, process):
+
         adb_command = self.base_adb_command[:]
+        # print (adb_command)
         adb_command.append('logcat')
-        proc = subprocess.Popen(adb_command, stdout=subprocess.PIPE)
-        while(status == 'True'):
-            for line in proc.stdout:
-                if process and "amazonaws" in line.decode('utf-8'):
-                    print (line)    
-                    self.logger.info(line.decode('utf-8'))
-        exit()
+        adb_command.extend(['-d'])
+        # print (adb_command)
+        adb = subprocess.Popen(adb_command, stdout=subprocess.PIPE)
+        adb2 = subprocess.Popen(['grep','amazonaws'], stdin=adb.stdout ,stdout=subprocess.PIPE)
+        adb3 = subprocess.Popen(['grep',process], stdin=adb2.stdout ,stdout=subprocess.PIPE)
+        for line in adb3.stdout.readlines():
+            print (line)
+
+
 
     def aws_autoconfig(self):
         cprint ("[*] Setting Up AWS Configuration" , "yellow")
@@ -230,10 +246,8 @@ elif args.H != None:
 # Clear Logcat
 sf.clear_logcat()
 time.sleep(1)
-t = Thread(target=sf.save_logcat, args=(args.process, "True"))
-t.start()
 sf.process = args.process
 sf.get_class_maketrace()
 sf.print_key()
-sf.save_logcat("", "False")
+sf.save_logcat(args.process)
 cprint ("[+] Done")
