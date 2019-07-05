@@ -21,19 +21,20 @@ class soFrida:
             self.device = frida.get_device_manager().add_remote_device(host)
             cprint("[*] Host Connect", 'green')
         self.pkgid = pkgid
-        self.logger = logging.getLogger("soLogger")
-        self.logger.setLevel(logging.INFO)
-        file_handler = logging.FileHandler(self.pkgid + ".log")
-        self.logger.addHandler(file_handler)
-        
-        self.logger.info("[+] Vulnerable PKG_ID : " + self.pkgid)
-        self.logger.info("[!] Logging Start")
-        
         self.acc_key_list = set()
         self.sec_key_list = set()
         self.session_token = set()
         self.key_found = False
         self.base_adb_command = ['adb']
+        self.logger = logging.getLogger("soLogger")
+        self.logger.setLevel(logging.INFO)        
+        self.formatter = logging.Formatter('%(levelname)s - %(message)s')
+        self.file_handler = logging.FileHandler(self.pkgid + ".log")
+        self.file_handler.setFormatter(self.formatter)
+        self.logger.addHandler(self.file_handler)
+        self.logger.info("[+] Vulnerable PKG_ID : " + self.pkgid)
+        self.logger.info("[!] Logging Start")
+        
         client = AdbClient(host="127.0.0.1", port=5037)
         self.adb_device = client.devices()[0]   
         self.javaperform = """
@@ -44,6 +45,7 @@ class soFrida:
                             }, 0);"""
         # User can add aws service which is supported with awscli
         self.aws_servicelist = ['s3', 'lambda', 'kinesis', 'cognito', 'sns', 'dynamodb', 'simpledb']
+        self.aws_regions = ['us-west-1', 'us-west-2', 'us-east-1', 'us-east-2','ap-east-1', 'ap-south-1', 'ap-northeast-2','ap-southeast-1','ap-southeast-2','ca-central-1','cn-north-1','cn-northwest-1','eu-central-1','eu-west-1','eu-west-2','eu-west-3','eu-north-1','sa-east-1']
 
     def analyze_apk(self, path):
         self.path = path
@@ -193,16 +195,6 @@ class soFrida:
         except :
             cprint ("[!] Error occured wuth cleaning logcat",'red')
     
-    # def save_logcat(self, process, status):
-    #     adb_command = self.base_adb_command[:]
-    #     adb_command.append('logcat')
-    #     proc = subprocess.Popen(adb_command, stdout=subprocess.PIPE)
-    #     while(status == 'True'):
-    #         for line in proc.stdout:
-    #             if process and "amazonaws" in line.decode('utf-8'):
-    #                 print (line)    
-    #                 self.logger.info(line.decode('utf-8'))
-    #     exit()
     def save_logcat(self, process):
         adb_command = self.base_adb_command[:]
         adb_command.append('logcat')
@@ -211,12 +203,12 @@ class soFrida:
         adb2 = subprocess.Popen(['grep','amazonaws'], stdin=adb.stdout ,stdout=subprocess.PIPE)
         adb3 = subprocess.Popen(['grep',process], stdin=adb2.stdout ,stdout=subprocess.PIPE)
         for line in adb3.stdout.readlines():
-            print (line)
-            self.logger.info(line.decode('utf-8'))
+            print (line.decode('utf-8'))
+            self.logger.info("[Logcat] :" + line.decode('utf-8'))
 
-    def aws_autoconfig(self):
-        cprint ("[*] Setting Up AWS Configuration" , "yellow")
-        subprocess.call("aws configure set %s %s"%key %value, shell=True) 
+    # def aws_autoconfig(self):
+    #     cprint ("[*] Setting Up AWS Configuration" , "yellow")
+    #     subprocess.call("aws configure set %s %s"%key %value, shell=True) 
                     
     def remove_dir(self):
         cprint("[*] Remove Apktool Dirctory", 'green')

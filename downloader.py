@@ -55,8 +55,17 @@ class Downloader:
             with open(self.apkfile_path + self.pkgid + '.apk', 'wb') as apk_file:
                 for chunk in fl.get('file').get('data'):
                     apk_file.write(chunk)
-                print('\nDownload successful\n')
-
+                cprint('\n[+] Download successful\n','green')
+                cprint('[+] Checking AWS_SDK','yellow')
+                apkfinal_path = apkfile_path + docid + '.apk'
+                s = os.popen('/usr/bin/grep -i "aws-android-sdk" {0}'.format(apkfinal_path)).read()
+                if 'matches' in s:
+                    cprint ("[!] This Application use AWS_SDK",'green')
+                    pass
+                else:
+                    cprint ("[!] NO AWS_SDK FOUND",'red')
+                    os.remove(apkfinal_path)
+      
         except :
             print("Unexpected error:", sys.exc_info()[0])
             traceback.print_exc()
