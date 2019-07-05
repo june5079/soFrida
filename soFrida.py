@@ -204,19 +204,15 @@ class soFrida:
     #                 self.logger.info(line.decode('utf-8'))
     #     exit()
     def save_logcat(self, process):
-
         adb_command = self.base_adb_command[:]
-        # print (adb_command)
         adb_command.append('logcat')
         adb_command.extend(['-d'])
-        # print (adb_command)
         adb = subprocess.Popen(adb_command, stdout=subprocess.PIPE)
         adb2 = subprocess.Popen(['grep','amazonaws'], stdin=adb.stdout ,stdout=subprocess.PIPE)
         adb3 = subprocess.Popen(['grep',process], stdin=adb2.stdout ,stdout=subprocess.PIPE)
         for line in adb3.stdout.readlines():
             print (line)
-
-
+            self.logger.info(line.decode('utf-8'))
 
     def aws_autoconfig(self):
         cprint ("[*] Setting Up AWS Configuration" , "yellow")

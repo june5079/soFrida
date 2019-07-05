@@ -32,6 +32,7 @@ class Getlists:
         elif self.option == "pkgid" :
             self.request_url = self.play_search_pkgid + self.search_keyword
             print (self.request_url)
+            self.apklist = [search_keyword]
         elif self.option == "devid" :
             self.request_url = self.play_search_devid + self.search_keyword
         else :
@@ -39,11 +40,16 @@ class Getlists:
             exit()
     
     def init_request(self):
-        # self.f = open ("apklist_{0}.txt".format(self.search_keyword),"w")
-        self.options = Options()
-        self.options.headless = False
-        self.browser = webdriver.Chrome('./chromedriver', chrome_options=self.options)
-        self.make_connection()
+        if self.option == "pkgid":
+            self.get_pkginfo()
+        else:
+            # self.f = open ("apklist_{0}.txt".format(self.search_keyword),"w")
+            self.options = Options()    
+            self.options.add_argument("--start-maximized")
+            self.options.headless = False
+            self.browser = webdriver.Chrome('./chromedriver', chrome_options=self.options)
+            self.browser.maximize_window()
+            self.make_connection()
 
     def make_connection(self):
         self.browser.get(self.request_url)
