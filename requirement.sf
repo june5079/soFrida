@@ -3,3 +3,5 @@ requests
 boto3
 pure-python-adb
 termcolor
+flask
+frida
