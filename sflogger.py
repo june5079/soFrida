@@ -8,6 +8,9 @@ class sfLogger:
         self.log_queue = queue.Queue()
         self.queue_handler = QueueHandler(self.log_queue)
         self.queue_handler.setFormatter(self.format)
+
+        # self.file_handler = logging.FileHandler()
+
         self.logger = logging.getLogger("testlogger")
         self.logger.addHandler(self.queue_handler)
         self.logger.setLevel(logging.INFO)

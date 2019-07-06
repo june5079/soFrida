@@ -52,7 +52,7 @@ class Getlists:
             # self.f = open ("apklist_{0}.txt".format(self.search_keyword),"w")
             self.options = Options()    
             self.options.add_argument("--start-maximized")
-            self.options.headless = False
+            self.options.headless = True
             self.browser = webdriver.Chrome(self.chrome_driver, chrome_options=self.options)
             self.browser.maximize_window()
             self.make_connection()

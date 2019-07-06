@@ -34,6 +34,8 @@ class soFrida:
         self.logger.addHandler(self.file_handler)
         self.logger.info("[+] Vulnerable PKG_ID : " + self.pkgid)
         self.logger.info("[!] Logging Start")
+        self.awsregion = set()
+        self.awsservice = set()
         
         client = AdbClient(host="127.0.0.1", port=5037)
         self.adb_device = client.devices()[0]   
@@ -215,6 +217,24 @@ class soFrida:
         command = ["rm", "-rf", self.dir]
         os.system(" ".join(command))
     
+    def aws_finder(self):
+        with open(self.pkgid + '.log', 'r') as flog:
+            flog_list = flog.readlines()
+            for flog_line in flog_list:
+                print (flog_line)
+                for r in self.aws_regions:
+                    if r in flog_line:
+                        self.awsregion.add(r)
+                    else:
+                        pass
+            
+                for s in self.aws_servicelist:
+                    if s in flog_line:
+                        self.awsservice.add(s)
+                    else:
+                        pass
+            self.logger.info(self.awsregion)
+            self.logger.info(self.awsservice)
 
 ap = argparse.ArgumentParser(description='Test APIBleed vulnerability - cloud backend - not for testing general mobile vulnerability.')
 ap.add_argument('-t', '--target', dest='target', required=False, help='apk file path')
@@ -239,3 +259,4 @@ sf.get_class_maketrace()
 sf.print_key()
 sf.save_logcat(args.process)
 cprint ("[+] Done")
+sf.aws_finder()
