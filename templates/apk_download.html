@@ -30,6 +30,39 @@ APK Downloader
 					.prop("checked", checked);
 				button_change();
 			});
+			$("#download").on("click", function(){
+				$.ajax({
+					url:'/google_login_check',
+					type:'GET',
+					success:function(res){
+						if(res.result == "success"){
+							download.download_start();
+						}else{
+							download.open_google_login();
+						}
+					}
+					
+				});
+				//var selected = $('.custom-control-input-item').filter(function(){ return $(this).prop('checked');});
+				//console.log(selected);
+			});
+			function login(){
+				$("#login_alert").html("<p class=\"text-info\">Wait a seconds for login.</p>");
+				$("#login_alert").attr("aria-hidden", false);
+				var id = $("#inputID").val();
+				var pw = $("#inputPassword").val();
+				if(id != "" && pw !=""){
+					download.google_login(id, pw);
+				}
+			}
+			$("#login").on('click', function(){
+				login();
+			});
+			$("#inputPassword").on('keyup',function(e){
+				if(e.keyCode == 13){
+					login();
+				}
+			});
 		});
 		function search(mode, text){
 			$("#log").text("Searching with Chorme DevTools...");
@@ -141,6 +174,39 @@ APK Downloader
 			<nav class="navbar navbar-expand">
 				<button class="nav-item btn btn-danger ml-auto mr-0 my-2 my-md-0" id="download" disabled>Download</button>
 			</nav>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="LoginModalLabel">Google Login</h5>
+				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<form>
+					<div class="form-group">
+						<div class="form-label-group">
+							<input type="text" id="inputID" class="form-control" placeholder="Google ID" required="required" autofocus="autofocus">
+							<label for="inputID">ID</label>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="form-label-group">
+							<input type="password" id="inputPassword" class="form-control" placeholder="Google Password" required="required">
+							<label for="inputPassword">Password</label>
+						</div>
+					</div>
+				</form>
+				<label id="login_alert" aria-hidden="true"></label>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+				<button class="btn btn-primary" type="button" id="login">Login</a>
+			</div>
 		</div>
 	</div>
 </div>
