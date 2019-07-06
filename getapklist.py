@@ -127,9 +127,11 @@ class Getlists:
         with open ("apklist_{0}.json".format(self.search_keyword), 'w') as outfile:
             json.dump(self.result, outfile)
 
-    def get_pkginfo_for_GUI(self):
+    def get_pkginfo_for_GUI(self, logger):
         l = self.apklist
+        logger.info(json.dumps({"LOG":"Start Downloading "+str(len(l))+" apks."}))
         try:
+            i = 1
             for x in l:
                 try:
                     print (x)
@@ -154,12 +156,18 @@ class Getlists:
 
                     self.result[x] = []
                     self.result[x].append({"popular":fin_pop, "category":fin_cat2, "title":fin_title2})
-                    yield "data: "+json.dumps({x:{"popular":fin_pop, "category":fin_cat2, "title":fin_title2}})+"\n\n"
+                    logger.info(json.dumps({x:{"popular":fin_pop, "category":fin_cat2, "title":fin_title2}}))
+                    logger.info(json.dumps({"LOG":"("+str(i)+"/"+str(len(l))+") Loaded "+x+" info."}))
+                    i+=1
                 except Exception as e:
                     print (x.strip("\n") + " : " + "ERROR\n")
+                    logger.info(json.dumps({"LOG":"("+str(i)+"/"+str(len(l))+") Failed to load "+x+" info."}))
+                    i+=1
                     #pass
             raise GeneratorExit("complete")
         except GeneratorExit as e:
             print (x.strip("\n") + " : " + "EXIT\n")
-            yield "data: "+json.dumps({"EXIT":{"msg":str(e)}})+"\n\n"
+            logger.info(json.dumps({"EXIT":{"msg":str(e)}}))
+        except Exception as e:
+            print(e)
 
