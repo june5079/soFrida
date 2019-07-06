@@ -16,7 +16,6 @@ APK Downloader
 			$("#search_form").on('keyup', function(e){
 				if(e.keyCode == 13){
 					var mode = $("#search_mode_button").text();
-					console.log("!"+mode+"!");
 					if(mode != "Search Mode"){
 						var text = $(this).val();
 						search(mode, text);

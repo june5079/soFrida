@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, jsonify, g, Response, stream_
 import frida
 import json
 import os
-import logging
 from getapklist import Getlists
 from threading import Thread
 from sflogger import sfLogger
@@ -10,7 +9,7 @@ app = Flask(__name__)
 BASE_URI = os.path.dirname(__file__)
 getlist = ""
 
-logger = ""
+logger = sfLogger()
 
 @app.route("/")
 def index():
@@ -23,10 +22,11 @@ def apk_download_layout():
 @app.route('/stream')
 def stream():
   global logger
-  #print("stream")
-  #log = logger.loggenerator()
-  #print("GETNER"+log)
-  return Response(logger.loggenerator(), mimetype="text/event-stream")
+  if logger != "":
+    return Response(logger.loggenerator(), mimetype="text/event-stream")
+  else:
+    return Response("data: "+json.dumps({"ERROR":{"message":"error"}})+"\n\n", mimetype="text/event-stream")
+
 @app.route("/load_finish")
 def load_finish():
   global logger
@@ -41,7 +41,7 @@ def search():
   global logger
   print("Getlists(\"%s\", \"%s\")" % (request.json['mode'].lower().strip(), request.json['text'].strip()))
   try:
-    logger = sfLogger()
+    logger.start()
     getlist = Getlists(request.json['mode'].lower().strip(), request.json['text'])
     getlist.init_request()
     Thread(target=getlist.get_pkginfo_for_GUI, args=(logger.logger,)).start()

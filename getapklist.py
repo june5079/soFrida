@@ -6,6 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from pathos.multiprocessing import ProcessingPool
 from tqdm import tqdm
+import platform
 
 # HOW to Use 
 # from getapklist import Getlists
@@ -38,16 +39,21 @@ class Getlists:
         else :
             print ("Wrong categories")
             exit()
+        if platform.system() == "Windows":
+            self.chrome_driver = "./chromedriver.exe"
+        else:
+            self.chrome_driver = "./chromedriver"
     
     def init_request(self):
         if self.option == "pkgid":
-            self.get_pkginfo()
+            #self.get_pkginfo()
+            pass
         else:
             # self.f = open ("apklist_{0}.txt".format(self.search_keyword),"w")
             self.options = Options()    
             self.options.add_argument("--start-maximized")
             self.options.headless = False
-            self.browser = webdriver.Chrome('./chromedriver', chrome_options=self.options)
+            self.browser = webdriver.Chrome(self.chrome_driver, chrome_options=self.options)
             self.browser.maximize_window()
             self.make_connection()
 
