@@ -141,7 +141,6 @@ class Getlists:
             i = 1
             for x in l:
                 try:
-                    print ("START GET :"+x)
                     r = requests.get(self.play_search_pkgid + x.strip("\n"))
                     res = r.text
 
@@ -165,7 +164,6 @@ class Getlists:
                     self.result[x].append({"popular":fin_pop, "category":fin_cat2, "title":fin_title2})
                     logger.info(json.dumps({x:{"popular":fin_pop, "category":fin_cat2, "title":fin_title2}}))
                     logger.info(json.dumps({"LOG":"("+str(i)+"/"+str(len(l))+") Loaded "+x+" info."}))
-                    print("QUQUQUQU")
                     i+=1
                 except Exception as e:
                     print (x.strip("\n") + " : " + "ERROR\n")
