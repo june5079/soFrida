@@ -20,9 +20,20 @@ var download = new function(){
             contentType: "application/json; charset=utf-8",
             data:JSON.stringify({"list":package_list}),
             success:function(res){
-                console.log(res)
+                download.log_start();
             }
         });
+    }
+    this.log_start = function(){
+        var source = new EventSource('/download_log');
+		source.onmessage = function (event) {
+            var log = JSON.parse(event);
+            /*
+            log = {"step":"start", "pkg_name":"com.happylabs.hps"};
+            log = {"step":"finish", "pkg_name":"com.happylabs.hps"};
+            log = {"step":"error", "msg":"request_error", "pkg_name":"com.happylabs.hps"};
+            */
+        }
     }
     this.open_google_login = function(){
         $("#loginModal").attr("aria-hidden", false);
