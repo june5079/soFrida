@@ -246,25 +246,33 @@ class soFrida:
         # regex_list.append(re.compile(r"?P<bucket>[^/]+).s3.amazonaws.com"))
         # regex_list.append(re.compile(r"?P<bucket>[^/]+).s3-(?P<region>[^.]+).amazonaws.com"))
         # regex_list.append(re.compile(r"s3-(?P<region>[^.]+).amazonaws.com/(?P<bucket>[^/]+)"))
-        rextest = re.compile(r"for\s(?P<bucket>[^/]+).s3-(?P<region>[^.]+).amazonaws.com")
-
+        caseA = re.compile(r"for\s(?P<bucket>[^/]+).s3.amazonaws.com")
+        caseB = re.compile(r"for\s(?P<bucket>[^/]+).s3-(?P<region>[^.]+).amazonaws.com")
+        caseC = re.compile(r"for\ss3-(?P<region>[^.]+).amazonaws.com/(?P<bucket>[^/]+)")
+        regex_list.append(caseA)
+        regex_list.append(caseB)
+        regex_list.append(caseC)
+        
         with open (logfile, "r") as flog:
             flog_list = flog.readlines()
             
             # for rex in regex_list:
             for flog in flog_list:
-                matchobj = rextest.search(str(flog))
-                if matchobj:
-                    print (matchobj.group("bucket"))
-                    print (matchobj.group("region"))
+                for rextest in regex_list:
+                    try:
+                        matchobj = rextest.search(str(flog))
+                        if matchobj:
+                            print (matchobj.group("bucket"))
+                            print (matchobj.group("region"))
+                    except:
+                        pass
 
                 # if matchobj.group("bucket") is not None:
                 #     self.awsbucket.add(matchobj.group("bucket"))
                 #     print (matchobj.group("bucket"))
                 # if matchobj.group("region") is not None:
                 #     self.awsregion.add(matchobj.group("region"))
-                else:
-                    pass
+
         # print (matchobj.group("bucket"))
 
             # for regex in regex_list:
