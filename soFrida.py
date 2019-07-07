@@ -9,6 +9,7 @@ import logging
 from threading import Thread
 from adb.client import Client as AdbClient
 from termcolor import colored, cprint
+from sflogger import sfFileLogger
 
 APKTOOL_PATH = "/usr/local/bin/apktool"
 
@@ -26,16 +27,18 @@ class soFrida:
         self.session_token = set()
         self.key_found = False
         self.base_adb_command = ['adb']
+        self.flogger = sfFileLogger(self.pkgid+".log")
         self.logger = logging.getLogger("soLogger")
         self.logger.setLevel(logging.INFO)        
         self.formatter = logging.Formatter('%(levelname)s - %(message)s')
         self.file_handler = logging.FileHandler(self.pkgid + ".log")
         self.file_handler.setFormatter(self.formatter)
         self.logger.addHandler(self.file_handler)
-        self.logger.info("[+] Vulnerable PKG_ID : " + self.pkgid)
-        self.logger.info("[!] Logging Start")
+        self.flogger.filelogger.info("[+] Vulnerable PKG_ID : " + self.pkgid)
+        self.flogger.filelogger.info("[!] Logging Start")
         self.awsregion = set()
         self.awsservice = set()
+        self.awsbucket = set()
         
         client = AdbClient(host="127.0.0.1", port=5037)
         self.adb_device = client.devices()[0]   
@@ -162,7 +165,7 @@ class soFrida:
             for accesskey in list(self.acc_key_list):
                 cprint("\t[-] %s" % accesskey, 'green')
                 subprocess.call("aws configure set aws_access_key_id %s"%accesskey, shell=True)
-                self.logger.info("[+] AccessKeyId : " + accesskey)
+                self.flogger.filelogger.info("[+] AccessKeyId : " + accesskey)
                  
         if len(self.sec_key_list) == 0:
             cprint("[*] No Secret Key", 'red')
@@ -171,7 +174,7 @@ class soFrida:
             for secretkey in list(self.sec_key_list):
                 cprint("\t[-] %s" % secretkey, 'green')
                 subprocess.call("aws configure set aws_secret_access_key %s"%secretkey, shell=True)
-                self.logger.info("[+] SecretAceessKey : " + secretkey)
+                self.flogger.filelogger.info("[+] SecretAceessKey : " + secretkey)
 
     
         if len(self.session_token) == 0:
@@ -181,7 +184,7 @@ class soFrida:
             for sessiontoken in list(self.session_token):
                 cprint("\t[-] %s" % sessiontoken, 'green')
                 subprocess.call("aws configure set aws_session_token %s"%sessiontoken, shell=True)
-                self.logger.info("[+] SessionToken : " + sessiontoken)
+                self.flogger.filelogger.info("[+] SessionToken : " + sessiontoken)
 
     
     def clear_logcat(self):
@@ -206,7 +209,7 @@ class soFrida:
         adb3 = subprocess.Popen(['grep',process], stdin=adb2.stdout ,stdout=subprocess.PIPE)
         for line in adb3.stdout.readlines():
             print (line.decode('utf-8'))
-            self.logger.info("[Logcat] :" + line.decode('utf-8'))
+            self.flogger.filelogger.info("[Logcat] :" + line.decode('utf-8'))
 
     # def aws_autoconfig(self):
     #     cprint ("[*] Setting Up AWS Configuration" , "yellow")
@@ -217,11 +220,12 @@ class soFrida:
         command = ["rm", "-rf", self.dir]
         os.system(" ".join(command))
     
+    # Recognize what aws service is used for app
     def aws_finder(self):
         with open(self.pkgid + '.log', 'r') as flog:
             flog_list = flog.readlines()
             for flog_line in flog_list:
-                print (flog_line)
+                # print (flog_line)
                 for r in self.aws_regions:
                     if r in flog_line:
                         self.awsregion.add(r)
@@ -233,8 +237,41 @@ class soFrida:
                         self.awsservice.add(s)
                     else:
                         pass
-            self.logger.info(self.awsregion)
-            self.logger.info(self.awsservice)
+            self.flogger.filelogger.info(self.awsregion)
+            self.flogger.filelogger.info(self.awsservice)
+    
+    def bucket_finder(self, logfile):
+
+        regex_list = []
+        # regex_list.append(re.compile(r"?P<bucket>[^/]+).s3.amazonaws.com"))
+        # regex_list.append(re.compile(r"?P<bucket>[^/]+).s3-(?P<region>[^.]+).amazonaws.com"))
+        # regex_list.append(re.compile(r"s3-(?P<region>[^.]+).amazonaws.com/(?P<bucket>[^/]+)"))
+        rextest = re.compile(r"for\s(?P<bucket>[^/]+).s3-(?P<region>[^.]+).amazonaws.com")
+
+        with open (logfile, "r") as flog:
+            flog_list = flog.readlines()
+            
+            # for rex in regex_list:
+            for flog in flog_list:
+                matchobj = rextest.search(str(flog))
+                if matchobj:
+                    print (matchobj.group("bucket"))
+                    print (matchobj.group("region"))
+
+                # if matchobj.group("bucket") is not None:
+                #     self.awsbucket.add(matchobj.group("bucket"))
+                #     print (matchobj.group("bucket"))
+                # if matchobj.group("region") is not None:
+                #     self.awsregion.add(matchobj.group("region"))
+                else:
+                    pass
+        # print (matchobj.group("bucket"))
+
+            # for regex in regex_list:
+            #     for flog in flog_list:
+            #         matchobj = regex.search(flog)
+
+        # print (self.awsregion + " : " + self.awsbucket)
 
 ap = argparse.ArgumentParser(description='Test APIBleed vulnerability - cloud backend - not for testing general mobile vulnerability.')
 ap.add_argument('-t', '--target', dest='target', required=False, help='apk file path')
@@ -260,3 +297,4 @@ sf.print_key()
 sf.save_logcat(args.process)
 cprint ("[+] Done")
 sf.aws_finder()
+sf.bucket_finder(args.process+".log")
