@@ -11,7 +11,12 @@ app = Flask(__name__)
 BASE_URI = os.path.dirname(__file__)
 getlist = ""
 
+
 logger = sfLogger()
+
+# Use for logging debug message
+debuglogger = sfLogger()
+
 downloader = Downloader()
 
 @app.route("/")

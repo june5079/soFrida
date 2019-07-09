@@ -144,18 +144,20 @@ class soFrida:
 
         regex_svc_A = re.compile(r"(?P<svc>[^/]+)\.(?P<region>[^.]+).amazonaws.com")
         regex_svc_B = re.compile(r"(?P<svc>[^/]+)\.amazonaws.com")
-        regex_svc_C = re.compile(r"(?P<svc>[^/]+)\-(?P<region>[^.]+).amazonaws.com")    
+        # regex_svc_C = re.compile(r"(?P<svc>[^/]+)\-(?P<region>[^.]+).amazonaws.com")    
         # https://happyrestaurant.s3.amazonaws.com/006/677/724.dat
+        # https://s3.ap-northeast-1.amazonaws.com/3gcdn.tokyo/soft/zcamera/2019-07-10/72265751141871565263738.jpg
+        # https://pinpoint.us-east-1.amazonaws.com/v1/apps/ac2f1c99ef384a8780b48ef5bbd2d1d5/events/legacy
 
-        regex_s3case = [re.compile(r"(?P<bucket>[^/]+).s3.amazonaws.com"), re.compile(r"(?P<bucket>[^/]+).s3-(?P<region>[^.]+).amazonaws.com"), re.compile(r"s3-(?P<region>[^.]+).amazonaws.com/(?P<bucket>[^/]+)")]
+        regex_s3case = [re.compile(r"(?P<bucket>[^/]+).s3.amazonaws.com"), re.compile(r"(?P<bucket>[^/]+).s3-(?P<region>[^.]+).amazonaws.com"), re.compile(r"s3-(?P<region>[^.]+).amazonaws.com/(?P<bucket>[^/]+)"), re.compile(r"s3.(?P<region>[^.]+).amazonaws.com/(?P<bucket>[^/]+)")]
         
         svc_temp = regex_svc_B.search(text)
         if svc_temp != None:
-            if svc_temp.group('svc').find("s3") != -1:
+            if svc_temp.group('svc').find("s3") != -1 :
                 for regex_s3 in regex_s3case :
                     s3temp = regex_s3.search(text)
                     if s3temp is not None:
-                        # print (text)
+                        print (text)
                         self.awsservice.add("s3")
                         self.awsbucket.add(s3temp.group('bucket'))
                         print (self.awsservice)
@@ -164,40 +166,12 @@ class soFrida:
                 svc_tempA = regex_svc_A.search(text)
                 if svc_tempA != None:
                     print (text)
-                    if svc_tempA.group('region').find("s3") == -1:
+                    if svc_tempA.group('region').find("s3") == -1 :
                         self.awsservice.add(svc_tempA.group('svc'))
                         self.awsregion.add(svc_tempA.group('region'))
                         print (self.awsservice)
                         print (self.awsregion)
                 
-
-
-        # if svc_temp is not No
-        #         for regs3temp in regex_s3case:
-        #             try:
-        #                 tmp = regs3temp.search(text)
-        #                 if tmp.group('bucket') is not None:
-        #                     self.awsbucket.add(tmp.group('bucket'))
-        #                     print (tmp.group('bucket'))
-        #             except:
-        #                 pass
-        #     else:
-        #         self.awsservice.add(svc_temp.group('svc'))
-
-
-
-        
-
-
-        # svc_tempB = regex_svc_B.search(text)
-        # if svc_tempB != None:
-        #     print (text)
-        #     self.awsservice.add(svc_tempB.group('svc'))
-        
- 
- 
- 
-
         sec = regex_sec.search(text)
         if sec != None:
             #print("[*] SecretKeyId : %s" % str(sec.group()))
@@ -253,12 +227,27 @@ class soFrida:
         adb_command.append('-c')
         try :
                 
-            adb_clear = subprocess.Popen(adb_command)
+            subprocess.Popen(adb_command)
             # Wait for cleaning logcat
             time.sleep(1)
             cprint("[+] Logcat sucessfully cleared", 'green')
         except :
             cprint ("[!] Error occured wuth cleaning logcat",'red')
+    
+    def clear_recentapp(self, pkgid):
+        adb_command = self.base_adb_command[:] 
+        adb_command.append('shell')
+        adb_command.append('am')
+        adb_command.append('force-stop')
+        adb_command.append(pkgid)
+        try :
+                
+            subprocess.Popen(adb_command)
+            # Wait for cleaning logcat
+            time.sleep(1)
+            print ("keykode")
+        except :
+            cprint ("[!] Error occured wuth cleaning logcat",'red')               
     
     def save_logcat(self, process):
         adb_command = self.base_adb_command[:]
@@ -357,15 +346,17 @@ elif args.H != None:
     sf = soFrida('host', args.host)
 
 # Clear Logcat
+sf.clear_recentapp(args.process)
 sf.clear_logcat()
 time.sleep(1)
 sf.process = args.process
 sf.get_class_maketrace()
 sf.print_key()
-sf.save_logcat(args.process)
+# sf.save_logcat(args.process)
 cprint ("[+] Done")
 # sf.aws_finder()
 # sf.bucket_finder(args.process+".log")
 
 print (sf.awsservice)
 print (sf.awsbucket)
+print (sf.awsregion)
