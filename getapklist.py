@@ -160,9 +160,10 @@ class Getlists:
                     fin_title=''.join(str(g) for g in pop_title)
                     fin_title2 = fin_title.split('>')[1].split('<')[0] 
 
-                    self.result[x] = []
-                    self.result[x].append({"popular":fin_pop, "category":fin_cat2, "title":fin_title2})
-                    logger.info(json.dumps({x:{"popular":fin_pop, "category":fin_cat2, "title":fin_title2}}))
+                    #self.result[x] = []
+                    self.result[x]={"popular":fin_pop, "category":fin_cat2, "title":fin_title2}
+                    #logger.info(json.dumps({x:{"popular":fin_pop, "category":fin_cat2, "title":fin_title2}}))
+                    logger.info(json.dumps({x:self.result[x]}))
                     logger.info(json.dumps({"LOG":"("+str(i)+"/"+str(len(l))+") Loaded "+x+" info."}))
                     i+=1
                 except Exception as e:
