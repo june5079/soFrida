@@ -10,11 +10,14 @@ function trace(className, over){
             var retval = this[method].apply(this, arguments);
             if(over_ret == "java.lang.String"){
                 send(retval);
-            }
+            }else if(over_ret == "java.net.URI"){
+				send(String(retval));
+			}
             return retval;
         }
     });
 }
+
 function uniqBy(array, key)
 {
         var seen = {};
@@ -23,6 +26,7 @@ function uniqBy(array, key)
                 return seen.hasOwnProperty(k) ? false : (seen[k] = true);
         });
 }
+
 function make_trace(cls){
     setTimeout(function() {
         Java.perform(function() {
@@ -57,7 +61,7 @@ Java.perform(function() {
     Java.enumerateLoadedClasses({
         onMatch: function(cls){
             cls = cls.replace("[L","").replace(";","");
-            if(cls == "com.amazonaws.auth.BasicAWSCredentials"|| cls == "com.amazonaws.auth.BasicSessionCredentials"){
+            if(cls == "com.amazonaws.auth.BasicAWSCredentials"|| cls == "com.amazonaws.auth.BasicSessionCredentials" || cls == "com.amazonaws.http.HttpRequest"){
                 make_trace(cls);
                 send("start_trace:"+cls);
             }

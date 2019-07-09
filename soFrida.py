@@ -25,6 +25,9 @@ class soFrida:
         self.acc_key_list = set()
         self.sec_key_list = set()
         self.session_token = set()
+        self.awsregion = set()
+        self.awsservice = set()
+        self.awsbucket = set()
         self.key_found = False
         self.base_adb_command = ['adb']
         self.flogger = sfFileLogger(self.pkgid+".log")
@@ -36,9 +39,7 @@ class soFrida:
         self.logger.addHandler(self.file_handler)
         self.flogger.filelogger.info("[+] Vulnerable PKG_ID : " + self.pkgid)
         self.flogger.filelogger.info("[!] Logging Start")
-        self.awsregion = set()
-        self.awsservice = set()
-        self.awsbucket = set()
+
         
         client = AdbClient(host="127.0.0.1", port=5037)
         self.adb_device = client.devices()[0]   
@@ -134,14 +135,65 @@ class soFrida:
         script.on("message", message_callback)
         script.load()
         return script
-
-
+    
     def findAccessKeyId (self, text):
         # Recognize AWS Key Pairs by RegEx
         regex_acc = re.compile(r"(?<![A-Z0-9])[A-Z0-9]{20}(?![A-Z0-9])")
         regex_sec = re.compile(r"(?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])")
-        sec = regex_sec.search(text)
 
+        regex_svc_A = re.compile(r"(?P<svc>[^/]+)\.(?P<region>[^.]+).amazonaws.com")
+        regex_svc_B = re.compile(r"(?P<svc>[^/]+)\.amazonaws.com")
+        regex_svc_C = re.compile(r"(?P<svc>[^/]+)\-(?P<region>[^.]+).amazonaws.com")    
+        # https://happyrestaurant.s3.amazonaws.com/006/677/724.dat
+
+        regex_s3case = [re.compile(r"(?P<bucket>[^/]+).s3.amazonaws.com"), re.compile(r"(?P<bucket>[^/]+).s3-(?P<region>[^.]+).amazonaws.com"), re.compile(r"s3-(?P<region>[^.]+).amazonaws.com/(?P<bucket>[^/]+)")]
+        
+        svc_temp = regex_svc_B.search(text)
+        if svc_temp != None:
+            if svc_temp.group('svc').find("s3") != -1:
+                for regex_s3 in regex_s3case :
+                    s3temp = regex_s3.search(text)
+                    if s3temp is not None:
+                        # print (text)
+                        self.awsservice.add("s3")
+                        self.awsbucket.add(s3temp.group('bucket'))
+            else:
+                svc_tempA = regex_svc_A.search(text)
+                if svc_tempA != None:
+                    print (text)
+                    if svc_tempA.group('region').find("s3") == -1:
+                        self.awsservice.add(svc_tempA.group('svc'))
+                        self.awsregion.add(svc_tempA.group('region'))
+                
+
+
+        # if svc_temp is not No
+        #         for regs3temp in regex_s3case:
+        #             try:
+        #                 tmp = regs3temp.search(text)
+        #                 if tmp.group('bucket') is not None:
+        #                     self.awsbucket.add(tmp.group('bucket'))
+        #                     print (tmp.group('bucket'))
+        #             except:
+        #                 pass
+        #     else:
+        #         self.awsservice.add(svc_temp.group('svc'))
+
+
+
+        
+
+
+        # svc_tempB = regex_svc_B.search(text)
+        # if svc_tempB != None:
+        #     print (text)
+        #     self.awsservice.add(svc_tempB.group('svc'))
+        
+ 
+ 
+ 
+
+        sec = regex_sec.search(text)
         if sec != None:
             #print("[*] SecretKeyId : %s" % str(sec.group()))
             self.sec_key_list.add(str(sec.group()))
@@ -154,7 +206,7 @@ class soFrida:
         if text.endswith ("=") or text.endswith ("=="):
             self.session_token.add(text)
         
-        if len(self.sec_key_list) > 0 and len(self.acc_key_list) > 0:
+        if len(self.sec_key_list) > 0 and len(self.acc_key_list) > 0 and len(self.awsservice) > 0 and len(self.awsbucket) > 0:
             self.key_found = True
 
     def print_key(self):
@@ -221,51 +273,51 @@ class soFrida:
         os.system(" ".join(command))
     
     # Recognize what aws service is used for app
-    def aws_finder(self):
-        with open(self.pkgid + '.log', 'r') as flog:
-            flog_list = flog.readlines()
-            for flog_line in flog_list:
-                # print (flog_line)
-                for r in self.aws_regions:
-                    if r in flog_line:
-                        self.awsregion.add(r)
-                    else:
-                        pass
+    # def aws_finder(self):
+    #     with open(self.pkgid + '.log', 'r') as flog:
+    #         flog_list = flog.readlines()
+    #         for flog_line in flog_list:
+    #             # print (flog_line)
+    #             for r in self.aws_regions:
+    #                 if r in flog_line:
+    #                     self.awsregion.add(r)
+    #                 else:
+    #                     pass
             
-                for s in self.aws_servicelist:
-                    if s in flog_line:
-                        self.awsservice.add(s)
-                    else:
-                        pass
-            self.flogger.filelogger.info(self.awsregion)
-            self.flogger.filelogger.info(self.awsservice)
+    #             for s in self.aws_servicelist:
+    #                 if s in flog_line:
+    #                     self.awsservice.add(s)
+    #                 else:
+    #                     pass
+    #         self.flogger.filelogger.info(self.awsregion)
+    #         self.flogger.filelogger.info(self.awsservice)
     
-    def bucket_finder(self, logfile):
+    # def bucket_finder(self, logfile):
 
-        regex_list = []
-        # regex_list.append(re.compile(r"?P<bucket>[^/]+).s3.amazonaws.com"))
-        # regex_list.append(re.compile(r"?P<bucket>[^/]+).s3-(?P<region>[^.]+).amazonaws.com"))
-        # regex_list.append(re.compile(r"s3-(?P<region>[^.]+).amazonaws.com/(?P<bucket>[^/]+)"))
-        caseA = re.compile(r"for\s(?P<bucket>[^/]+).s3.amazonaws.com")
-        caseB = re.compile(r"for\s(?P<bucket>[^/]+).s3-(?P<region>[^.]+).amazonaws.com")
-        caseC = re.compile(r"for\ss3-(?P<region>[^.]+).amazonaws.com/(?P<bucket>[^/]+)")
-        regex_list.append(caseA)
-        regex_list.append(caseB)
-        regex_list.append(caseC)
+    #     regex_list = []
+    #     # regex_list.append(re.compile(r"?P<bucket>[^/]+).s3.amazonaws.com"))
+    #     # regex_list.append(re.compile(r"?P<bucket>[^/]+).s3-(?P<region>[^.]+).amazonaws.com"))
+    #     # regex_list.append(re.compile(r"s3-(?P<region>[^.]+).amazonaws.com/(?P<bucket>[^/]+)"))
+    #     caseA = re.compile(r"for\s(?P<bucket>[^/]+).s3.amazonaws.com")
+    #     caseB = re.compile(r"for\s(?P<bucket>[^/]+).s3-(?P<region>[^.]+).amazonaws.com")
+    #     caseC = re.compile(r"for\ss3-(?P<region>[^.]+).amazonaws.com/(?P<bucket>[^/]+)")
+    #     regex_list.append(caseA)
+    #     regex_list.append(caseB)
+    #     regex_list.append(caseC)
         
-        with open (logfile, "r") as flog:
-            flog_list = flog.readlines()
+    #     with open (logfile, "r") as flog:
+    #         flog_list = flog.readlines()
             
-            # for rex in regex_list:
-            for flog in flog_list:
-                for rextest in regex_list:
-                    try:
-                        matchobj = rextest.search(str(flog))
-                        if matchobj:
-                            print (matchobj.group("bucket"))
-                            print (matchobj.group("region"))
-                    except:
-                        pass
+    #         # for rex in regex_list:
+    #         for flog in flog_list:
+    #             for rextest in regex_list:
+    #                 try:
+    #                     matchobj = rextest.search(str(flog))
+    #                     if matchobj:
+    #                         print (matchobj.group("bucket"))
+    #                         print (matchobj.group("region"))
+    #                 except:
+    #                     pass
 
                 # if matchobj.group("bucket") is not None:
                 #     self.awsbucket.add(matchobj.group("bucket"))
@@ -304,5 +356,8 @@ sf.get_class_maketrace()
 sf.print_key()
 sf.save_logcat(args.process)
 cprint ("[+] Done")
-sf.aws_finder()
-sf.bucket_finder(args.process+".log")
+# sf.aws_finder()
+# sf.bucket_finder(args.process+".log")
+
+print (sf.awsservice)
+print (sf.awsbucket)
