@@ -1,0 +1,126 @@
+{% extends "layout.html" %}
+{% block title %}
+Assets
+{% endblock %}
+{% block content %}
+<script type='text/javascript'>
+    $(function(){
+		$(document).ready(function(){
+			$("#check-all").on("change", function(){
+				var checked = $(this).prop("checked");
+				$(this).parents(".table")
+					.first()
+					.find("input[type=checkbox]")
+					.prop("checked", checked);
+				button_change();
+			});
+		});
+		function button_change(){
+			var all = $('.custom-control-input-item');
+			$('#select-remove').prop('disabled',function(){
+				return all.filter(function(){ return $(this).prop('checked'); }).length === 0;
+			});
+		}
+		function checkbox_change(){
+			var all = $('.custom-control-input-item');
+			$('#check-all').prop('checked',function(){
+				return all.length === all.filter(function(){ return $(this).prop('checked'); }).length;
+			});
+		}
+		function finish_load_table(){
+			$('.custom-control-input-item').on('change', function(){
+				button_change();
+				checkbox_change();
+			});
+		}
+		function result_table(list){
+			var source = new EventSource('/stream');
+			source.onmessage = function (event) {
+				var pkg = JSON.parse(event.data);
+				for(var key in pkg){
+					if(key == "EXIT"){
+						this.close();
+						$.ajax({
+							url:'/load_finish',
+							type:'GET',
+							success:function(res){
+								console.log(res)
+							}
+						});
+						finish_load_table();
+					}else if(key != "ERROR"){
+					}
+				}
+			};
+		}	
+	});
+</script>
+<div class="container-fluid">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item">
+			<a href="#">Dashboard</a>
+		</li>
+		<li class="breadcrumb-item active">Assets</li>
+	</ol>
+	<div class="card mb-3">
+		<div class="card-header">
+			<i class="fas fa-table"></i>
+			Assets Table
+		</div>
+		<div class="card-body">
+			<div class="input-group">
+				<input type="text" class="form-control" placeholder="Input Search Text" spellcheck="false" id="search_form">
+			</div>
+			<div style="margin-top:20px;" class="table-responsive" id="assets_list">
+				<table class="table" id="assets_table">
+					<thead>
+						<th>
+							<div class="custom-control custom-checkbox" align="center">
+								<input type="checkbox" class="custom-control-input" id="check-all">
+								<label class="custom-control-label" for="check-all"></label>
+							</div>
+						</th>
+						</th>
+						<th>PKGID</th>
+						<th>TITLE</th>
+						<th>POPULAR</th>
+						<th>CATEGORY</th>
+						<th>STATUS</th>
+						<th>EXIST_SDK</th>
+						<th>ANALYZE</th>
+					</thead>
+					<tbody>
+						{% for info in asset_infos %}
+						<tr>
+							<td>
+								<div class="custom-control custom-checkbox" align="center">
+									<input type="checkbox" class="custom-control-input custom-control-input-item" id="{{ info['package_name'] }}"><label class="custom-control-label" for="{{ info['package_name'] }}"></label>
+								</div>
+							</td>
+							<td>{{ info['package_name'] }}</td>
+							<td>{{ info['title'] }}</td>
+							<td>{{ "{:,}".format(info['popular']) }}</td>
+							<td>{{ info['category'] }}</td>
+							<td>{{ info['status'] }}</td>
+							{% if info['exist_sdk'] == 1 %}
+							<td>True</td>
+							<td><button class="btn btn-success" id="{{ info['package_name'] }}">Analyze</button></td>
+							{% elif info['exist_sdk'] == 0 %}
+							<td>False</td>
+							<td><button class="btn btn-danger" id="{{ info['package_name'] }}">Remove</button></td>
+							{% else %}
+							<td></td>
+							<td></td>
+							{% endif %}
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+			<nav class="navbar navbar-expand">
+				<button class="nav-item btn btn-danger ml-auto mr-0 my-2 my-md-0" id="select-remove" disabled>Select Remove</button>
+			</nav>
+		</div>
+	</div>
+</div>
+{% endblock %}

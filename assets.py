@@ -21,8 +21,9 @@ class Assets:
             secret_access_key text,
             session_token text,
             region text,
-            service text)''')
-        self.columns = ['package_name', 'title', 'popular','category','status','exist_sdk', 'access_key_id', 'secret_key_id','session_token','region','service']
+            service text,
+            bucket text)''')
+        self.columns = ['package_name', 'title', 'popular','category','status','exist_sdk', 'access_key_id', 'secret_key_id','session_token','region','service','bucket']
         self.con.commit()
 
     def exist(self, package_name):
@@ -38,6 +39,17 @@ class Assets:
         for i in range(len(self.columns)):
             package[self.columns[i]] = row[i]
         return package
+    def get_all(self):
+        package_list = []
+        for row in self.cur.execute('''select * from assets'''):
+            package = dict()
+            for i in range(len(self.columns)):
+                if row[i] == None:
+                    package[self.columns[i]] = ""
+                else:    
+                    package[self.columns[i]] = row[i]
+            package_list.append(package)
+        return package_list
 
     def select_all(self):
         print('|'.join(self.columns))
@@ -53,15 +65,17 @@ class Assets:
         self.update_one(package_name, 'status', status)
     def exist_sdk(self, package_name, tf):
         self.update_one(package_name, "exist_sdk", (1 if tf else 0))
+    def close(self):
+        self.con.close()
 if __name__ == "__main__":
     ast = Assets()
-    if ast.exist("com.happylabs.hps") == False:
-        ast.add("com.happylabs.hps", "Happy Pet Story: Virtual Sim", "5000000", "GAME_SIMULATION")
+    #if ast.exist("com.happylabs.hps") == False:
+    #    ast.add("com.happylabs.hps", "Happy Pet Story: Virtual Sim", "5000000", "GAME_SIMULATION")
     ast.select_all()
-    print(ast.get("com.happylabs.hps"))
-    ast.update_status("com.happylabs.hps", "added")
-    ast.exist_sdk("com.happylabs.hps", False)
-    ast.select_all()
+    #print(ast.get("com.happylabs.hps"))
+    #ast.update_status("com.happylabs.hps", "added")
+    #ast.exist_sdk("com.happylabs.hps", False)
+    #ast.select_all()
 
 
 

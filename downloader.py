@@ -1,12 +1,14 @@
 from gpapi.googleplay import GooglePlayAPI, RequestError
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from assets import Assets
 
 import sys, os, time
 import traceback
 import argparse
 import subprocess
 import platform
+import re
 
 class Downloader:
     def __init__ (self):
@@ -66,7 +68,9 @@ class Downloader:
     def startdownload(self, pkgid=""):
         self.pkgid = pkgid
         if self.pkgid == "":
-            return 
+            return
+        self.asset = Assets()
+        self.asset.update_status(self.pkgid, "downloading")
         print('\nAttempting to download %s\n' % self.pkgid)
         try:
             fl = ""
@@ -76,6 +80,7 @@ class Downloader:
                 self.server.login(None, None, self.gsfId, self.authSubToken)
                 try:
                     fl = self.server.download(self.pkgid)
+                    
                     break
                 except Exception as e:
                     print(e)
@@ -85,7 +90,9 @@ class Downloader:
             with open(self.apkfile_path + self.pkgid + '.apk', 'wb') as apk_file:
                 for chunk in fl.get('file').get('data'):
                     apk_file.write(chunk)
-                print('\n[+] Download successful\n')
+            print('\n[+] Download successful\n')
+            self.asset.update_status(self.pkgid, "downloaded")
+            self.check_aws_sdk_common(self.pkgid)
         except :
             print("Unexpected error:", sys.exc_info()[0])
             traceback.print_exc()
@@ -96,7 +103,7 @@ class Downloader:
 
     def check_aws_sdk(self, pkgid):
         print('[+] Checking AWS_SDK')
-        apkfinal_path = apkfile_path + pkgid + '.apk'
+        apkfinal_path = self.apkfile_path + pkgid + '.apk'
         s = os.popen('/usr/bin/grep -i "aws-android-sdk" {0}'.format(apkfinal_path)).read()
         if 'matches' in s:
             print ("[!] This Application use AWS_SDK")
@@ -104,4 +111,17 @@ class Downloader:
         else:
             print ("[!] NO AWS_SDK FOUND")
             os.remove(apkfinal_path)
+
+    def check_aws_sdk_common(self, pkgid):
+        print('[+] Checking AWS_SDK')
+        apkfinal_path = self.apkfile_path + pkgid + '.apk'
+        
+        if re.search(b'(?i)aws-android-sdk', open(apkfinal_path,"rb").read()):
+            print ("[!] This Application use AWS_SDK")
+            self.asset.exist_sdk(pkgid, True)
+            pass
+        else:
+            print ("[!] NO AWS_SDK FOUND")
+            self.asset.exist_sdk(pkgid, False)
+            #os.remove(apkfinal_path)
 

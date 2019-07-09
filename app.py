@@ -7,6 +7,7 @@ import os
 from getapklist import Getlists
 from sflogger import sfLogger
 from downloader import Downloader
+from assets import Assets
 app = Flask(__name__)
 BASE_URI = os.path.dirname(__file__)
 getlist = ""
@@ -20,8 +21,12 @@ def index():
 
 @app.route("/apk_download")
 def apk_download_layout():
-    return render_template("apk_download.html")
-
+  return render_template("apk_download.html")
+@app.route("/assets")
+def assets_layout():
+  asset = Assets()
+  asset_infos = asset.get_all()
+  return render_template("assets.html", asset_infos=asset_infos)
 @app.route('/stream')
 def stream():
   global logger
@@ -84,7 +89,14 @@ def google_login():
 @app.route("/download", methods=['POST'])
 def download():
   global downloader
+  global getlist
   package_list = request.json['list']
+  for package_name in request.json['list']:
+    asset = Assets()
+    if not asset.exist(package_name):
+      info = getlist.result[package_name]
+      asset.add(package_name, info['title'], int(info['popular'].replace(",","")), info['category'])
+      asset.close()
   try:
     Thread(target=downloader.download_packages, args=(package_list,)).start()
     return jsonify(
