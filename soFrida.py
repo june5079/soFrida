@@ -116,8 +116,9 @@ class soFrida:
                 pass
             i+=1
         
-        while not self.key_found:
-            pass
+        # while not self.key_found:
+            # pass
+        input ("Press enter key")
         script.unload()
         
     def spwan(self, runjs, message_callback):
@@ -157,6 +158,8 @@ class soFrida:
                         # print (text)
                         self.awsservice.add("s3")
                         self.awsbucket.add(s3temp.group('bucket'))
+                        print (self.awsservice)
+                        print (self.awsbucket)
             else:
                 svc_tempA = regex_svc_A.search(text)
                 if svc_tempA != None:
@@ -164,6 +167,8 @@ class soFrida:
                     if svc_tempA.group('region').find("s3") == -1:
                         self.awsservice.add(svc_tempA.group('svc'))
                         self.awsregion.add(svc_tempA.group('region'))
+                        print (self.awsservice)
+                        print (self.awsregion)
                 
 
 
@@ -197,14 +202,17 @@ class soFrida:
         if sec != None:
             #print("[*] SecretKeyId : %s" % str(sec.group()))
             self.sec_key_list.add(str(sec.group()))
+            print (self.sec_key_list)
 
         acc = regex_acc.search(text)
         if acc != None:
             #print("[*] AccessKeyId : %s" % str(acc.group()))
             self.acc_key_list.add(str(acc.group()))
+            print (self.acc_key_list)
 
         if text.endswith ("=") or text.endswith ("=="):
             self.session_token.add(text)
+            print (self.session_token)
         
         if len(self.sec_key_list) > 0 and len(self.acc_key_list) > 0 and len(self.awsservice) > 0 and len(self.awsbucket) > 0:
             self.key_found = True
