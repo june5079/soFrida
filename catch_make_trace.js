@@ -57,19 +57,21 @@ function make_trace(cls){
         });
     },0);
 }
-
-Java.perform(function() {
-    Java.enumerateLoadedClasses({
-        onMatch: function(cls){
-            cls = cls.replace("[L","").replace(";","");
-            if(cls == "com.amazonaws.http.HttpRequest" || cls == "com.amazonaws.auth.BasicAWSCredentials" || cls == "com.amazonaws.auth.BasicSessionCredentials"){
-                make_trace(cls);
-                send("start_trace:"+cls);
+function search_loaded_class(target_cls){
+    Java.perform(function() {
+        Java.enumerateLoadedClasses({
+            onMatch: function(cls){
+                cls = cls.replace("[L","").replace(";","");
+                for(var i=0;i<target_cls.length;i++){
+                    if(target_cls[i] == cls){
+                        make_trace(cls);
+                        send("start_trace:"+cls);
+                    }
+                }
+            },
+            onComplete: function(){
+                send("search complete")
             }
-        },
-        onComplete: function(){
-            send("search complete")
-        }
+        });
     });
-});
-
+}

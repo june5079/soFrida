@@ -85,6 +85,10 @@ class soFrida:
         self.trace_flag = False
         self.search_flag = True
 
+        self.target_cls = ["com.amazonaws.http.HttpRequest", "com.amazonaws.auth.BasicAWSCredentials", "com.amazonaws.auth.BasicSessionCredentials"]
+
+        start_function = "\nsearch_loaded_class([%s]);" % (', '.join("'"+x+"'" for x in self.target_cls))
+
         ## This is Callback Func.
         ############################################################
         def trace_callback(message, data):
@@ -92,7 +96,8 @@ class soFrida:
                 if message['payload'].find("start_trace:") != -1:
                     cls = message['payload'].split(":")[1]
                     cprint("[+] %s Trace Start!!" % (cls), 'yellow')
-                    if cls == "com.amazonaws.http.HttpRequest":
+                    self.target_cls.remove(cls)
+                    if len(self.target_cls) <2 and "com.amazonaws.http.HttpRequest" not in self.target_cls:
                         self.trace_flag = True
                 elif message['payload'] =="search complete":
                     self.search_flag = False
@@ -102,7 +107,7 @@ class soFrida:
                 print(message['stack'])
         ########################################################### 
                
-        script = self.spwan(catch_trace_js, trace_callback)
+        script = self.spwan(catch_trace_js+start_function, trace_callback)
         while self.search_flag:
             pass
         i = 1
@@ -113,7 +118,8 @@ class soFrida:
         while self.trace_flag == False:
             script.unload()
             self.search_flag = True
-            script = self.run(catch_trace_js, trace_callback)
+            start_function = "\nsearch_loaded_class([%s]);" % (', '.join("'"+x+"'" for x in self.target_cls))
+            script = self.run(catch_trace_js+start_function, trace_callback)
             while self.search_flag:
                 pass
             i+=1

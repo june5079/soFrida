@@ -5,7 +5,7 @@ from logging.handlers import QueueHandler, QueueListener
 # Queue Logger
 class sfLogger:
     def __init__(self):
-        self.format =  logging.Formatter("%(levelname)s-%(message)s")
+        self.format =  logging.Formatter("%(message)s")
         self.log_queue = queue.Queue()
         self.queue_handler = QueueHandler(self.log_queue)
         self.queue_handler.setFormatter(self.format)
