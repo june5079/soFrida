@@ -9,7 +9,7 @@ import logging
 from threading import Thread
 from adb.client import Client as AdbClient
 from termcolor import colored, cprint
-from sflogger import sfFileLogger
+from sflogger import *
 
 APKTOOL_PATH = "/usr/local/bin/apktool"
 
@@ -31,15 +31,9 @@ class soFrida:
         self.key_found = False
         self.base_adb_command = ['adb']
         self.flogger = sfFileLogger(self.pkgid+".log")
-        self.logger = logging.getLogger("soLogger")
-        self.logger.setLevel(logging.INFO)        
-        self.formatter = logging.Formatter('%(levelname)s - %(message)s')
-        self.file_handler = logging.FileHandler(self.pkgid + ".log")
-        self.file_handler.setFormatter(self.formatter)
-        self.logger.addHandler(self.file_handler)
         self.flogger.filelogger.info("[+] Vulnerable PKG_ID : " + self.pkgid)
         self.flogger.filelogger.info("[!] Logging Start")
-
+        self.dbglogger = sfLogger()
         
         client = AdbClient(host="127.0.0.1", port=5037)
         self.adb_device = client.devices()[0]   
@@ -305,4 +299,4 @@ cprint ("[+] Done")
 # sf.bucket_finder(args.process+".log")
 
 print (sf.awsservice)
-print (sf.awsbucket)
+print (sf.awsregion)

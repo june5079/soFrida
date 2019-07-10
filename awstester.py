@@ -23,12 +23,24 @@ class awsTester:
             except ClientError as e:
                 print (e)
 
-    def kinesis_check(self, bucket, command):
-        kinesis = boto3.resource('kinesis')
+    def kinesis_check(self, command):
+        kinesis = boto3.client('kinesis')
         if command == 'list_streams':
             try:
                 if kinesis.list_streams() :
                     print ("This is vulnerable")
 
             except ClientError as e:
-                print (e)
+                print ("This is not vulnerable")
+    
+    def firehose_check(self, command):
+        firehose = boto3.client('firehose')
+        if command == 'list_delivery_streams':
+            try:
+                res = firehose.list_delivery_streams()
+                if res :
+                    print ("This is vulnerable")
+                    print (res)
+
+            except ClientError as e:
+                print ("This is not vulnerable")

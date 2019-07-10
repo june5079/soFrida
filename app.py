@@ -12,7 +12,7 @@ app = Flask(__name__)
 BASE_URI = os.path.dirname(__file__)
 getlist = ""
 
-
+# Use for logging info message
 logger = sfLogger()
 
 # Use for logging debug message
