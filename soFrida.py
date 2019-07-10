@@ -90,24 +90,32 @@ class soFrida:
         catch_trace_js = open('catch_make_trace.js', 'r').read()
         self.trace_flag = False
         self.search_flag = True
+
+        ## This is Callback Func.
+        ############################################################
         def trace_callback(message, data):
             if 'payload' in message:
                 if message['payload'].find("start_trace:") != -1:
                     cls = message['payload'].split(":")[1]
                     cprint("[+] %s Trace Start!!" % (cls), 'yellow')
-                    self.trace_flag = True
+                    if cls == "com.amazonaws.http.HttpRequest":
+                        self.trace_flag = True
                 elif message['payload'] =="search complete":
                     self.search_flag = False
                 else:
                     self.findAccessKeyId(message['payload'])
             else:
                 print(message['stack'])
+        ########################################################### 
+               
         script = self.spwan(catch_trace_js, trace_callback)
         while self.search_flag:
             pass
         i = 1
+
         if self.trace_flag == False:
             cprint("[!] Switching to static mode", "yellow")
+
         while self.trace_flag == False:
             script.unload()
             self.search_flag = True
@@ -145,10 +153,11 @@ class soFrida:
         regex_svc_A = re.compile(r"(?P<svc>[^/]+)\.(?P<region>[^.]+).amazonaws.com")
         regex_svc_B = re.compile(r"(?P<svc>[^/]+)\.amazonaws.com")
         regex_svc_C = re.compile(r"(?P<svc>[^/]+)\-(?P<region>[^.]+).amazonaws.com")    
-        # https://happyrestaurant.s3.amazonaws.com/006/677/724.dat
+        # https://happyrestaurant.s3.amazonaws.com/
 
         regex_s3case = [re.compile(r"(?P<bucket>[^/]+).s3.amazonaws.com"), re.compile(r"(?P<bucket>[^/]+).s3-(?P<region>[^.]+).amazonaws.com"), re.compile(r"s3-(?P<region>[^.]+).amazonaws.com/(?P<bucket>[^/]+)")]
         
+        #if text matched regex_svc_B --> Check reges_s3cases
         svc_temp = regex_svc_B.search(text)
         if svc_temp != None:
             if svc_temp.group('svc').find("s3") != -1:
@@ -170,34 +179,6 @@ class soFrida:
                         print (self.awsservice)
                         print (self.awsregion)
                 
-
-
-        # if svc_temp is not No
-        #         for regs3temp in regex_s3case:
-        #             try:
-        #                 tmp = regs3temp.search(text)
-        #                 if tmp.group('bucket') is not None:
-        #                     self.awsbucket.add(tmp.group('bucket'))
-        #                     print (tmp.group('bucket'))
-        #             except:
-        #                 pass
-        #     else:
-        #         self.awsservice.add(svc_temp.group('svc'))
-
-
-
-        
-
-
-        # svc_tempB = regex_svc_B.search(text)
-        # if svc_tempB != None:
-        #     print (text)
-        #     self.awsservice.add(svc_tempB.group('svc'))
-        
- 
- 
- 
-
         sec = regex_sec.search(text)
         if sec != None:
             #print("[*] SecretKeyId : %s" % str(sec.group()))
@@ -289,7 +270,7 @@ class soFrida:
         try :
 
             subprocess.Popen(adb_command)
-            # Wait for cleaning logcat
+            # Wait for cleaning recent app
             time.sleep(1)
             print ("app cleaned")
         except :

@@ -1,5 +1,9 @@
 *.log
 *.txt
 *.json
+*.old
 test.py
 selenium/
+__pycache__/
+tmp/
+

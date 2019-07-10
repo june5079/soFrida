@@ -1,0 +1,5 @@
+test.py
+*.txt
+*.log
+__pycache__
+logcat_test.py

@@ -57,6 +57,7 @@ function make_trace(cls){
         });
     },0);
 }
+
 Java.perform(function() {
     Java.enumerateLoadedClasses({
         onMatch: function(cls){
