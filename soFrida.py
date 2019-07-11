@@ -109,20 +109,22 @@ class soFrida:
                
         script = self.spwan(catch_trace_js+start_function, trace_callback)
         while self.search_flag:
-            pass
+        	pass
+        # if len(self.target_cls) == 3:
+	    #     script.unload()
         i = 1
 
         if self.trace_flag == False:
             cprint("[!] Switching to static mode", "yellow")
 
         while self.trace_flag == False:
-            script.unload()
             self.search_flag = True
             start_function = "\nsearch_loaded_class([%s]);" % (', '.join("'"+x+"'" for x in self.target_cls))
             script = self.run(catch_trace_js+start_function, trace_callback)
             while self.search_flag:
                 pass
             i+=1
+            # script.unload()
         
         # while not self.key_found:
             # pass
@@ -151,15 +153,16 @@ class soFrida:
         regex_sec = re.compile(r"(?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])")
 
         regex_svc_A = re.compile(r"(?P<svc>[^/]+)\.(?P<region>[^.]+).amazonaws.com")
-        regex_svc_B = re.compile(r"(?P<svc>[^/]+)\.amazonaws.com")
+        regex_svc_B = re.compile(r"(\/\/(?P<svc>[^\/?#]*))")
         regex_svc_C = re.compile(r"(?P<svc>[^/]+)\-(?P<region>[^.]+).amazonaws.com")    
         # https://happyrestaurant.s3.amazonaws.com/
 
-        regex_s3case = [re.compile(r"(?P<bucket>[^/]+).s3.amazonaws.com"), re.compile(r"(?P<bucket>[^/]+).s3-(?P<region>[^.]+).amazonaws.com"), re.compile(r"s3-(?P<region>[^.]+).amazonaws.com/(?P<bucket>[^/]+)")]
+        regex_s3case = [re.compile(r"https:\/\/(?P<bucket>[^.]+).s3.amazonaws.com"),re.compile(r"https:\/\/(?P<bucket>[^.]+).s3.(?P<region>[^.]+).amazonaws.com"), re.compile(r"https:\/\/(?P<bucket>[^.]+).s3-(?P<region>[^.]+).amazonaws.com"), re.compile(r"https:\/\/s3\-(?P<region>[^.]+).amazonaws.com/(?P<bucket>[^.]+)")]
         
         #if text matched regex_svc_B --> Check reges_s3cases
         svc_temp = regex_svc_B.search(text)
         if svc_temp != None:
+            print (text)
             if svc_temp.group('svc').find("s3") != -1:
                 for regex_s3 in regex_s3case :
                     s3temp = regex_s3.search(text)
@@ -299,10 +302,11 @@ time.sleep(1)
 sf.process = args.process
 sf.get_class_maketrace()
 sf.print_key()
-sf.save_logcat(args.process)
+# sf.save_logcat(args.process)
 cprint ("[+] Done")
 # sf.aws_finder()
 # sf.bucket_finder(args.process+".log")
 
 print (sf.awsservice)
 print (sf.awsregion)
+print (sf.awsbucket)
