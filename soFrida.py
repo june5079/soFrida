@@ -9,7 +9,8 @@ import logging
 from threading import Thread
 from adb.client import Client as AdbClient
 from termcolor import colored, cprint
-from sflogger import *
+from sflogger import sfLogger, sfFileLogger
+from awstester import awsTester
 
 APKTOOL_PATH = "/usr/local/bin/apktool"
 
@@ -277,7 +278,10 @@ class soFrida:
             time.sleep(1)
             print ("app cleaned")
         except :
-            cprint ("[!] Error occured wuth cleaning app",'red')               
+            cprint ("[!] Error occured wuth cleaning app",'red')
+
+    # def exploit_test(self, awsservice, command):
+
 
 ap = argparse.ArgumentParser(description='Test APIBleed vulnerability - cloud backend - not for testing general mobile vulnerability.')
 ap.add_argument('-t', '--target', dest='target', required=False, help='apk file path')
