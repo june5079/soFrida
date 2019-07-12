@@ -11,17 +11,12 @@ from adb.client import Client as AdbClient
 from termcolor import colored, cprint
 from sflogger import sfLogger, sfFileLogger
 from awstester import awsTester
+from time import sleep
 
 APKTOOL_PATH = "/usr/local/bin/apktool"
 
 class soFrida:
-    def __init__(self, pkgid, mode='usb', host=None ):
-        if mode == 'usb':
-            self.device = frida.get_usb_device()
-            cprint("[*] USB Connected", 'green')
-        elif mode == 'host':
-            self.device = frida.get_device_manager().add_remote_device(host)
-            cprint("[*] Host Connect", 'green')
+    def __init__(self, pkgid):
         self.pkgid = pkgid
         self.acc_key_list = set()
         self.sec_key_list = set()
@@ -35,9 +30,8 @@ class soFrida:
         self.flogger.filelogger.info("[+] Vulnerable PKG_ID : " + self.pkgid)
         self.flogger.filelogger.info("[!] Logging Start")
         self.dbglogger = sfLogger()
-        
-        client = AdbClient(host="127.0.0.1", port=5037)
-        self.adb_device = client.devices()[0]   
+        self.apk_path = "./tmp/"
+
         self.javaperform = """
                             setTimeout(function() {
                                 Java.perform(function() {
@@ -47,7 +41,26 @@ class soFrida:
         # User can add aws service which is supported with awscli
         self.aws_servicelist = ['s3', 'lambda', 'kinesis', 'cognito', 'sns', 'dynamodb', 'simpledb']
         self.aws_regions = ['us-west-1', 'us-west-2', 'us-east-1', 'us-east-2','ap-east-1', 'ap-south-1', 'ap-northeast-2','ap-southeast-1','ap-southeast-2','ca-central-1','cn-north-1','cn-northwest-1','eu-central-1','eu-west-1','eu-west-2','eu-west-3','eu-north-1','sa-east-1']
-
+    def frida_connect(self, mode='usb', host=None):
+        if mode == 'usb':
+            try:
+                self.device = frida.get_usb_device()
+                cprint("[*] USB Connected", 'green')                
+            except Exception as e:
+                self.device = ""
+                self.err = str(e)
+            return self.device
+        elif mode == 'host':
+            self.device = frida.get_device_manager().add_remote_device(host)
+            cprint("[*] Host Connect", 'green')
+    def adb_connect(self):
+        try:
+            client = AdbClient(host="127.0.0.1", port=5037)
+            self.adb_device = client.devices()[0]
+        except Exception as e:
+            self.adb_device = ""
+            self.err = str(e)
+        return self.adb_device
     def analyze_apk(self, path):
         self.path = path
         self.dir = path[:path.rfind(".apk")]
@@ -175,7 +188,7 @@ class soFrida:
                         print (self.awsservice)
                         print (self.awsbucket)
                         print (self.awsregion)
-                        
+
             else:
                 svc_tempA = regex_svc_A.search(text)
                 if svc_tempA != None:
@@ -288,34 +301,72 @@ class soFrida:
 
     # def exploit_test(self, awsservice, command):
 
-ap = argparse.ArgumentParser(description='Test APIBleed vulnerability - cloud backend - not for testing general mobile vulnerability.')
-ap.add_argument('-t', '--target', dest='target', required=False, help='apk file path')
-ap.add_argument('-p', '--process', dest='process', required=False, help='Prcess Nmae')
-ap.add_argument('-U', '--usb', action='store_true')
-ap.add_argument('-H', '--host', dest='host', nargs='?', default='', required=False)
+    def soFrida_start(self, debuglogger):
+        logger = debuglogger.logger
+        sleep(1)
+        while True:
+            sleep(0.5)
+            device = self.frida_connect()
+            if device == "":
+                logger.info(json.dumps({"step":"frida_connect", "result":"fail", "msg":self.err}))
+            else:
+                logger.info(json.dumps({"step":"frida_connect", "result":"success"}))
+                break
+    
+        while True:
+            sleep(0.5)
+            adb_device = self.adb_connect()
+            if adb_device == "":
+                logger.info(json.dumps({"step":"adb_connect", "result":"fail", "msg":self.err}))
+            else:
+                logger.info(json.dumps({"step":"adb_connect", "result":"success"}))
+                break
+        
+        while True:
+            sleep(0.5)
+            if adb_device.is_installed(self.pkgid):
+                logger.info(json.dumps({"step":"apk_install", "result":"installed", "package":self.pkgid}))
+                break
+            else:
+                logger.info(json.dumps({"step":"apk_install", "result":"not installed", "package":self.pkgid}))
+                logger.info(json.dumps({"step":"apk_install", "result":"installing", "package":self.pkgid}))
+                try:
+                    adb_device.install(self.apk_path+self.pkgid+".apk")
+                    logger.info(json.dumps({"step":"apk_install", "result":"installed", "package":self.pkgid}))
+                    break
+                except Exception as e:
+                    logger.info(json.dumps({"step":"apk_install", "result":"fail", "msg":str(e), "package":self.pkgid}))
+        debuglogger.stop()
+        
+if __name__ == '__main__':
+    ap = argparse.ArgumentParser(description='Test APIBleed vulnerability - cloud backend - not for testing general mobile vulnerability.')
+    ap.add_argument('-t', '--target', dest='target', required=False, help='apk file path')
+    ap.add_argument('-p', '--process', dest='process', required=False, help='Prcess Nmae')
+    ap.add_argument('-U', '--usb', action='store_true')
+    ap.add_argument('-H', '--host', dest='host', nargs='?', default='', required=False)
 
-args = ap.parse_args()
+    args = ap.parse_args()
+    sf = soFrida(args.process)
+    if args.usb and args.host == None:
+        cprint("Usage : %s -U -t [target] or %s -H [frida_listen_ip] -t [target]" % (sys.argv[0], sys.argv[0]), 'red')
+    elif args.usb:
+        sf.frida_connect('usb')
+    elif args.H != None:
+        sf.frida_connect('host', args.host)
+    sf.adb_connect()
+    sf.clear_recentapp(args.process)
+    time.sleep(0.5)
+    # Clear Logcat
+    sf.clear_logcat()
+    time.sleep(1)
+    sf.process = args.process
+    sf.get_class_maketrace()
+    sf.print_key()
+    # sf.save_logcat(args.process)
+    cprint ("[+] Done")
+    # sf.aws_finder()
+    # sf.bucket_finder(args.process+".log")
 
-if args.usb and args.host == None:
-    cprint("Usage : %s -U -t [target] or %s -H [frida_listen_ip] -t [target]" % (sys.argv[0], sys.argv[0]), 'red')
-elif args.usb:
-    sf = soFrida(args.process, 'usb' )
-elif args.H != None:
-    sf = soFrida('host', args.host)
-
-sf.clear_recentapp(args.process)
-time.sleep(0.5)
-# Clear Logcat
-sf.clear_logcat()
-time.sleep(1)
-sf.process = args.process
-sf.get_class_maketrace()
-sf.print_key()
-# sf.save_logcat(args.process)
-cprint ("[+] Done")
-# sf.aws_finder()
-# sf.bucket_finder(args.process+".log")
-
-print (sf.awsservice)
-print (sf.awsregion)
-print (sf.awsbucket)
+    print (sf.awsservice)
+    print (sf.awsregion)
+    print (sf.awsbucket)

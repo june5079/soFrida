@@ -116,6 +116,8 @@ APK Downloader
 							}
 						});
 						finish_load_table();
+					}else if(key == "step"){
+						continue;
 					}else if(key != "ERROR"){
 						if(key == "LOG"){
 							$("#log").text(pkg[key]);

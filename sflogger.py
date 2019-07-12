@@ -1,7 +1,7 @@
 import logging
 import queue
 from logging.handlers import QueueHandler, QueueListener
-
+import json
 # Queue Logger
 class sfLogger:
     def __init__(self):
@@ -25,6 +25,8 @@ class sfLogger:
 
     def loggenerator(self):
         print("logger.loggenerator()")
+        if self.log_queue.empty():
+            yield "data: "+json.dumps({"step":"waiting"})+"\n\n"
         while self.isStop == False:
             yield "data: "+self.log_queue.get().getMessage()+"\n\n"
 

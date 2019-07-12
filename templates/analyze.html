@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+{% block title %}
+Analyze
+{% endblock %}
+{% block content %}
+<script type='text/javascript'>
+    $(function(){
+		$(document).ready(function(){
+            analyze.soFrida_start();
+		});
+	});
+</script>
+<div class="container-fluid" style="font-family: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item">
+			<a href="#">Dashboard</a>
+		</li>
+		<li class="breadcrumb-item">
+            <a href="{{ url_for('assets_layout') }}">Assets</a>
+        </li>
+        <li class="breadcrumb-item active">Analyze</li>
+    </ol>
+    <div class="card mb-3">
+        <!-- Card closing and opening animation : https://codepen.io/disjfa/pen/EZdMpe -->
+        <div class="card-header">
+            <i class="fab fa-usb"></i>
+            Frida Connection Check
+        </div>
+        <div class="card-body">
+            <span class="fas fa-fw fa-times" id="frida-connect-icon" style="color:red"></span> <span id="frida-connect-text">Please check frida-server daemon...</span>
+        </div>
+    </div>
+    <div class="card mb-3">
+        <div class="card-header">
+            <i class="fas fa-cog"></i>
+            APK Install Check
+        </div>
+        <div class="card-body">
+            <span class="fas fa-fw fa-times" id="adb-connect-icon" style="color:red"></span> <span id="adb-connect-text">Please check adb connection..</span><br>
+            <span class="fas fa-fw fa-times" id="apk-install-icon" style="color:red"></span> <span id="apk-install-text">Checking APK is Installed..</span><br>
+        </div>
+    </div>
+    <div class="card mb-3">
+        <div class="card-header">
+            <i class="fas fa-cloud"></i>
+            Analyze with soFrida
+        </div>
+        <div class="card-body">
+            <span class="fas fa-fw fa-times" id="connect-status-icon" style="color:red"></span> <span id="connect-status-text">APK is installed...</span><br>
+            <span class="fas fa-fw fa-times" id="connect-status-icon" style="color:red"></span> <span id="connect-status-text">APK is installed...</span><br>
+            <span class="fas fa-fw fa-times" id="connect-status-icon" style="color:red"></span> <span id="connect-status-text">APK is installed...</span><br>
+        </div>
+    </div>
+    <div class="card mb-3">
+        <div class="card-header">
+            <i class="fas fa-cloud"></i>
+            Extracted AWS Service, Bucket and Keys
+        </div>
+        <div class="card-body">
+            <span class="fas fa-fw fa-times" id="connect-status-icon" style="color:red"></span> <span id="connect-status-text">APK is installed...</span><br>
+            <span class="fas fa-fw fa-times" id="connect-status-icon" style="color:red"></span> <span id="connect-status-text">APK is installed...</span><br>
+            <span class="fas fa-fw fa-times" id="connect-status-icon" style="color:red"></span> <span id="connect-status-text">APK is installed...</span><br>
+        </div>
+    </div>
+    <div class="card mb-3">
+        <div class="card-header">
+            <i class="fas fa-table"></i>
+            Analyze Android Application
+        </div>
+        <div class="card-body">
+            <div class="spinner-border spinner-border-sm" role="status">
+                <span class="sr-only">Loading...</span>
+            </div> This is Spinner test
+        </div>
+    </div>
+    <div class="card mb-3">
+        <div class="card-header">
+            <i class="fas fa-table"></i>
+            Log
+        </div>
+        <div class="card-body">
+            <p >
+
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

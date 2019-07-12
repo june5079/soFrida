@@ -104,7 +104,7 @@ Assets
 							<td>{{ info['status'] }}</td>
 							{% if info['exist_sdk'] == 1 %}
 							<td>True</td>
-							<td><button class="btn btn-success" id="{{ info['package_name'] }}">Analyze</button></td>
+							<td><a  class="btn btn-success" href="/analyze/{{ info['package_name'] }}">Analyze</a></td>
 							{% elif info['exist_sdk'] == 0 %}
 							<td>False</td>
 							<td><button class="btn btn-danger" id="{{ info['package_name'] }}">Remove</button></td>

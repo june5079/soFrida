@@ -120,7 +120,7 @@ class Getlists:
                 fin_cat2 = fin_cat.split("category/")[1].split('"')[0]
 
                 fin_title=''.join(str(g) for g in pop_title)
-                fin_title2 = fin_title.split('>')[1].split('<')[0] 
+                fin_title2 =  fin_title.split('>')[1].split('<')[0]
 
                 self.result[x] = []
                 self.result[x].append({"popular":fin_pop, "category":fin_cat2, "title":fin_title2})

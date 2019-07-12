@@ -1,11 +1,3 @@
-!function(){
-    function start_download(){
-
-    };
-    function google_login(){
-        $("#loginModal").prop("aria-hidden", false);
-    };
-}
 var download = new function(){
     this.download_start = function(){
         var package_list = [];

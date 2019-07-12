@@ -1,7 +1,7 @@
 import os
 import json
 import sqlite3
-
+import html
 class Assets:
     def __init__(self):
         self.db_init()
@@ -31,6 +31,9 @@ class Assets:
 
     def add(self, package_name, title, popular, category):
         #status : added, downloading, downloaded, analyzed
+        print(title)
+        title = html.unescape(title)
+        print(title)
         self.cur.execute('''insert into assets(package_name, title, popular, category, status) values (?, ?, ?, ?, ?)''', (package_name, title, popular, category, "added",))
         self.con.commit()
     def get(self, package_name):

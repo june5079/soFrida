@@ -8,6 +8,8 @@ from getapklist import Getlists
 from sflogger import sfLogger
 from downloader import Downloader
 from assets import Assets
+from soFrida import soFrida
+
 app = Flask(__name__)
 BASE_URI = os.path.dirname(__file__)
 getlist = ""
@@ -19,6 +21,7 @@ logger = sfLogger()
 debuglogger = sfLogger()
 
 downloader = Downloader()
+sofrida = ""
 
 @app.route("/")
 def index():
@@ -112,5 +115,25 @@ def download():
     return jsonify(
       result="fail"
     )
+@app.route("/analyze/<package_name>", methods=["GET"])
+def analyze(package_name):
+  global sofrida
+  sofrida = soFrida(package_name)
+  return render_template("analyze.html", package_name=package_name)
+
+@app.route('/soFrida_start')
+def soFrida_start():
+  global sofrida
+  global debuglogger
+  debuglogger.start()
+  Thread(target=sofrida.soFrida_start, args=(debuglogger,)).start()
+  return jsonify(
+      result="success"
+    )
+@app.route('/analyze_status')
+def analyze_status():
+  global debuglogger
+  return Response(debuglogger.loggenerator(), mimetype="text/event-stream")
+
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port='8888', debug=True)
