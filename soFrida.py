@@ -154,7 +154,7 @@ class soFrida:
         regex_sec = re.compile(r"(?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])")
 
         regex_svc_A = re.compile(r"(?P<svc>[^/]+)\.(?P<region>[^.]+).amazonaws.com")
-        regex_svc_B = re.compile(r"(\/\/(?P<svc>[^\/?#]*))")
+        regex_svc_B = re.compile(r"(\/\/(?P<svc>[^\/?#]*)).amazonaws.com")
         regex_svc_C = re.compile(r"(?P<svc>[^/]+)\-(?P<region>[^.]+).amazonaws.com")    
         # https://happyrestaurant.s3.amazonaws.com/
 
@@ -171,8 +171,11 @@ class soFrida:
                         # print (text)
                         self.awsservice.add("s3")
                         self.awsbucket.add(s3temp.group('bucket'))
+                        self.awsregion.add(s3temp.group('region'))
                         print (self.awsservice)
                         print (self.awsbucket)
+                        print (self.awsregion)
+                        
             else:
                 svc_tempA = regex_svc_A.search(text)
                 if svc_tempA != None:
@@ -195,7 +198,7 @@ class soFrida:
             self.acc_key_list.add(str(acc.group()))
             print (self.acc_key_list)
 
-        if text.endswith ("=") or text.endswith ("=="):
+        if (text.endswith ("=") or text.endswith ("==")) and ("http" not in text):
             self.session_token.add(text)
             print (self.session_token)
         
@@ -220,7 +223,6 @@ class soFrida:
                 cprint("\t[-] %s" % secretkey, 'green')
                 subprocess.call("aws configure set aws_secret_access_key %s"%secretkey, shell=True)
                 self.flogger.filelogger.info("[+] SecretAceessKey : " + secretkey)
-
     
         if len(self.session_token) == 0:
             cprint("[*] No SessionToken", 'red')
@@ -285,7 +287,6 @@ class soFrida:
             cprint ("[!] Error occured wuth cleaning app",'red')
 
     # def exploit_test(self, awsservice, command):
-
 
 ap = argparse.ArgumentParser(description='Test APIBleed vulnerability - cloud backend - not for testing general mobile vulnerability.')
 ap.add_argument('-t', '--target', dest='target', required=False, help='apk file path')
