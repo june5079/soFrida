@@ -31,7 +31,7 @@ class soFrida:
         self.awsbucket = set()
         self.key_found = False
         self.base_adb_command = ['adb']
-        self.flogger = sfFileLogger(self.pkgid+".log")
+        self.flogger = sfFileLogger(self.pkgid)
         self.flogger.filelogger.info("[+] Vulnerable PKG_ID : " + self.pkgid)
         self.flogger.filelogger.info("[!] Logging Start")
         self.dbglogger = sfLogger()
@@ -230,6 +230,10 @@ class soFrida:
                 cprint("\t[-] %s" % sessiontoken, 'green')
                 subprocess.call("aws configure set aws_session_token %s"%sessiontoken, shell=True)
                 self.flogger.filelogger.info("[+] SessionToken : " + sessiontoken)
+        
+        self.flogger.filelogger.info("[+] AWS Service is : " + str(self.awsservice))
+        self.flogger.filelogger.info("[+] AWS Region is  : " + str(self.awsregion))
+        self.flogger.filelogger.info("[+] AWS Bucket is  : " + str(self.awsbucket))
 
     
     def clear_logcat(self):
