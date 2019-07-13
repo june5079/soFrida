@@ -7,7 +7,11 @@ Analyze
     $(function(){
 		$(document).ready(function(){
             analyze.soFrida_start();
-		});
+        });
+        $(window).on('beforeunload', function(){
+            console.log("unload");
+            analyze.stop_log();
+        });
 	});
 </script>
 <div class="container-fluid" style="font-family: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;">
@@ -46,9 +50,10 @@ Analyze
             Analyze with soFrida
         </div>
         <div class="card-body">
-            <span class="fas fa-fw fa-times" id="connect-status-icon" style="color:red"></span> <span id="connect-status-text">APK is installed...</span><br>
-            <span class="fas fa-fw fa-times" id="connect-status-icon" style="color:red"></span> <span id="connect-status-text">APK is installed...</span><br>
-            <span class="fas fa-fw fa-times" id="connect-status-icon" style="color:red"></span> <span id="connect-status-text">APK is installed...</span><br>
+            <span class="fas fa-fw fa-times" id="spawn-icon" style="color:red"></span> <span id="spawn-text">Application is going to spawn..</span><br>
+            <span class="fas fa-fw fa-times" id="connect-status-icon" style="color:red"></span> <span id="connect-status-text">Wainting class "HttpRequest" is loaded..</span><br>
+            <span class="fas fa-fw fa-times ml-3" id="connect-status-icon" style="color:red"></span> <span id="connect-status-text">Find AWS Service..</span><br>
+            <span class="fas fa-fw fa-times" id="connect-status-icon" style="color:red"></span> <span id="connect-status-text">Wainting class "BasicAWSCredentials" or "BasicSessionCredentials" is loaded..</span><br>
         </div>
     </div>
     <div class="card mb-3">

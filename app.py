@@ -135,5 +135,17 @@ def analyze_status():
   global debuglogger
   return Response(debuglogger.loggenerator(), mimetype="text/event-stream")
 
+@app.route("/next_step/<step>", methods=["GET"])
+def next_step(step):
+  global sofrida
+  if sofrida != "":
+    sofrida.step = step
+    if sofrida.step == "stop":
+      sofrida.__del__()
+      sofrida = ""
+  return jsonify(
+    result="success"
+  )
+
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port='8888', debug=True)

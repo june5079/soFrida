@@ -41,6 +41,8 @@ class soFrida:
         # User can add aws service which is supported with awscli
         self.aws_servicelist = ['s3', 'lambda', 'kinesis', 'cognito', 'sns', 'dynamodb', 'simpledb']
         self.aws_regions = ['us-west-1', 'us-west-2', 'us-east-1', 'us-east-2','ap-east-1', 'ap-south-1', 'ap-northeast-2','ap-southeast-1','ap-southeast-2','ca-central-1','cn-north-1','cn-northwest-1','eu-central-1','eu-west-1','eu-west-2','eu-west-3','eu-north-1','sa-east-1']
+    def __del__(self):
+        pass
     def frida_connect(self, mode='usb', host=None):
         if mode == 'usb':
             try:
@@ -94,7 +96,17 @@ class soFrida:
         cprint("[*] Start Uninstall Pakcage : %s" % self.package, 'yellow')
         self.adb_device.uninstall(self.package)
     
-    def get_class_maketrace(self):
+    def get_class_maketrace(self, logger=""):
+        ## This is Logger Thread Func for GUI event-stream.
+        def message_thread(step, msg):
+            while True:
+                logger.info(msg)
+                if self.step == step:
+                    break
+                sleep(0.5)
+            if step == "spawn":# or step == "stop":
+                #print(step)
+                self.debuglogger.stop()
         catch_trace_js = open('catch_make_trace.js', 'r').read()
         self.trace_flag = False
         self.search_flag = True
@@ -120,8 +132,18 @@ class soFrida:
             else:
                 print(message['stack'])
         ########################################################### 
-               
-        script = self.spwan(catch_trace_js+start_function, trace_callback)
+
+        # if logger is "" means cli mode else is gui mode
+        if logger == "":
+            script = self.spwan(catch_trace_js+start_function, trace_callback)
+        else:
+            try:
+                script = self.spwan(catch_trace_js+start_function, trace_callback)
+                Thread(target=message_thread, args=("spawn", json.dumps({"step":"spawn", "result":"success"}),)).start()
+            except Exception as e:
+                Thread(target=message_thread, args=("spawn", json.dumps({"step":"spawn", "result":"fail", "msg":str(e)}),)).start()
+                return
+        
         while self.search_flag:
         	pass
         # if len(self.target_cls) == 3:
@@ -302,41 +324,63 @@ class soFrida:
     # def exploit_test(self, awsservice, command):
 
     def soFrida_start(self, debuglogger):
+        self.debuglogger = debuglogger
         logger = debuglogger.logger
+        self.step = "start"
         sleep(1)
         while True:
             sleep(0.5)
+            if self.step == "frida-connect" or self.step == "stop":
+                break
             device = self.frida_connect()
             if device == "":
                 logger.info(json.dumps({"step":"frida_connect", "result":"fail", "msg":self.err}))
             else:
                 logger.info(json.dumps({"step":"frida_connect", "result":"success"}))
-                break
     
         while True:
             sleep(0.5)
+            if self.step == "adb-connect" or self.step == "stop":
+                break
             adb_device = self.adb_connect()
             if adb_device == "":
                 logger.info(json.dumps({"step":"adb_connect", "result":"fail", "msg":self.err}))
             else:
                 logger.info(json.dumps({"step":"adb_connect", "result":"success"}))
-                break
+                    
+        if adb_device.is_installed(self.pkgid):
+             while True:
+                logger.info(json.dumps({"step":"apk_install", "result":"installed", "package":self.pkgid}))
+                if self.step == "apk-install" or self.step == "stop":
+                    break
+                sleep(0.5) 
         
         while True:
             sleep(0.5)
+            if self.step == "apk-install" or self.step == "stop":
+                break
             if adb_device.is_installed(self.pkgid):
                 logger.info(json.dumps({"step":"apk_install", "result":"installed", "package":self.pkgid}))
-                break
             else:
-                logger.info(json.dumps({"step":"apk_install", "result":"not installed", "package":self.pkgid}))
-                logger.info(json.dumps({"step":"apk_install", "result":"installing", "package":self.pkgid}))
+                while True:
+                    logger.info(json.dumps({"step":"apk_install", "result":"not installed", "package":self.pkgid}))
+                    if self.step == "apk-not-installed" or self.step == "stop":
+                        break
+                    sleep(0.5) 
+                while True:
+                    logger.info(json.dumps({"step":"apk_install", "result":"installing", "package":self.pkgid}))
+                    if self.step == "apk-installing" or self.step == "stop":
+                        break
+                    sleep(0.5) 
                 try:
                     adb_device.install(self.apk_path+self.pkgid+".apk")
                     logger.info(json.dumps({"step":"apk_install", "result":"installed", "package":self.pkgid}))
-                    break
                 except Exception as e:
                     logger.info(json.dumps({"step":"apk_install", "result":"fail", "msg":str(e), "package":self.pkgid}))
-        debuglogger.stop()
+        self.process = self.pkgid
+        if self.step != "stop":
+            self.get_class_maketrace(logger)
+        
         
 if __name__ == '__main__':
     ap = argparse.ArgumentParser(description='Test APIBleed vulnerability - cloud backend - not for testing general mobile vulnerability.')
