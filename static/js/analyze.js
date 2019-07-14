@@ -1,20 +1,36 @@
 var analyze = new function(){
     this.spinner_div = "";
     this.source = "";
+    this.credentials = "";
+    this.init = function(){
+        analyze.service = ""
+        analyze.bucket = ""
+        analyze.region = ""
+        analyze.accesskeyid = ""
+        analyze.secretkeyid = ""
+        analyze.sessiontoken = ""
+    }
     this.soFrida_start = function(){
         $.ajax({
             url:"/soFrida_start",
             type:"GET",
             success:function(res){
-                if(res.result == "success")
+                if(res.result == "success"){
+                    analyze.init();
                     analyze.log_start();
+                }
             }
         })
     }
     this.begreen = function(step, text){
         $("#"+step+"-icon").attr("style","color:green");
+        var ml = $("#"+step+"-icon").hasClass("ml-3");
         $("#"+step+"-icon").removeClass();
-        $("#"+step+"-icon").addClass("fas fa-fw fa-check");   
+        if(ml){
+            $("#"+step+"-icon").addClass("fas fa-fw fa-check ml-3");       
+        }else{
+            $("#"+step+"-icon").addClass("fas fa-fw fa-check"); 
+        }
         $("#"+step+"-text").text(text);
     }
     this.spinner = function(step, text){
@@ -35,10 +51,21 @@ var analyze = new function(){
             }
         })
     }
+    this.check = function(){
+        if(analyze.service == "") return false;
+        if(analyze.bucket == "") return false;
+        if(analyze.region == "") return false;
+        if(analyze.accesskeyid == "") return false;
+        if(analyze.secretkeyid == "") return false;
+        if(analyze.accesskeyid == "") return false;
+        return true;
+    }
     this.stop_log = function(){
         console.log("stop");
-        analyze.source.close();
-        analyze.source = "";
+        if(analyze.source != ""){ 
+            analyze.source.close();
+            analyze.source = "";
+        }
         analyze.next_step("stop")
     }
     this.log_start = function(){
@@ -77,62 +104,60 @@ var analyze = new function(){
                 }
             }else if(log.step == "spawn"){
                 if(log.result == "success"){
-                    analyze.begreen("spawn", "spawned application!!");
+                    analyze.begreen("spawn", "application is spawned !!");
                     analyze.next_step("spawn")
-                    this.close();
                 }else{
                     $("#spawn-text").text("spawn error : "+log.msg);
                 }
-            }else if(log.step == "waiting"){
-                
-            }
-            /*
-            log = {"step":"frida_connect", "result":"success"};
-            log = {"step":"finish", "pkg_name":"com.happylabs.hps"};
-            log = {"step":"error", "msg":"request_error", "pkg_name":"com.happylabs.hps"};
-            */
-        }
-    }
-    this.download_start = function(){
-        var package_list = [];
-        $('.custom-control-input-item').filter(function(){
-            return $(this).prop('checked');}).each(function(){
-                package_list.push($(this).attr('id'));
-            });
-
-        $.ajax({
-            url:'/download',
-            type:'POST',
-            contentType: "application/json; charset=utf-8",
-            data:JSON.stringify({"list":package_list}),
-            success:function(res){
-                download.log_start();
-            }
-        });
-    }
-    
-    this.open_google_login = function(){
-        $("#loginModal").attr("aria-hidden", false);
-        $("#loginModal").modal();
-    }
-    this.google_login = function(id, pw){
-        $.ajax({
-            url:'/google_login',
-            type:'POST',
-            data: {'id':id,'pw':pw},
-            success:function(res){
-                if(res.result == "success"){
-                    $("#login_alert").html("<p class=\"text-success\">Login success!</p>");
-                    $("#loginModal").attr("aria-hidden", true);
-                    $("#loginModal").modal("hide");
-                    $("#login_alert").attr("aria-hidden", true);
-                    download.download_start();
-                }else{
-                    $("#inputPassword").val("");
-                    $("#login_alert").html("<p class=\"text-danger\">Login fail!</p><p class=\"text-info\"><a href=\"https://accounts.google.com/b/0/DisplayUnlockCaptcha\">Unlock Google Account</p>");
-                    $("#login_alert").attr("aria-hidden", false);
+            }else if(log.step == "httprequest"){
+                var class_name = log.class.substring(log.class.lastIndexOf(".")+1);
+                analyze.begreen("httprequest", "class \""+class_name+"\" class is Loaded");
+                analyze.next_step("httprequest");
+            }else if(log.step == "credentials"){
+                var class_name = log.class.substring(log.class.lastIndexOf(".")+1);
+                if(analyze.credentials == ""){
+                    analyze.credentials = class_name;
+                    analyze.begreen("credentials", "class \""+class_name+"\" class is Loaded. Tracing is Started!!");
+                }else if(analyze.credentials != class_name){
+                    analyze.begreen("credentials", "class \""+analyze.credentials+", "+class_name+"\" class is Loaded. Tracing is Started!!");
                 }
+                analyze.next_step("credentials");
+            }else if(log.step == "service"){
+                analyze.begreen("service", "\""+log.name+"\" is used!!");
+                analyze.service = log.name;
+                if(log.name != "s3"){
+                    analyze.bucket = "nobucket";
+                    analyze.begreen("bucket", "This is not S3 Service!!");
+                }
+                analyze.next_step("service");
+            }else if(log.step == "bucket"){
+                analyze.begreen("bucket", "Bucket Name is \""+log.name+"\"!!");
+                analyze.bucket = log.name;
+                analyze.next_step("bucket");
+            }else if(log.step == "region"){
+                analyze.begreen("region", "Region is \""+log.name+"\"!!");
+                analyze.region = log.name;
+                analyze.next_step("region");
+            }else if(log.step == "accesskeyid"){
+                analyze.begreen("accesskeyid", "AccessKeyId is "+log.name);
+                analyze.accesskeyid = log.name;
+                analyze.next_step("accesskeyid");
+            }else if(log.step == "secretkeyid"){
+                analyze.begreen("secretkeyid", "SecretKeyId is "+log.name);
+                analyze.secretkeyid = log.name;
+                analyze.next_step("secretkeyid");
+            }else if(log.step == "sessiontoken"){
+                analyze.begreen("sessiontoken", "SessionToken is "+log.name);
+                analyze.sessiontoken = log.name;
+                analyze.next_step("sessiontoken");
+            }/*else if(log.step == "stop"){
+                analyze.next_step("stop");
+                this.close();
+            }*/
+            if(analyze.check()){
+                this.close();
+                analyze.next_step("guicomplete")
             }
-        });
+        }
     }
 }

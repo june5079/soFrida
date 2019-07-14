@@ -139,10 +139,7 @@ def analyze_status():
 def next_step(step):
   global sofrida
   if sofrida != "":
-    sofrida.step = step
-    if sofrida.step == "stop":
-      sofrida.__del__()
-      sofrida = ""
+    sofrida.step.add(step)
   return jsonify(
     result="success"
   )
