@@ -206,6 +206,9 @@ class soFrida:
                         # print (text)
                         self.awsservice.add("s3")
                         self.awsbucket.add(s3temp.group('bucket'))
+                        if (s3temp.group('region')):
+                            self.awsregion.add(s3temp.group('region'))
+                            print (self.awsregion)
                         self.awsregion.add(s3temp.group('region'))
                         print (self.awsservice)
                         print (self.awsbucket)
@@ -286,16 +289,16 @@ class soFrida:
         except :
             cprint ("[!] Error occured wuth cleaning logcat",'red')
     
-    def save_logcat(self, process):
-        adb_command = self.base_adb_command[:]
-        adb_command.append('logcat')
-        adb_command.extend(['-d'])
-        adb = subprocess.Popen(adb_command, stdout=subprocess.PIPE)
-        adb2 = subprocess.Popen(['grep','amazonaws'], stdin=adb.stdout ,stdout=subprocess.PIPE)
-        adb3 = subprocess.Popen(['grep',process], stdin=adb2.stdout ,stdout=subprocess.PIPE)
-        for line in adb3.stdout.readlines():
-            print (line.decode('utf-8'))
-            self.flogger.filelogger.info("[Logcat] :" + line.decode('utf-8'))
+    # def save_logcat(self, process):
+    #     adb_command = self.base_adb_command[:]
+    #     adb_command.append('logcat')
+    #     adb_command.extend(['-d'])
+    #     adb = subprocess.Popen(adb_command, stdout=subprocess.PIPE)
+    #     adb2 = subprocess.Popen(['grep','amazonaws'], stdin=adb.stdout ,stdout=subprocess.PIPE)
+    #     adb3 = subprocess.Popen(['grep',process], stdin=adb2.stdout ,stdout=subprocess.PIPE)
+    #     for line in adb3.stdout.readlines():
+    #         print (line.decode('utf-8'))
+    #         self.flogger.filelogger.info("[Logcat] :" + line.decode('utf-8'))
 
     # def aws_autoconfig(self):
     #     cprint ("[*] Setting Up AWS Configuration" , "yellow")
@@ -321,7 +324,22 @@ class soFrida:
         except :
             cprint ("[!] Error occured wuth cleaning app",'red')
 
-    # def exploit_test(self, awsservice, command):
+    def get_installedapps(self, pkgid):
+        adb_command = self.base_adb_command[:]
+        adb_command.append('shell') 
+        adb_command.append('pm')
+        adb_command.append('list')
+        adb_command.append('packages')
+        adb_command.append(pkgid)
+        try :
+            s = subprocess.Popen(adb_command, stdout=subprocess.PIPE)
+            installed_applist = s.stdout.readlines()
+            # print (installed_applist)
+            for x in installed_applist:
+                # cprint (x.split(':')[1],'blue')
+                cprint (str(x).split(":")[1].strip("\\n'"), 'blue')
+        except:
+            cprint ("Error", 'red')
 
     def soFrida_start(self, debuglogger):
         self.debuglogger = debuglogger
@@ -411,6 +429,7 @@ if __name__ == '__main__':
     # sf.aws_finder()
     # sf.bucket_finder(args.process+".log")
 
+    sf.get_installedapps("com")
     print (sf.awsservice)
     print (sf.awsregion)
     print (sf.awsbucket)

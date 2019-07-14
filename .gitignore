@@ -6,3 +6,4 @@ test.py
 selenium/
 __pycache__/
 tmp/
+assets.db
