@@ -378,22 +378,22 @@ class soFrida:
         except :
             cprint ("[!] Error occured wuth cleaning app",'red')
 
-    def get_installedapps(self, pkgid):
-        adb_command = self.base_adb_command[:]
-        adb_command.append('shell') 
-        adb_command.append('pm')
-        adb_command.append('list')
-        adb_command.append('packages')
-        adb_command.append(pkgid)
-        try :
-            s = subprocess.Popen(adb_command, stdout=subprocess.PIPE)
-            installed_applist = s.stdout.readlines()
-            # print (installed_applist)
-            for x in installed_applist:
-                # cprint (x.split(':')[1],'blue')
-                cprint (str(x).split(":")[1].strip("\\n'"), 'blue')
-        except:
-            cprint ("Error", 'red')
+    # def get_installedapps(self, pkgid):
+    #     adb_command = self.base_adb_command[:]
+    #     adb_command.append('shell') 
+    #     adb_command.append('pm')
+    #     adb_command.append('list')
+    #     adb_command.append('packages')
+    #     adb_command.append(pkgid)
+    #     try :
+    #         s = subprocess.Popen(adb_command, stdout=subprocess.PIPE)
+    #         installed_applist = s.stdout.readlines()
+    #         # print (installed_applist)
+    #         for x in installed_applist:
+    #             # cprint (x.split(':')[1],'blue')
+    #             cprint (str(x).split(":")[1].strip("\\n'"), 'blue')
+    #     except:
+    #         cprint ("Error", 'red')
 
     def soFrida_start(self, debuglogger):
         self.debuglogger = debuglogger

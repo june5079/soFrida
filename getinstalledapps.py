@@ -1,8 +1,6 @@
 from adb.client import Client as AdbClient
-from multiprocessing import Pool
-import time
-import os
-
+from termcolor import cprint
+import subprocess, os
 
 class getInstalledApps:
 
@@ -11,42 +9,34 @@ class getInstalledApps:
         self.adb_device = self.client.devices()[0]
         self.applist = []
         self.apppath = []
-        self.ltemp = self.adb_device.shell("pm list packages")
-        self.applist = self.ltemp.split("\n")
-        # time.sleep(3)
-
-        with Pool(16) as p:
-            p.map(self.get_Path, self.applist)
-
-    def get_Path(self, applist):
-        while applist:
-            try:
-                ptemp = self.adb_device.shell("pm path "+ (applist.pop(0)).split(":")[1])
-                print (ptemp)
-                self.apppath.append(ptemp)
-            except:
-                pass
-            
-        print (self.apppath)
-    
-    def get_SDKApps(self):
         
-        for apk in self.apppath:
-            self.adb_device.pull(str(apk).split(":")[1], "tmp/installed/"+str(apk).split(":")[1]+".apk")
-            apkfinal_path = "tmp/installed/"+apk+".apk"
+    def get_Applist(self, search_keyword):
+        self.ltemp = self.adb_device.shell("pm list packages "+search_keyword)
+        # if search_keword is none, print all lists out.
+        temp = self.ltemp.split("\n")
+        del temp[len(temp)-1]
+        
+        self.applist = [x.split(":")[1] for x in temp]
+        print (self.applist)
 
-            print('[+] Checking AWS_SDK')
+    def get_Path(self, pkgid):
 
+        path_temp = self.adb_device.shell("pm path " + pkgid)
+        path = path_temp.split(":")[1]
+        return path
+
+    def get_SDKApps(self, pkgid):
+        apkpath = str(self.get_Path(pkgid))
+        apkfinal_path = str("tmp/" + pkgid + ".apk")
             
-            s = os.popen('/usr/bin/grep -i "aws-android-sdk" {0}'.format(apkfinal_path)).read()
-            if 'matches' in s:
-                print ("[!] This Application use AWS_SDK")
-                pass
-            else:
-                print ("[!] NO AWS_SDK FOUND")
-                os.remove(apkfinal_path)
+        self.adb_device.pull(apkpath.strip("\n"), apkfinal_path)
 
+        cprint('[+] Checking AWS_SDK', 'blue')
 
-
-    
-
+        s = os.popen('/usr/bin/grep -i "aws-android-sdk" {0}'.format(apkfinal_path)).read()
+        if 'matches' in s:
+            cprint ("[!] This Application use AWS_SDK", 'blue')
+            pass
+        else:
+            cprint ("[!] NO AWS_SDK FOUND", 'blue')
+            os.remove(apkfinal_path)
