@@ -10,8 +10,8 @@ class getInstalledApps:
         self.applist = []
         self.apppath = []
         
-    def get_Applist(self, search_keyword):
-        self.ltemp = self.adb_device.shell("pm list packages "+search_keyword)
+    def get_Applist(self):
+        self.ltemp = self.adb_device.shell("pm list packages ")
         # if search_keword is none, print all lists out.
         temp = self.ltemp.split("\n")
         del temp[len(temp)-1]
