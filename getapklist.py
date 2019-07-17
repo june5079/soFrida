@@ -136,45 +136,35 @@ class Getlists:
     def get_pkginfo_for_GUI(self, logger):
         print("Getlists.get_pkginfo_for_GUI()")
         l = self.apklist
-        logger.info(json.dumps({"LOG":"Start Downloading "+str(len(l))+" apks."}))
+        logger.info(json.dumps({"type":"log", "data": "Start Downloading "+str(len(l))+" apks."}))
         try:
             i = 1
             for x in l:
-                try:
-                    r = requests.get(self.play_search_pkgid + x.strip("\n"))
-                    res = r.text
+                r = requests.get(self.play_search_pkgid + x.strip("\n"))
+                res = r.text
 
-                    soup = BeautifulSoup(res, "html.parser" )
+                soup = BeautifulSoup(res, "html.parser" )
 
-                    pop = (soup.select ('div[class=IQ1z0d]'))[2]
-                    pop_cat = (soup.select ('span > a'))
-                    pop_title = (soup.select('h1 > span'))
+                pop = (soup.select ('div[class=IQ1z0d]'))[2]
+                pop_cat = (soup.select ('span > a'))
+                pop_title = (soup.select('h1 > span'))
 
-                    
-                    fin=''.join(str(e) for e in pop)  
-                    fin_pop = fin.split('+')[0].split('>')[1]
-                    
-                    fin_cat=''.join(str(k) for k in pop_cat)  
-                    fin_cat2 = fin_cat.split("category/")[1].split('"')[0]
+                
+                fin=''.join(str(e) for e in pop)  
+                fin_pop = fin.split('+')[0].split('>')[1]
+                
+                fin_cat=''.join(str(k) for k in pop_cat)  
+                fin_cat2 = fin_cat.split("category/")[1].split('"')[0]
 
-                    fin_title=''.join(str(g) for g in pop_title)
-                    fin_title2 = fin_title.split('>')[1].split('<')[0] 
+                fin_title=''.join(str(g) for g in pop_title)
+                fin_title2 = fin_title.split('>')[1].split('<')[0] 
 
-                    #self.result[x] = []
-                    self.result[x]={"popular":fin_pop, "category":fin_cat2, "title":fin_title2}
-                    #logger.info(json.dumps({x:{"popular":fin_pop, "category":fin_cat2, "title":fin_title2}}))
-                    logger.info(json.dumps({x:self.result[x]}))
-                    logger.info(json.dumps({"LOG":"("+str(i)+"/"+str(len(l))+") Loaded "+x+" info."}))
-                    i+=1
-                except Exception as e:
-                    print (x.strip("\n") + " : " + "ERROR\n")
-                    logger.info(json.dumps({"LOG":"("+str(i)+"/"+str(len(l))+") Failed to load "+x+" info."}))
-                    i+=1
-                    #pass
-            raise GeneratorExit("complete")
-        except GeneratorExit as e:
-            print (x.strip("\n") + " : " + "EXIT\n")
-            logger.info(json.dumps({"EXIT":{"msg":str(e)}}))
+                #self.result[x] = []
+                self.result[x]={"popular":fin_pop, "category":fin_cat2, "title":fin_title2}
+                #logger.info(json.dumps({x:{"popular":fin_pop, "category":fin_cat2, "title":fin_title2}}))
+                logger.info(json.dumps({"type":"result", "package_name": x, "info":self.result[x]}))
+                logger.info(json.dumps({"type": "log","data":"("+str(i)+"/"+str(len(l))+") Loaded "+x+" info."}))
+                i+=1
+            logger.info(json.dumps({"type":"exit"}))
         except Exception as e:
-            print(e)
-
+            logger.info(json.dumps({"type":"log", "data":str(e)}))

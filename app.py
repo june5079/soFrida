@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify, g, Response, stream_with_context
+from flask_socketio import SocketIO, emit
 from threading import Thread
 import frida
 import json
@@ -11,6 +12,8 @@ from assets import Assets
 from soFrida import soFrida
 
 app = Flask(__name__)
+app.secret_key = "secret"
+socketio = SocketIO(app, async_mode="threading", engineio_logger=True)
 BASE_URI = os.path.dirname(__file__)
 getlist = ""
 
@@ -51,24 +54,25 @@ def load_finish():
     result="success"
   )
 
-@app.route("/search", methods=["POST"])
-def search():
+@socketio.on("search", namespace="/apk_download")
+def search(data):
   global getlist
   global logger
-  print("Getlists(\"%s\", \"%s\")" % (request.json['mode'].lower().strip(), request.json['text'].strip()))
-  try:
-    logger.start()
-    getlist = Getlists(request.json['mode'].lower().strip(), request.json['text'])
-    getlist.init_request()
-    Thread(target=getlist.get_pkginfo_for_GUI, args=(logger.logger,)).start()
-    return jsonify(
-      result="success"
-    )
-  except Exception as e:
-    return jsonify(
-      result="fail",
-      msg=str(e)
-    )
+  print("Getlists(\"%s\", \"%s\")" % (data['mode'].lower().strip(), data['text'].strip()))
+  logger.start()
+  getlist = Getlists(data['mode'].lower().strip(), data['text'])
+  getlist.init_request()
+  socketio.start_background_task(target=getlist.get_pkginfo_for_GUI, logger=logger.logger)
+  for a in logger.loggenerator():
+    data = json.loads(a)
+    print(data)
+    if data['type'] == "result":
+      socketio.emit("search_result", data, namespace="/apk_download")
+    elif data['type'] == "log":
+      socketio.emit("log", data, namespace="/apk_download")
+    elif data['type'] == "exit":
+      socketio.emit("exit", data, namespace="/apk_download")
+      logger.stop()
 
 @app.route("/google_login_check", methods=['GET'])
 def google_login_check():
@@ -98,8 +102,8 @@ def google_login():
 def download():
   global downloader
   global getlist
-  package_list = request.json['list']
-  for package_name in request.json['list']:
+  package_list = json.loads(request.data)['list']
+  for package_name in json.loads(request.data)['list']:
     asset = Assets()
     if not asset.exist(package_name):
       info = getlist.result[package_name]
@@ -121,28 +125,29 @@ def analyze(package_name):
   sofrida = soFrida(package_name)
   return render_template("analyze.html", package_name=package_name)
 
-@app.route('/soFrida_start')
-def soFrida_start():
+@socketio.on('soFrida_start', namespace="/analyze")
+def soFrida_start(message):
   global sofrida
   global debuglogger
-  debuglogger.start()
-  Thread(target=sofrida.soFrida_start, args=(debuglogger,)).start()
-  return jsonify(
-      result="success"
-    )
-@app.route('/analyze_status')
-def analyze_status():
-  global debuglogger
-  return Response(debuglogger.loggenerator(), mimetype="text/event-stream")
 
-@app.route("/next_step/<step>", methods=["GET"])
-def next_step(step):
+  debuglogger.start()
+  socketio.start_background_task(target=sofrida.soFrida_start, debuglogger=debuglogger)
+  for a in debuglogger.loggenerator():
+    data = json.loads(a)
+    if data['step'] == "stop":
+      break
+    else:
+      socketio.emit("analyze_status", data, namespace="/analyze")
+  debuglogger.stop()
+
+@socketio.on('soFrida_stop', namespace="/analyze")
+def soFrida_stop(message):
+  global debuglogger
   global sofrida
   if sofrida != "":
-    sofrida.step.add(step)
-  return jsonify(
-    result="success"
-  )
+    sofrida.isStop = True
+
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port='8888', debug=True)
+    #app.run(host='127.0.0.1', port='8888', debug=True)
+    socketio.run(app, host='127.0.0.1', port=8888,  debug=True, log_output=True)

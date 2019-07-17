@@ -20,20 +20,17 @@ class sfLogger:
         self.listener.start()
         self.isStop = False
 
-    # def logprint(self):
-    #     print (self.log_queue.get().getMessage())
-
     def loggenerator(self):
         print("logger.loggenerator()")
-        if self.log_queue.empty():
-            yield "data: "+json.dumps({"step":"waiting"})+"\n\n"
         while self.isStop == False:
-            yield "data: "+self.log_queue.get().getMessage()+"\n\n"
+            yield self.log_queue.get().getMessage()
 
     def stop(self):
         print("logger.stop()")
+        self.listener.stop()
         self.isStop = True
-        self.log_queue.empty()
+        while self.log_queue.empty() == False:
+            self.log_queue.get()
         
 # if file logging needed:
 class sfFileLogger:

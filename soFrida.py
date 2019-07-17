@@ -18,6 +18,7 @@ APKTOOL_PATH = "/usr/local/bin/apktool"
 class soFrida:
     def __init__(self, pkgid):
         self.pkgid = pkgid
+        self.process = pkgid
         self.acc_key_list = set()
         self.sec_key_list = set()
         self.session_token = set()
@@ -30,6 +31,8 @@ class soFrida:
         self.flogger.filelogger.info("[+] Vulnerable PKG_ID : " + self.pkgid)
         self.flogger.filelogger.info("[!] Logging Start")
         self.dbglogger = sfLogger()
+        self.debuglogger = ""
+        self.isStop = False
         self.apk_path = "./tmp/"
 
         self.javaperform = """
@@ -47,6 +50,7 @@ class soFrida:
         if mode == 'usb':
             try:
                 self.device = frida.get_usb_device()
+                print(self.device)
                 cprint("[*] USB Connected", 'green')                
             except Exception as e:
                 self.device = ""
@@ -95,17 +99,12 @@ class soFrida:
     def uninstall_apk(self):
         cprint("[*] Start Uninstall Pakcage : %s" % self.package, 'yellow')
         self.adb_device.uninstall(self.package)
-    
+    def message_send(self, data):
+        if self.debuglogger != "":
+            logger = self.debuglogger.logger
+            logger.info(json.dumps(data))
     def get_class_maketrace(self, logger=""):
         print("get_class_maketrace !!!!")
-        ## This is Logger Thread Func for GUI event-stream.
-        def message_thread(step, msg):
-            while True:
-                logger.info(msg)
-                if step in self.step:
-                    self.step.remove(step)
-                    break
-                sleep(0.5)
 
         catch_trace_js = open('catch_make_trace.js', 'r').read()
         self.trace_flag = False
@@ -129,7 +128,7 @@ class soFrida:
                                 step = "httprequest" 
                             else:
                                 step = "credentials"
-                            Thread(target=message_thread, args=(step, json.dumps({"step":step, "result":"success", "class":cls}),)).start()
+                            self.message_send({"step":step, "result":"success", "class":cls})
                     self.target_cls.remove(cls)
                     if len(self.target_cls) <2 and "com.amazonaws.http.HttpRequest" not in self.target_cls:
                         self.trace_flag = True
@@ -151,13 +150,16 @@ class soFrida:
             try:
                 script = self.spwan(catch_trace_js+start_function, trace_callback)
                 script_list.append(script)
-                Thread(target=message_thread, args=("spawn", json.dumps({"step":"spawn", "result":"success"}),)).start()
+                self.message_send({"step":"spawn", "result":"success"})
             except Exception as e:
-                Thread(target=message_thread, args=("spawn", json.dumps({"step":"spawn", "result":"fail", "msg":str(e)}),)).start()
+                self.message_send({"step":"spawn", "result":"fail", "msg":str(e)})
                 return
         
         while self.search_flag:
-        	pass
+            if self.isStop:
+                print("self.search_flag1: isStop True!!")
+                break
+            pass
         # if len(self.target_cls) == 3:
 	    #     script.unload()
         i = 1
@@ -166,23 +168,29 @@ class soFrida:
             cprint("[!] Switching to static mode", "yellow")
 
         while self.trace_flag == False:
+            if self.isStop:
+                print("self.trace_flag: isStop True!!")
+                break
             self.search_flag = True
             start_function = "\nsearch_loaded_class([%s]);" % (', '.join("'"+x+"'" for x in self.target_cls))
             script = self.run(catch_trace_js+start_function, trace_callback)
             script_list.append(script)
             while self.search_flag:
+                if self.isStop:
+                    print("self.search_flag2: isStop True!!")
+                    break
                 pass
             i+=1
             #script.unload()
         
         while not self.key_found:
+            if self.isStop:
+                print("self.key_found: isStop True!!")
+                break
             pass
         #input ("Press enter key")
-        if logger != "":
-            while "guicomplete" not in self.step:
-                pass
-            #logger.info(json.dumps({"step":"stop", "result":"success"}))
-            self.debuglogger.stop()
+        if self.debuglogger != "":
+            self.message_send({"step":"stop"})            
             script_list.reverse()
             for script in script_list:
                 script.unload()
@@ -207,15 +215,6 @@ class soFrida:
         return script
     
     def findAccessKeyId (self, text, logger=""):
-
-        ## This is Logger Thread Func for GUI event-stream.
-        def message_thread(step, msg):
-            while True:
-                logger.info(msg)
-                if step in self.step:
-                    self.step.remove(step)
-                    break
-                sleep(0.5)
             
         # Recognize AWS Key Pairs by RegEx
         regex_acc = re.compile(r"(?<![A-Z0-9])[A-Z0-9]{20}(?![A-Z0-9])")
@@ -239,12 +238,12 @@ class soFrida:
                         # print (text)
                         if logger != "":
                             if len(self.awsservice) == 0:
-                                Thread(target=message_thread, args=("service", json.dumps({"step":"service", "result":"success", "name":"s3"}),)).start()
+                                self.message_send({"step":"service", "result":"success", "name":"s3"})
                             if len(self.awsbucket) == 0:
-                                Thread(target=message_thread, args=("bucket", json.dumps({"step":"bucket", "result":"success", "name":s3temp.group('bucket')}),)).start()
+                                self.message_send({"step":"bucket", "result":"success", "name":s3temp.group('bucket')})
                             if len(self.awsregion) == 0:
                                 if (s3temp.group('region')):
-                                    Thread(target=message_thread, args=("region", json.dumps({"step":"region", "result":"success", "name":s3temp.group('region')}),)).start()
+                                    self.message_send({"step":"region", "result":"success", "name":s3temp.group('region')})
                         self.awsservice.add("s3")
                         self.awsbucket.add(s3temp.group('bucket'))
                         if (s3temp.group('region')):
@@ -263,9 +262,9 @@ class soFrida:
                     if svc_tempA.group('region').find("s3") == -1:
                         if logger != "":
                             if len(self.awsservice) == 0:
-                                Thread(target=message_thread, args=("service", json.dumps({"step":"service", "result":"success", "name":svc_tempA.group('svc')}),)).start()
+                                self.message_send({"step":"service", "result":"success", "name":svc_tempA.group('svc')})
                             if len(self.awsregion) == 0:
-                                Thread(target=message_thread, args=("region", json.dumps({"step":"region", "result":"success", "name":svc_tempA.group('region')}),)).start()
+                                self.message_send({"step":"region", "result":"success", "name":svc_tempA.group('region')})
                         self.awsservice.add(svc_tempA.group('svc'))
                         self.awsregion.add(svc_tempA.group('region'))
                         print (self.awsservice)
@@ -275,7 +274,7 @@ class soFrida:
         if sec != None:
             #print("[*] SecretKeyId : %s" % str(sec.group()))
             if len(self.sec_key_list) == 0:
-                Thread(target=message_thread, args=("secretkeyid", json.dumps({"step":"secretkeyid", "result":"success", "name":str(sec.group())}),)).start()             
+                self.message_send({"step":"secretkeyid", "result":"success", "name":str(sec.group())})
             self.sec_key_list.add(str(sec.group()))
             print (self.sec_key_list)
 
@@ -283,13 +282,13 @@ class soFrida:
         if acc != None:
             #print("[*] AccessKeyId : %s" % str(acc.group()))
             if len(self.acc_key_list) == 0:
-                Thread(target=message_thread, args=("accesskeyid", json.dumps({"step":"accesskeyid", "result":"success", "name":str(acc.group())}),)).start()             
+                self.message_send({"step":"accesskeyid", "result":"success", "name":str(acc.group())})
             self.acc_key_list.add(str(acc.group()))
             print (self.acc_key_list)
 
         if (text.endswith ("=") or text.endswith ("==")) and ("http" not in text):
             if len(self.session_token) == 0:
-                Thread(target=message_thread, args=("sessiontoken", json.dumps({"step":"sessiontoken", "result":"success", "name":text}),)).start()             
+                self.message_send({"step":"sessiontoken", "result":"success", "name":text})
             self.session_token.add(text)
             print (self.session_token)
         
@@ -396,67 +395,46 @@ class soFrida:
     #         cprint ("Error", 'red')
 
     def soFrida_start(self, debuglogger):
+        print("python soFrida_start")
         self.debuglogger = debuglogger
         logger = debuglogger.logger
-        self.step = set()
         sleep(1)
         while True:
             sleep(0.5)
-            if "frida-connect" in self.step:
-                self.step.remove("frida-connect")
+            print("isStop "+str(self.isStop))
+            if self.isStop:
                 break
             device = self.frida_connect()
             if device == "":
-                logger.info(json.dumps({"step":"frida_connect", "result":"fail", "msg":self.err}))
+                self.message_send({"step":"frida_connect", "result":"fail", "msg":self.err})
             else:
-                logger.info(json.dumps({"step":"frida_connect", "result":"success"}))
+                self.message_send({"step":"frida_connect", "result":"success"})
+                break
+            
     
         while True:
             sleep(0.5)
-            if "adb-connect" in self.step:
-                self.step.remove("adb-connect")
+            if self.isStop:
                 break
             adb_device = self.adb_connect()
             if adb_device == "":
-                logger.info(json.dumps({"step":"adb_connect", "result":"fail", "msg":self.err}))
+                self.message_send({"step":"adb_connect", "result":"fail", "msg":self.err})
             else:
-                logger.info(json.dumps({"step":"adb_connect", "result":"success"}))
-                    
-        if adb_device.is_installed(self.pkgid):
-             while True:
-                logger.info(json.dumps({"step":"apk_install", "result":"installed", "package":self.pkgid}))
-                if "apk-install" in self.step:
-                    self.step.remove("apk-install")
-                    break
-                sleep(0.5) 
-        
-        while True:
-            sleep(0.5)
-            if "apk-install" in self.step:
-                self.step.remove("apk-install")
+                self.message_send({"step":"adb_connect", "result":"success"})
                 break
+        if not self.isStop:             
             if adb_device.is_installed(self.pkgid):
-                logger.info(json.dumps({"step":"apk_install", "result":"installed", "package":self.pkgid}))
+                self.message_send({"step":"apk_install", "result":"installed", "package":self.pkgid})
             else:
-                while True:
-                    logger.info(json.dumps({"step":"apk_install", "result":"not installed", "package":self.pkgid}))
-                    if "apk-not-installed" in self.step:
-                        self.step.remove("apk-not-installed")
-                        break
-                    sleep(0.5) 
-                while True:
-                    logger.info(json.dumps({"step":"apk_install", "result":"installing", "package":self.pkgid}))
-                    if "apk-installing" in self.step:
-                        self.step.remove("apk-installing")
-                        break
-                    sleep(0.5) 
+                self.message_send({"step":"apk_install", "result":"not installed", "package":self.pkgid})
+                self.message_send({"step":"apk_install", "result":"installing", "package":self.pkgid})
                 try:
                     adb_device.install(self.apk_path+self.pkgid+".apk")
-                    logger.info(json.dumps({"step":"apk_install", "result":"installed", "package":self.pkgid}))
+                    self.message_send({"step":"apk_install", "result":"installed", "package":self.pkgid})
                 except Exception as e:
-                    logger.info(json.dumps({"step":"apk_install", "result":"fail", "msg":str(e), "package":self.pkgid}))
-        self.process = self.pkgid
-        if "stop" not in self.step:
+                    self.message_send({"step":"apk_install", "result":"fail", "msg":str(e), "package":self.pkgid})
+        
+        if not self.isStop:
             self.get_class_maketrace(logger)
             
         

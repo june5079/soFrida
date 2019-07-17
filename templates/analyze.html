@@ -6,12 +6,14 @@ Analyze
 <script type='text/javascript'>
     $(function(){
 		$(document).ready(function(){
-            analyze.soFrida_start();
+            var socket = io.connect("http://" + document.domain + ":" + location.port + "/analyze")
+            analyze.soFrida_start(socket);
+            $(window).on('beforeunload', function(){
+                console.log("beforeunload");
+                socket.emit("soFrida_stop",{"step":"stop"});
+            });
         });
-        $(window).on('beforeunload', function(){
-            console.log("unload");
-            analyze.stop_log();
-        });
+        
 	});
 </script>
 <div class="container-fluid" style="font-family: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;">
@@ -42,19 +44,28 @@ Analyze
         <div class="card-body">
             <span class="fas fa-fw fa-times" id="adb-connect-icon" style="color:red"></span> <span id="adb-connect-text">Please check adb connection..</span><br>
             <span class="fas fa-fw fa-times" id="apk-install-icon" style="color:red"></span> <span id="apk-install-text">Checking APK is Installed..</span><br>
+            <span class="fas fa-fw fa-times" id="spawn-icon" style="color:red"></span> <span id="spawn-text">Application is going to spawn..</span><br>
         </div>
     </div>
     <div class="card mb-3">
         <div class="card-header">
             <i class="fas fa-cloud"></i>
-            Analyze with soFrida
+            AWS Services and Region Trace
         </div>
         <div class="card-body">
-            <span class="fas fa-fw fa-times" id="spawn-icon" style="color:red"></span> <span id="spawn-text">Application is going to spawn..</span><br>
             <span class="fas fa-fw fa-times" id="httprequest-icon" style="color:red"></span> <span id="httprequest-text">Wainting class "HttpRequest" is loaded..</span><br>
             <span class="fas fa-fw fa-times ml-3" id="service-icon" style="color:red"></span> <span id="service-text">AWS Service is going to be found..</span><br>
             <span class="fas fa-fw fa-times ml-3" id="bucket-icon" style="color:red"></span> <span id="bucket-text">Bucket name is going to be found..</span><br>
             <span class="fas fa-fw fa-times ml-3" id="region-icon" style="color:red"></span> <span id="region-text">Region is going to be found..</span><br>
+            
+        </div>
+    </div>
+    <div class="card mb-3">
+        <div class="card-header">
+            <i class="fas fa-cloud"></i>
+            AWS Credentials Trace
+        </div>
+        <div class="card-body">
             <span class="fas fa-fw fa-times" id="credentials-icon" style="color:red"></span> <span id="credentials-text">Wainting class "BasicAWSCredentials" or "BasicSessionCredentials" is loaded..</span><br>
             <span class="fas fa-fw fa-times ml-3" id="accesskeyid-icon" style="color:red"></span> <span id="accesskeyid-text">AccessKeyId is going to be found..</span><br>
             <span class="fas fa-fw fa-times ml-3" id="secretkeyid-icon" style="color:red"></span> <span id="secretkeyid-text">SecretKeyId is going to be found..</span><br>
@@ -62,35 +73,11 @@ Analyze
         </div>
     </div>
     <div class="card mb-3">
-        <div class="card-header">
-            <i class="fas fa-cloud"></i>
-            Extracted AWS Service, Bucket and Keys
-        </div>
         <div class="card-body">
-            <span class="fas fa-fw fa-times" id="connect-status-icon" style="color:red"></span> <span id="connect-status-text">APK is installed...</span><br>
-            <span class="fas fa-fw fa-times" id="connect-status-icon" style="color:red"></span> <span id="connect-status-text">APK is installed...</span><br>
-            <span class="fas fa-fw fa-times" id="connect-status-icon" style="color:red"></span> <span id="connect-status-text">APK is installed...</span><br>
-        </div>
-    </div>
-    <div class="card mb-3">
-        <div class="card-header">
-            <i class="fas fa-table"></i>
-            Analyze Android Application
-        </div>
-        <div class="card-body">
-            <div class="spinner-border spinner-border-sm" role="status">
-                <span class="sr-only">Loading...</span>
-            </div> This is Spinner test
-        </div>
-    </div>
-    <div class="card mb-3">
-        <div class="card-header">
-            <i class="fas fa-table"></i>
-            Log
-        </div>
-        <div class="card-body">
-            <p >
-
+            <button type="button" class="btn btn-secondary">Stop Trace</button>
+            <button type="button" class="btn btn-secondary">Vulnerability Check</button>
+            <p>
+                버튼을 눌러도 아무일도 일어나지 않습니다.    
             </p>
         </div>
     </div>
