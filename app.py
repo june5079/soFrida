@@ -18,10 +18,10 @@ BASE_URI = os.path.dirname(__file__)
 getlist = ""
 
 # Use for logging info message
-logger = sfLogger()
+logger = sfLogger("apk_download")
 
 # Use for logging debug message
-debuglogger = sfLogger()
+debuglogger = sfLogger("sofrida")
 
 downloader = Downloader()
 sofrida = ""
@@ -72,8 +72,10 @@ def search(data):
       socketio.emit("log", data, namespace="/apk_download")
     elif data['type'] == "exit":
       socketio.emit("exit", data, namespace="/apk_download")
-      logger.stop()
-
+      
+@socketio.on("stop", namespace="/apk_download")
+def apk_download_stop(message):
+  logger.stop()
 @app.route("/google_login_check", methods=['GET'])
 def google_login_check():
   global downloader
@@ -135,10 +137,14 @@ def soFrida_start(message):
   for a in debuglogger.loggenerator():
     data = json.loads(a)
     if data['step'] == "stop":
-      break
+      if "mode" in data:
+        socketio.emit("manual", {}, namespace="/analyze")
+      else:
+        debuglogger.stop()
+        break
     else:
       socketio.emit("analyze_status", data, namespace="/analyze")
-  debuglogger.stop()
+  
 
 @socketio.on('soFrida_stop', namespace="/analyze")
 def soFrida_stop(message):
@@ -146,7 +152,12 @@ def soFrida_stop(message):
   global sofrida
   if sofrida != "":
     sofrida.isStop = True
-
+@socketio.on('trace', namespace="/analyze")
+def manual_trace(message):
+  global sofrida
+  global debuglogger
+  cls = message['class']
+  socketio.start_background_task(target=sofrida.manual_trace, cls=cls, logger=debuglogger)
 
 if __name__ == '__main__':
     #app.run(host='127.0.0.1', port='8888', debug=True)

@@ -3,12 +3,12 @@ var analyze = new function(){
     this.source = "";
     this.credentials = "";
     this.init = function(){
-        analyze.service = ""
-        analyze.bucket = ""
-        analyze.region = ""
-        analyze.accesskeyid = ""
-        analyze.secretkeyid = ""
-        analyze.sessiontoken = ""
+        analyze.service = new Set();
+        analyze.bucket = "";
+        analyze.region = "";
+        analyze.accesskeyid = "";
+        analyze.secretkeyid = "";
+        analyze.sessiontoken = "";
     }
     this.soFrida_start = function(socket){
         analyze.init();
@@ -62,8 +62,8 @@ var analyze = new function(){
                 analyze.begreen("credentials", "class \""+analyze.credentials+", "+class_name+"\" class is Loaded. Tracing is Started!!");
             }
         }else if(log.step == "service"){
-            analyze.begreen("service", "\""+log.name+"\" is used!!");
-            analyze.service = log.name;
+            analyze.service.add(log.name);
+            analyze.begreen("service", "\""+Array.from(analyze.service).join(",")+"\" is used!!");
             if(log.name != "s3"){
                 analyze.bucket = "nobucket";
                 analyze.begreen("bucket", "This is not S3 Service!!");
@@ -113,14 +113,5 @@ var analyze = new function(){
                 
             }
         })
-    }
-    this.check = function(){
-        if(analyze.service == "") return false;
-        if(analyze.bucket == "") return false;
-        if(analyze.region == "") return false;
-        if(analyze.accesskeyid == "") return false;
-        if(analyze.secretkeyid == "") return false;
-        if(analyze.accesskeyid == "") return false;
-        return true;
     }
 }

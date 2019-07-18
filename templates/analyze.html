@@ -12,8 +12,23 @@ Analyze
                 console.log("beforeunload");
                 socket.emit("soFrida_stop",{"step":"stop"});
             });
+            $("#stop_button").on("click", function(){
+                socket.emit("soFrida_stop", {"step":"stop"});
+            });
+            socket.on("manual", function(){
+                $("#httprequest-text").append(" <a href=\"#\" id=\"httprequest-click\">HttpRequest</a>");
+                $("#credentials-text").append(" <a href=\"#\" id=\"basicawscredentials-click\">BasicAWSCredentials</a> <a href=\"#\" id=\"basicsessioncredentials-click\">BasicSessionCredentials</a>");
+                $("#httprequest-click").on("click",function(){
+                    socket.emit("trace", {"class":"com.amazonaws.http.HttpRequest"});
+                });
+                $("#basicawscredentials-click").on("click", function(){
+                    socket.emit("trace", {"class":"com.amazonaws.auth.BasicAWSCredentials"});
+                });
+                $("#basicsessioncredentials-click").on("click", function(){
+                    socket.emit("trace", {"class":"com.amazonaws.auth.BasicSessionCredentials"});
+                });
+            });
         });
-        
 	});
 </script>
 <div class="container-fluid" style="font-family: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;">
@@ -74,11 +89,8 @@ Analyze
     </div>
     <div class="card mb-3">
         <div class="card-body">
-            <button type="button" class="btn btn-secondary">Stop Trace</button>
+            <button type="button" class="btn btn-secondary" id="stop_button">Stop Trace</button>
             <button type="button" class="btn btn-secondary">Vulnerability Check</button>
-            <p>
-                버튼을 눌러도 아무일도 일어나지 않습니다.    
-            </p>
         </div>
     </div>
 </div>

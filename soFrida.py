@@ -30,9 +30,10 @@ class soFrida:
         self.flogger = sfFileLogger(self.pkgid)
         self.flogger.filelogger.info("[+] Vulnerable PKG_ID : " + self.pkgid)
         self.flogger.filelogger.info("[!] Logging Start")
-        self.dbglogger = sfLogger()
+        #self.dbglogger = sfLogger()
         self.debuglogger = ""
         self.isStop = False
+        self.isManual = False
         self.apk_path = "./tmp/"
 
         self.javaperform = """
@@ -99,6 +100,17 @@ class soFrida:
     def uninstall_apk(self):
         cprint("[*] Start Uninstall Pakcage : %s" % self.package, 'yellow')
         self.adb_device.uninstall(self.package)
+    def manual_trace(self, cls, logger):
+        def trace_callback(message, data):
+            if 'payload' in message:
+                self.findAccessKeyId(message['payload'], logger)
+            else:
+                print(message['stack'])
+        catch_trace_js = open('catch_make_trace.js', 'r').read()
+        start_function = "make_trace(\"%s\");" % (cls)
+        script = self.run(catch_trace_js+start_function, trace_callback)
+        while self.isStop == False:
+            pass
     def message_send(self, data):
         if self.debuglogger != "":
             logger = self.debuglogger.logger
@@ -138,6 +150,11 @@ class soFrida:
                     self.findAccessKeyId(message['payload'], logger)
             else:
                 print(message['stack'])
+                if "Unable to parse ART internals; please file a bug at https://github.com/frida/frida-java" in message['stack']:
+                    if self.isManual == False:
+                        self.message_send({"step":"stop","mode":"manual"})
+                        self.isManual = True
+                    self.isStop = True
         ########################################################### 
 
         script_list = []
@@ -182,20 +199,29 @@ class soFrida:
                 pass
             i+=1
             #script.unload()
-        
-        while not self.key_found:
-            if self.isStop:
-                print("self.key_found: isStop True!!")
-                break
+
+        #while not self.key_found:
+        #    if self.isStop:
+        #        print("self.key_found: isStop True!!")
+        #        break
+        #    pass
+        while self.isStop == False:
             pass
-        #input ("Press enter key")
-        if self.debuglogger != "":
-            self.message_send({"step":"stop"})            
-            script_list.reverse()
-            for script in script_list:
-                script.unload()
+        print("self.isStop == True!!")
+        script_list.reverse()
+        for script in script_list:
+            script.unload()
             script.off("message", trace_callback)
-            self.session.detach()
+        self.session.detach()
+
+        #input ("Press enter key")
+        #if self.debuglogger != "":
+        #    self.message_send({"step":"stop"})            
+        #    script_list.reverse()
+        #    for script in script_list:
+        #        script.unload()
+        #    script.off("message", trace_callback)
+        #    self.session.detach()
 
         
     def spwan(self, runjs, message_callback):
@@ -237,16 +263,16 @@ class soFrida:
                     if s3temp is not None:
                         # print (text)
                         if logger != "":
-                            if len(self.awsservice) == 0:
+                            if "s3" not in self.awsservice:
                                 self.message_send({"step":"service", "result":"success", "name":"s3"})
-                            if len(self.awsbucket) == 0:
+                            if s3temp.group('bucket') not in self.awsbucket:
                                 self.message_send({"step":"bucket", "result":"success", "name":s3temp.group('bucket')})
-                            if len(self.awsregion) == 0:
-                                if (s3temp.group('region')):
+                            if s3temp.group('region'):
+                                if s3temp.group('region') not in self.awsregion:
                                     self.message_send({"step":"region", "result":"success", "name":s3temp.group('region')})
                         self.awsservice.add("s3")
                         self.awsbucket.add(s3temp.group('bucket'))
-                        if (s3temp.group('region')):
+                        if s3temp.group('region'):
                             self.awsregion.add(s3temp.group('region'))
                             print (self.awsregion)
                         self.awsregion.add(s3temp.group('region'))
@@ -261,9 +287,9 @@ class soFrida:
                     print (text)
                     if svc_tempA.group('region').find("s3") == -1:
                         if logger != "":
-                            if len(self.awsservice) == 0:
+                            if svc_tempA.group('svc') not in self.awsservice:
                                 self.message_send({"step":"service", "result":"success", "name":svc_tempA.group('svc')})
-                            if len(self.awsregion) == 0:
+                            if svc_tempA.group('region') not in self.awsregion:
                                 self.message_send({"step":"region", "result":"success", "name":svc_tempA.group('region')})
                         self.awsservice.add(svc_tempA.group('svc'))
                         self.awsregion.add(svc_tempA.group('region'))
@@ -292,9 +318,9 @@ class soFrida:
             self.session_token.add(text)
             print (self.session_token)
         
-        if len(self.sec_key_list) > 0 and len(self.acc_key_list) > 0 and len(self.awsservice) > 0 and len(self.awsregion) > 0:
-            if "s3" in self.awsservice and len(self.awsbucket) > 0 or "s3" not in self.awsservice:
-                self.key_found = True
+        #if len(self.sec_key_list) > 0 and len(self.acc_key_list) > 0 and len(self.awsservice) > 0 and len(self.awsregion) > 0:
+        #    if "s3" in self.awsservice and len(self.awsbucket) > 0 or "s3" not in self.awsservice:
+        #        self.key_found = True
                 
     def print_key(self):
         if len(self.acc_key_list) == 0:
@@ -433,7 +459,8 @@ class soFrida:
                     self.message_send({"step":"apk_install", "result":"installed", "package":self.pkgid})
                 except Exception as e:
                     self.message_send({"step":"apk_install", "result":"fail", "msg":str(e), "package":self.pkgid})
-        
+                    self.message_send({"step":"stop"})
+                    self.isStop = True
         if not self.isStop:
             self.get_class_maketrace(logger)
             

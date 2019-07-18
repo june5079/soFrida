@@ -4,19 +4,19 @@ from logging.handlers import QueueHandler, QueueListener
 import json
 # Queue Logger
 class sfLogger:
-    def __init__(self):
+    def __init__(self, logger_name):
         self.format =  logging.Formatter("%(message)s")
         self.log_queue = queue.Queue()
         self.queue_handler = QueueHandler(self.log_queue)
         self.queue_handler.setFormatter(self.format)
-        self.logger = logging.getLogger("testlogger")
+        self.logger = logging.getLogger(logger_name)
         self.logger.addHandler(self.queue_handler)
         self.logger.setLevel(logging.DEBUG)
+        self.listener = QueueListener(self.log_queue, self.queue_handler)
         self.isStop = False
 
     def start(self):
         print("logger.start()")
-        self.listener = QueueListener(self.log_queue, self.queue_handler)
         self.listener.start()
         self.isStop = False
 
@@ -27,10 +27,12 @@ class sfLogger:
 
     def stop(self):
         print("logger.stop()")
+        print("before stop length "+str(self.log_queue.qsize()))
         self.listener.stop()
         self.isStop = True
         while self.log_queue.empty() == False:
-            self.log_queue.get()
+            print("throw "+str(self.log_queue.get().getMessage()))
+        print("after stop length "+str(self.log_queue.qsize()))
         
 # if file logging needed:
 class sfFileLogger:

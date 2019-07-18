@@ -23,6 +23,7 @@ APK Downloader
 			socket.on("exit", function(data){
 				$("#log").text("Loading Complete!!");
 				$("#log").append("<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button>");
+				socket.emit("stop", {});
 				finish_load_table()
 			})
 			$("#search_mode_button").on("click", function(){
