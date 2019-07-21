@@ -144,85 +144,49 @@ class soFrida:
                     self.target_cls.remove(cls)
                     if len(self.target_cls) <2 and "com.amazonaws.http.HttpRequest" not in self.target_cls:
                         self.trace_flag = True
-                elif message['payload'] =="search complete":
-                    self.search_flag = False
+                #elif message['payload'] =="search complete":
+                #    self.search_flag = False
                 else:
                     self.findAccessKeyId(message['payload'], logger)
             else:
                 print(message['stack'])
-                if "Unable to parse ART internals; please file a bug at https://github.com/frida/frida-java" in message['stack']:
-                    if self.isManual == False:
-                        self.message_send({"step":"stop","mode":"manual"})
-                        self.isManual = True
-                    self.isStop = True
         ########################################################### 
 
         script_list = []
 
         # if logger is "" means cli mode else is gui mode
         if logger == "":
-            script = self.spwan(catch_trace_js+start_function, trace_callback)
-            script_list.append(script)
+            try:
+                script = self.spwan(catch_trace_js+start_function, trace_callback)
+                script_list.append(script)
+
+                input ("Press enter key")
+                if self.debuglogger != "":
+                    self.message_send({"step":"stop"})            
+                    script_list.reverse()
+                    for script in script_list:
+                        script.unload()
+                    script.off("message", trace_callback)
+                    self.session.detach()
+            except Exception as e:
+                cprint("[*] Spawn Error : "+str(e), 'red')
         else:
             try:
                 script = self.spwan(catch_trace_js+start_function, trace_callback)
                 script_list.append(script)
                 self.message_send({"step":"spawn", "result":"success"})
+                while self.isStop == False:
+                    pass
+                print("self.isStop == True!!")
+                script_list.reverse()
+                for script in script_list:
+                    script.unload()
+                    script.off("message", trace_callback)
+                self.session.detach()
             except Exception as e:
                 self.message_send({"step":"spawn", "result":"fail", "msg":str(e)})
                 return
         
-        while self.search_flag:
-            if self.isStop:
-                print("self.search_flag1: isStop True!!")
-                break
-            pass
-        # if len(self.target_cls) == 3:
-	    #     script.unload()
-        i = 1
-
-        if self.trace_flag == False:
-            cprint("[!] Switching to static mode", "yellow")
-
-        while self.trace_flag == False:
-            if self.isStop:
-                print("self.trace_flag: isStop True!!")
-                break
-            self.search_flag = True
-            start_function = "\nsearch_loaded_class([%s]);" % (', '.join("'"+x+"'" for x in self.target_cls))
-            script = self.run(catch_trace_js+start_function, trace_callback)
-            script_list.append(script)
-            while self.search_flag:
-                if self.isStop:
-                    print("self.search_flag2: isStop True!!")
-                    break
-                pass
-            i+=1
-            #script.unload()
-
-        #while not self.key_found:
-        #    if self.isStop:
-        #        print("self.key_found: isStop True!!")
-        #        break
-        #    pass
-        while self.isStop == False:
-            pass
-        print("self.isStop == True!!")
-        script_list.reverse()
-        for script in script_list:
-            script.unload()
-            script.off("message", trace_callback)
-        self.session.detach()
-
-        #input ("Press enter key")
-        #if self.debuglogger != "":
-        #    self.message_send({"step":"stop"})            
-        #    script_list.reverse()
-        #    for script in script_list:
-        #        script.unload()
-        #    script.off("message", trace_callback)
-        #    self.session.detach()
-
         
     def spwan(self, runjs, message_callback):
         pid = self.device.spawn(self.process)

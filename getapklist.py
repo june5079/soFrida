@@ -137,7 +137,7 @@ class Getlists:
         print("Getlists.get_pkginfo_for_GUI()")
         l = self.apklist
         # logger.info(json.dumps({"type":"log", "data": "Start Downloading "+str(len(l))+" apks."}))
-        logger.info(json.dumps({"type":"log", "data": "Getting App Information from Google Play " + str(len)}))
+        logger.info(json.dumps({"type":"log", "data": "Getting App Information from Google Play " + str(len(l))}))
         try:
             i = 1
             for x in l:

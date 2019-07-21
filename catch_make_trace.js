@@ -59,19 +59,14 @@ function make_trace(cls){
 }
 function search_loaded_class(target_cls){
     Java.perform(function() {
-        Java.enumerateLoadedClasses({
-            onMatch: function(cls){
-                cls = cls.replace("[L","").replace(";","");
-                for(var i=0;i<target_cls.length;i++){
-                    if(target_cls[i] == cls){
-                        make_trace(cls);
-                        send("start_trace:"+cls);
-                    }
-                }
-            },
-            onComplete: function(){
-                send("search complete")
+        for(var i=0;i<target_cls.length;i++){
+            try{
+                make_trace(target_cls[i]);
+                send("start_trace:"+target_cls[i]);
+            }catch(e){
+                console.log(e);
+                send("no class:"+target_cls[i]);
             }
-        });
+        }
     });
 }
