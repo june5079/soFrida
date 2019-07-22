@@ -53,7 +53,9 @@ def load_finish():
   return jsonify(
     result="success"
   )
-
+def downfile_check(package_name):
+  return os.path.exists(os.path.join("./tmp/") + package_name + '.apk')
+    
 @socketio.on("search", namespace="/apk_download")
 def search(data):
   global getlist
@@ -67,11 +69,17 @@ def search(data):
     data = json.loads(a)
     print(data)
     if data['type'] == "result":
+      if downfile_check(data['package_name']):
+        data['info']['status'] = "YES"
+      else:
+        data['info']['status'] = "NO"
       socketio.emit("search_result", data, namespace="/apk_download")
     elif data['type'] == "log":
       socketio.emit("log", data, namespace="/apk_download")
     elif data['type'] == "exit":
       socketio.emit("exit", data, namespace="/apk_download")
+      break
+  logger.stop()
       
 @socketio.on("stop", namespace="/apk_download")
 def apk_download_stop(message):
@@ -100,27 +108,40 @@ def google_login():
     return jsonify(
       result="fail"
     )
-@app.route("/download", methods=['POST'])
-def download():
+@socketio.on("download", namespace="/apk_download")
+def download(message):
   global downloader
   global getlist
-  package_list = json.loads(request.data)['list']
-  for package_name in json.loads(request.data)['list']:
+  global logger
+  package_list = message['list']
+  for package_name in message['list']:
     asset = Assets()
     if not asset.exist(package_name):
       info = getlist.result[package_name]
       asset.add(package_name, info['title'], int(info['popular'].replace(",","")), info['category'])
       asset.close()
   try:
-    Thread(target=downloader.download_packages, args=(package_list,)).start()
-    return jsonify(
-      result="success"
-    )
+    logger.start()
+    socketio.start_background_task(target=downloader.download_packages, package_list=package_list, logger=logger.logger)        
+    for a in logger.loggenerator():
+      data = json.loads(a)
+      if data['step'] == "complete":
+        logger.stop()
+      socketio.emit("download_step", data, namespace="/apk_download")
   except Exception as e:
     print(e)
-    return jsonify(
-      result="fail"
-    )
+    logger.stop()
+@socketio.on("select_remove", namespace="/assets")
+def select_remove(message):
+  print("select_remove")
+  asset = Assets()
+  for package in message['list']:
+    print(package)
+    try:
+      os.remove(os.path.join("./tmp/") + package + '.apk')
+    except:
+      pass
+    socketio.emit("remove_result", {"result":asset.delete_one(package),"package":package}, namespace="/assets")
 @app.route("/analyze/<package_name>", methods=["GET"])
 def analyze(package_name):
   global sofrida

@@ -60,7 +60,7 @@ class Assets:
             print('|'.join(str(x) for x in row))
     def update_one(self, package_name, col_name, col_data):
         if self.exist(package_name):
-            self.cur.execute('''update assets set %s=? where package_name=?;'''%col_name, (col_data, package_name))
+            self.cur.execute('''update assets set %s=? where package_name=?;'''%col_name, (col_data, package_name,))
             self.con.commit()
         else:
             print("no package")
@@ -68,6 +68,14 @@ class Assets:
         self.update_one(package_name, 'status', status)
     def exist_sdk(self, package_name, tf):
         self.update_one(package_name, "exist_sdk", (1 if tf else 0))
+    def delete_one(self, package_name):
+        try:
+            self.cur.execute('''delete from assets where package_name=?;''', (package_name,))
+            self.con.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
     def close(self):
         self.con.close()
 if __name__ == "__main__":

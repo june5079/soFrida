@@ -3,28 +3,31 @@ var download = new function(){
         var package_list = [];
         $('.custom-control-input-item').filter(function(){
             return $(this).prop('checked');}).each(function(){
-                package_list.push($(this).attr('id'));
-            });
-
-        $.ajax({
-            url:'/download',
-            type:'POST',
-            contentType: "application/json; charset=utf-8",
-            data:JSON.stringify({"list":package_list}),
-            success:function(res){
-                download.log_start();
-            }
+                package_list.push($(this).attr('id'));});
+        download.socket.emit("download", {"list":package_list});
+        download.socket.on("download_step", function(data){
+            console.log(data);
+            download.log_start(data);
         });
-    }
-    this.log_start = function(){
-        var source = new EventSource('/download_log');
-		source.onmessage = function (event) {
-            var log = JSON.parse(event);
-            /*
-            log = {"step":"start", "pkg_name":"com.happylabs.hps"};
-            log = {"step":"finish", "pkg_name":"com.happylabs.hps"};
-            log = {"step":"error", "msg":"request_error", "pkg_name":"com.happylabs.hps"};
-            */
+    };
+    this.log_start = function(data){
+        var tr = $("#apk_table tbody tr");
+        var i = 0;
+        for(i = 0;i<tr.length;i++)
+            if(tr[i].attributes.id.value == data.package)
+                break;
+        if(data.step == "start"){
+            tr[i].children[5].innerText = "DOWN_START";
+        }else if(data.step == "finish"){
+            tr[i].children[5].innerText = "DOWN_FINISH";
+        }else if(data.step == "check"){
+            tr[i].children[5].innerText = "SDK_CHECK";
+        }else if(data.step == "result"){
+            if(data.sdk){
+                tr[i].children[5].innerText = "SDK_EXIST";
+            }else{
+                tr[i].children[5].innerText = "SDK_NOT_EXIST";
+            }
         }
     }
     this.open_google_login = function(){

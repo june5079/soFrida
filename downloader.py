@@ -9,6 +9,7 @@ import argparse
 import subprocess
 import platform
 import re
+import json
 
 class Downloader:
     def __init__ (self):
@@ -61,17 +62,19 @@ class Downloader:
         self.startdownload()
         return True
 
-    def download_packages(self, package_list):
+    def download_packages(self, package_list, logger=""):
         for package in package_list:
-            self.startdownload(package)
+            self.startdownload(package, logger)
+        logger.info({"step":"complete"})
 
-    def startdownload(self, pkgid=""):
+    def startdownload(self, pkgid="", logger=""):
         self.pkgid = pkgid
         if self.pkgid == "":
             return
         self.asset = Assets()
         self.asset.update_status(self.pkgid, "downloading")
         print('\nAttempting to download %s\n' % self.pkgid)
+        logger.info(json.dumps({"step":"start","package":self.pkgid}))
         try:
             fl = ""
             for codename in self.devices_codenames:
@@ -91,8 +94,10 @@ class Downloader:
                 for chunk in fl.get('file').get('data'):
                     apk_file.write(chunk)
             print('\n[+] Download successful\n')
+            logger.info(json.dumps({"step":"finish","package":self.pkgid}))
             self.asset.update_status(self.pkgid, "downloaded")
-            self.check_aws_sdk_common(self.pkgid)
+            logger.info(json.dumps({"step":"check","package":self.pkgid}))
+            self.check_aws_sdk_common(self.pkgid, logger)
         except :
             print("Unexpected error:", sys.exc_info()[0])
             traceback.print_exc()
@@ -112,16 +117,18 @@ class Downloader:
             print ("[!] NO AWS_SDK FOUND")
             os.remove(apkfinal_path)
 
-    def check_aws_sdk_common(self, pkgid):
+    def check_aws_sdk_common(self, pkgid, logger=""):
         print('[+] Checking AWS_SDK')
         apkfinal_path = self.apkfile_path + pkgid + '.apk'
         
         if re.search(b'(?i)aws-android-sdk', open(apkfinal_path,"rb").read()):
             print ("[!] This Application use AWS_SDK")
             self.asset.exist_sdk(pkgid, True)
+            logger.info(json.dumps({"step":"result","package":self.pkgid, "sdk":True}))
             pass
         else:
             print ("[!] NO AWS_SDK FOUND")
             self.asset.exist_sdk(pkgid, False)
+            logger.info(json.dumps({"step":"result","package":self.pkgid, "sdk":False}))
             #os.remove(apkfinal_path)
 
