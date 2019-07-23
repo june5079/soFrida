@@ -7,13 +7,19 @@ Analyze
     $(function(){
 		$(document).ready(function(){
             var socket = io.connect("http://" + document.domain + ":" + location.port + "/analyze")
+            var package_name = document.baseURI.substring(document.baseURI.lastIndexOf("/")+1);
             analyze.soFrida_start(socket);
             $(window).on('beforeunload', function(){
                 console.log("beforeunload");
                 socket.emit("soFrida_stop",{"step":"stop"});
             });
             $("#stop_button").on("click", function(){
-                socket.emit("soFrida_stop", {"step":"stop"});
+                var keys = analyze.get_keys();
+                //var package_name = document.baseURI.substring(document.baseURI.lastIndexOf("/")+1);
+                socket.emit("soFrida_stop", {"step":"stop", "package_name":package_name, "keys":keys});
+            });
+            $("#awstest_button").on("click", function(){
+                location.href="/awstest/"+package_name;
             });
             socket.on("manual", function(){
                 $("#httprequest-text").append(" <a href=\"#\" id=\"httprequest-click\">HttpRequest</a>");
@@ -90,7 +96,7 @@ Analyze
     <div class="card mb-3">
         <div class="card-body">
             <button type="button" class="btn btn-secondary" id="stop_button">Stop Trace</button>
-            <button type="button" class="btn btn-secondary">Vulnerability Check</button>
+            <button type="button" class="btn btn-secondary" id="awstest_button">Vulnerability Check</button>
         </div>
     </div>
 </div>

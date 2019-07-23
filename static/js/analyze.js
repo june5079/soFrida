@@ -10,6 +10,14 @@ var analyze = new function(){
         analyze.secretkeyid = "";
         analyze.sessiontoken = "";
     }
+    this.get_keys = function(){
+        return {"service":Array.from(analyze.service),
+                "bucket":analyze.bucket,
+                "region":analyze.region,
+                "accesskeyid":analyze.accesskeyid,
+                "secretkeyid":analyze.secretkeyid,
+                "sessiontoken":analyze.sessiontoken};
+    }
     this.soFrida_start = function(socket){
         analyze.init();
         socket.emit("soFrida_start", {});
@@ -104,14 +112,5 @@ var analyze = new function(){
         var div = $("#"+step+"-icon");
         analyze.spinner_div.insertAfter(div);
         return analyze.spinner_div;
-    }
-    this.next_step = function(step){
-        $.ajax({
-            url:"/next_step/"+step,
-            type:"GET",
-            success:function(res){
-                
-            }
-        })
     }
 }

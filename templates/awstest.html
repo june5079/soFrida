@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block title %}
+AWS Vulnerability Test
+{% endblock %}
+{% block content %}
+<script type='text/javascript'>
+    $(function(){
+		$(document).ready(function(){
+            var socket = io.connect("http://" + document.domain + ":" + location.port + "/awstest")
+            socket.on('connect', function(){
+                var package_name = document.baseURI.substring(document.baseURI.lastIndexOf("/")+1);
+                socket.emit("awstest_start", {"package_name":package_name});
+                socket.on("log", function(data){
+                    $("#aws_log").append(data['text']);
+                });
+            });
+        });
+	});
+</script>
+<div class="container-fluid" style="font-family: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item">
+			<a href="#">Dashboard</a>
+		</li>
+		<li class="breadcrumb-item">
+            <a href="{{ url_for('assets_layout') }}">Assets</a>
+        </li>
+        <li class="breadcrumb-item active">Analyze</li>
+        <li class="breadcrumb-item active">AWS Vulnerability Test</li>
+    </ol>
+    <div class="card mb-3">
+        <!-- Card closing and opening animation : https://codepen.io/disjfa/pen/EZdMpe -->
+        <div class="card-header">
+            <i class="fas fa-cloud"></i>
+            AWS Vulnerability Test
+        </div>
+        <div class="card-body">
+            <p id="aws_log">
+
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

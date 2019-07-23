@@ -23,23 +23,22 @@ Assets
 					return $(this).prop('checked');}).each(function(){
 						package_list.push($(this).attr('id'));});
 				socket.emit("select_remove", {"list":package_list});
-				socket.on("remove_result", function(data){
-					if(data.result){
-						var tr = $("#assets_table tbody tr");
-						for(var i =0;i<tr.length;i++){
-							if(tr[i].children[0].children[0].children[0].attributes.id.value == data.package){
-								console.log(i);
-								console.log(data);
-								console.log(tr[i].children[0].children[0].children[0]);
-								document.getElementById("assets_table").deleteRow(i+1);	
-								break;
-							}
+			});
+			$("tbody tr td button").on("click",  function(){
+				var package_name = $(this).attr('id');
+				socket.emit("select_remove", {"list":[package_name]});
+			});
+			socket.on("remove_result", function(data){
+				if(data.result){
+					var tr = $("#assets_table tbody tr");
+					for(var i =0;i<tr.length;i++){
+						if(tr[i].children[0].children[0].children[0].attributes.id.value == data.package){
+							document.getElementById("assets_table").deleteRow(i+1);	
+							break;
 						}
 					}
-				});
-			})
-			
-				
+				}
+			});
 		});
 		function button_change(){
 			var all = $('.custom-control-input-item');

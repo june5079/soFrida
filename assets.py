@@ -66,6 +66,15 @@ class Assets:
             print("no package")
     def update_status(self, package_name, status):
         self.update_one(package_name, 'status', status)
+    def update_keys(self, package_name, keys):
+        print("update")
+        if self.exist(package_name):
+            print("update2")
+            self.cur.execute('''update assets set %s=?, %s=?, %s=?, %s=?, %s=?, %s=? where package_name=?'''
+                        %("service", "bucket", "region","access_key_id", "secret_access_key","session_token"),
+                        (','.join(keys['service']), keys['bucket'], keys['region'], keys['accesskeyid'], keys['secretkeyid'], keys['sessiontoken'], package_name,))
+            print("update3")
+            self.con.commit()
     def exist_sdk(self, package_name, tf):
         self.update_one(package_name, "exist_sdk", (1 if tf else 0))
     def delete_one(self, package_name):

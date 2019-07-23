@@ -10,6 +10,7 @@ from sflogger import sfLogger
 from downloader import Downloader
 from assets import Assets
 from soFrida import soFrida
+from awstester import awsTester
 
 app = Flask(__name__)
 app.secret_key = "secret"
@@ -38,6 +39,9 @@ def assets_layout():
   asset = Assets()
   asset_infos = asset.get_all()
   return render_template("assets.html", asset_infos=asset_infos)
+@app.route("/awstest/<package_name>", methods=['GET'])
+def awstest_layout(package_name):
+  return render_template("awstest.html")
 @app.route('/stream')
 def stream():
   global logger
@@ -173,13 +177,27 @@ def soFrida_stop(message):
   global sofrida
   if sofrida != "":
     sofrida.isStop = True
+  if "keys" in message:
+    print(message)
+    asset = Assets()
+    asset.update_keys(message['package_name'], message['keys'])
 @socketio.on('trace', namespace="/analyze")
 def manual_trace(message):
   global sofrida
   global debuglogger
   cls = message['class']
   socketio.start_background_task(target=sofrida.manual_trace, cls=cls, logger=debuglogger)
-
+@socketio.on("awstest_start" ,namespace="/awstest")
+def awstest_start(message):
+  package_name = message['package_name']
+  asset = Assets()
+  keys = asset.get(package_name)
+  for service in keys['service'].split(","):
+    if service == "s3":
+      at = awsTester(package_name, keys['access_key_id'], keys['secret_key_id'], keys['session_token'], service, keys['region'])
+      at.s3_check(keys['bucket'], "ls")
+    elif service == "pinpoint":
+      at = awsTester(package_name, keys['access_key_id'], keys['secret_key_id'], keys['session_token'], service, keys['region'])
 if __name__ == '__main__':
     #app.run(host='127.0.0.1', port='8888', debug=True)
     socketio.run(app, host='127.0.0.1', port=8888,  debug=True, log_output=True)
