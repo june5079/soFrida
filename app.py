@@ -189,15 +189,32 @@ def manual_trace(message):
   socketio.start_background_task(target=sofrida.manual_trace, cls=cls, logger=debuglogger)
 @socketio.on("awstest_start" ,namespace="/awstest")
 def awstest_start(message):
+  global logger
   package_name = message['package_name']
   asset = Assets()
   keys = asset.get(package_name)
+  logger.start()
+  socketio.start_background_task(target=awstest, package_name=package_name, keys=keys)
+  for a in logger.loggenerator():
+    data = json.loads(a)
+    if data['service'] == "stop":
+      logger.stop()
+      break
+    socketio.emit("log", data, namespace="/awstest")
+  print("stoped")
+def awstest(package_name, keys):
+  global logger
   for service in keys['service'].split(","):
     if service == "s3":
-      at = awsTester(package_name, keys['access_key_id'], keys['secret_key_id'], keys['session_token'], service, keys['region'])
+      at = awsTester(package_name, keys['access_key_id'], keys['secret_key_id'], keys['session_token'], service, keys['region'], logger.logger)
       at.s3_check(keys['bucket'], "ls")
-    elif service == "pinpoint":
-      at = awsTester(package_name, keys['access_key_id'], keys['secret_key_id'], keys['session_token'], service, keys['region'])
+    elif service == "kinesis":
+      at = awsTester(package_name, keys['access_key_id'], keys['secret_key_id'], keys['session_token'], service, keys['region'], logger.logger)
+      at.kinesis_check("list_streams")
+    elif service == "firehorse":
+      at = awsTester(package_name, keys['access_key_id'], keys['secret_key_id'], keys['session_token'], service, keys['region'], logger.logger)
+      at.firehose_check("list_delivery_streams")
+  logger.logger.info(json.dumps({"service":"stop"}))
 if __name__ == '__main__':
     #app.run(host='127.0.0.1', port='8888', debug=True)
     socketio.run(app, host='127.0.0.1', port=8888,  debug=True, log_output=True)

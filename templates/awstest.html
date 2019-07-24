@@ -10,9 +10,9 @@ AWS Vulnerability Test
             socket.on('connect', function(){
                 var package_name = document.baseURI.substring(document.baseURI.lastIndexOf("/")+1);
                 socket.emit("awstest_start", {"package_name":package_name});
-                socket.on("log", function(data){
-                    $("#aws_log").append(data['text']);
-                });
+            });
+            socket.on("log", function(data){
+                $("#aws_log").append(data['msg']+"<br>");
             });
         });
 	});
