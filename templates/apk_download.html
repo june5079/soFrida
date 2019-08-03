@@ -8,11 +8,12 @@ APK Downloader
 		$(document).ready(function(){
 			$("#log").hide();
 			let socket = io.connect("http://" + document.domain + ":" + location.port + "/apk_download")
+			//finish_load_table();
 			download.socket = socket;
 			socket.on("search_result", function(data){
 				var package_name = data.package_name;
 				var info = data.info;
-				body = "<tr id=\""+package_name+"\"><td><div class=\"custom-control custom-checkbox\" align=\"center\">" +
+				body = "<tr><td><div class=\"custom-control custom-checkbox\" align=\"center\">" +
 				"<input type=\"checkbox\" class=\"custom-control-input custom-control-input-item\" id=\""+package_name+"\">" +
 				"<label class=\"custom-control-label\" for=\""+package_name+"\"></label>" +
 				"</div></td><td>"+package_name+"</td><td>"+info.title+"</td><td>"+info.popular+"</td><td>"+info.category+"</td><td>"+info.status+"</td></tr>";
@@ -21,11 +22,11 @@ APK Downloader
 			socket.on("log", function(data){
 				$("#log").text(data.data);
 			});
-			socket.on("exit", function(data){
+			socket.on("exit", function(data, fn){
 				$("#log").text("Loading Complete!!");
 				$("#log").append("<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button>");
-				//socket.emit("stop", {});
-				finish_load_table()
+				finish_load_table();
+				fn();
 			})
 			$("#search_mode_button").on("click", function(){
 				$("#search_mode_button").html($(this).text()+"<span style=\"transform: rotate(180deg);\" class=\"caret\"></span>");
@@ -63,8 +64,6 @@ APK Downloader
 					}
 					
 				});
-				//var selected = $('.custom-control-input-item').filter(function(){ return $(this).prop('checked');});
-				//console.log(selected);
 			});
 			function login(){
 				$("#login_alert").html("<p class=\"text-info\">Wait a seconds for login.</p>");
@@ -146,7 +145,12 @@ APK Downloader
 								<label class="custom-control-label" for="check-all"></label>
 							</div>
 						</th>
-						</th><th>PKGID</th><th>TITLE</th><th>POPULAR</th><th>CATEGORY</th><th>SAVED</th></thead>
+						<th>PKGID</th>
+						<th>TITLE</th>
+						<th>POPULAR</th>
+						<th>CATEGORY</th>
+						<th>SAVED</th>
+					</thead>
 					<tbody></tbody>
 				</table>
 			</div>

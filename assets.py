@@ -18,12 +18,13 @@ class Assets:
             status text,
             exist_sdk integer,
             access_key_id text,
-            secret_access_key text,
+            secret_key_id text,
             session_token text,
             region text,
             service text,
-            bucket text)''')
-        self.columns = ['package_name', 'title', 'popular','category','status','exist_sdk', 'access_key_id', 'secret_key_id','session_token','region','service','bucket']
+            bucket text,
+            vulnerable integer)''')
+        self.columns = ['package_name', 'title', 'popular','category','status','exist_sdk', 'access_key_id', 'secret_key_id','session_token','region','service','bucket', 'vulnerable']
         self.con.commit()
 
     def exist(self, package_name):
@@ -53,7 +54,17 @@ class Assets:
                     package[self.columns[i]] = row[i]
             package_list.append(package)
         return package_list
-
+    def get_exist_key(self):
+        package_list = []
+        for row in self.cur.execute('''select * from assets where access_key_id is not null'''):
+            package = dict()
+            for i in range(len(self.columns)):
+                if row[i] == None:
+                    package[self.columns[i]] = ""
+                else:    
+                    package[self.columns[i]] = row[i]
+            package_list.append(package)
+        return package_list
     def select_all(self):
         print('|'.join(self.columns))
         for row in self.cur.execute('''select * from assets'''):

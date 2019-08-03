@@ -4,6 +4,7 @@ from threading import Thread
 import frida
 import json
 import os
+from threading import Event
 
 from getapklist import Getlists
 from sflogger import sfLogger
@@ -39,6 +40,12 @@ def assets_layout():
   asset = Assets()
   asset_infos = asset.get_all()
   return render_template("assets.html", asset_infos=asset_infos)
+@app.route("/keylist")
+def keylist_layout():
+  asset = Assets()
+  key_infos = asset.get_exist_key()
+  print(key_infos)
+  return render_template("keylist.html", key_infos=key_infos)
 @app.route("/awstest/<package_name>", methods=['GET'])
 def awstest_layout(package_name):
   return render_template("awstest.html")
@@ -69,9 +76,9 @@ def search(data):
   getlist = Getlists(data['mode'].lower().strip(), data['text'])
   getlist.init_request()
   socketio.start_background_task(target=getlist.get_pkginfo_for_GUI, logger=logger.logger)
+  ev = Event()
   for a in logger.loggenerator():
     data = json.loads(a)
-    print(data)
     if data['type'] == "result":
       if downfile_check(data['package_name']):
         data['info']['status'] = "YES"
@@ -81,10 +88,12 @@ def search(data):
     elif data['type'] == "log":
       socketio.emit("log", data, namespace="/apk_download")
     elif data['type'] == "exit":
-      socketio.emit("exit", data, namespace="/apk_download")
+      socketio.emit("exit", data, namespace="/apk_download", callback=logger_stop)
       break
+def logger_stop():
+  global logger
+  print("exitemit")
   logger.stop()
-      
 @socketio.on("stop", namespace="/apk_download")
 def apk_download_stop(message):
   logger.stop()
@@ -170,7 +179,6 @@ def soFrida_start(message):
     else:
       socketio.emit("analyze_status", data, namespace="/analyze")
   
-
 @socketio.on('soFrida_stop', namespace="/analyze")
 def soFrida_stop(message):
   global debuglogger
@@ -181,6 +189,7 @@ def soFrida_stop(message):
     print(message)
     asset = Assets()
     asset.update_keys(message['package_name'], message['keys'])
+    asset.update_status(message['package_name'], "analyzed")
 @socketio.on('trace', namespace="/analyze")
 def manual_trace(message):
   global sofrida
@@ -195,12 +204,18 @@ def awstest_start(message):
   keys = asset.get(package_name)
   logger.start()
   socketio.start_background_task(target=awstest, package_name=package_name, keys=keys)
+  isvuln = False
   for a in logger.loggenerator():
     data = json.loads(a)
     if data['service'] == "stop":
       logger.stop()
       break
+    elif data['type'] == "vuln":
+      isvuln = isvuln or True
+    elif data['type'] == "novuln":
+      isvuln = isvuln or False
     socketio.emit("log", data, namespace="/awstest")
+  asset.update_one(package_name, "vulnerable", 1 if isvuln else 0)
   print("stoped")
 def awstest(package_name, keys):
   global logger

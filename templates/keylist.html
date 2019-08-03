@@ -1,12 +1,12 @@
 {% extends "layout.html" %}
 {% block title %}
-Assets
+Key List
 {% endblock %}
 {% block content %}
 <script type='text/javascript'>
     $(function(){
 		$(document).ready(function(){
-			let socket = io.connect("http://" + document.domain + ":" + location.port + "/assets");
+            let socket = io.connect("http://" + document.domain + ":" + location.port + "/assets");
 			finish_load_table();
 			
 			$("#check-all").on("change", function(){
@@ -25,15 +25,20 @@ Assets
 				socket.emit("select_remove", {"list":package_list});
 			});
 			$("tbody tr td button").on("click",  function(){
-				var package_name = $(this).attr('id');
-				socket.emit("select_remove", {"list":[package_name]});
-			});
+                var info = JSON.parse($(this).data('package').replace(/'/g, "\""));
+                var card = $(".modal-body .card");
+                card[0].children[1].innerHTML= "<p class=\"card-text\">"+info.access_key_id+"</p>";
+                card[1].children[1].innerHTML= "<p class=\"card-text\">"+info.secret_key_id+"</p>";
+                card[2].children[1].innerHTML= "<p class=\"card-text\">"+info.session_token+"</p>";
+				$("#keyViewModal").attr("aria-hidden", false);
+                $("#keyViewModal").modal();
+            });
 			socket.on("remove_result", function(data){
 				if(data.result){
-					var tr = $("#assets_table tbody tr");
+					var tr = $("#key_table tbody tr");
 					for(var i =0;i<tr.length;i++){
 						if(tr[i].children[0].children[0].children[0].attributes.id.value == data.package){
-							document.getElementById("assets_table").deleteRow(i+1);	
+							document.getElementById("key_table").deleteRow(i+1);	
 							break;
 						}
 					}
@@ -65,19 +70,19 @@ Assets
 		<li class="breadcrumb-item">
 			<a href="#">Dashboard</a>
 		</li>
-		<li class="breadcrumb-item active">Assets</li>
+		<li class="breadcrumb-item active">Key List</li>
 	</ol>
 	<div class="card mb-3">
 		<div class="card-header">
 			<i class="fas fa-table"></i>
-			Assets Table
+			Key List Table
 		</div>
 		<div class="card-body">
 			<div class="input-group">
 				<input type="text" class="form-control" placeholder="Input Search Text" spellcheck="false" id="search_form">
 			</div>
-			<div style="margin-top:20px;" class="table-responsive" id="assets_list">
-				<table class="table" id="assets_table">
+			<div style="margin-top:20px;" class="table-responsive" id="key_list">
+				<table class="table" id="key_table">
 					<thead>
 						<th>
 							<div class="custom-control custom-checkbox" align="center">
@@ -87,14 +92,13 @@ Assets
 						</th>
 						<th>PKGID</th>
 						<th>TITLE</th>
-						<th>POPULAR</th>
-						<th>CATEGORY</th>
-						<th>STATUS</th>
-						<th>EXIST_SDK</th>
-						<th>ANALYZE</th>
+                        <th>SERVICES</th>
+                        <th>VULNERABLE</th>
+                        <th>VIEW KEY</th>
+						<th>AWSCHECK</th>
 					</thead>
 					<tbody>
-						{% for info in asset_infos %}
+						{% for info in key_infos %}
 						<tr>
 							<td>
 								<div class="custom-control custom-checkbox" align="center">
@@ -103,27 +107,50 @@ Assets
 							</td>
 							<td>{{ info['package_name'] }}</td>
 							<td>{{ info['title'] }}</td>
-							<td>{{ "{:,}".format(info['popular']) }}</td>
-							<td>{{ info['category'] }}</td>
-							<td>{{ info['status'] }}</td>
-							{% if info['exist_sdk'] == 1 %}
-							<td>True</td>
-							<td><a  class="btn btn-success" href="/analyze/{{ info['package_name'] }}">Analyze</a></td>
-							{% elif info['exist_sdk'] == 0 %}
-							<td>False</td>
-							<td><button class="btn btn-danger" id="{{ info['package_name'] }}">Remove</button></td>
-							{% else %}
-							<td></td>
-							<td></td>
-							{% endif %}
+							<td>{{ info['service'] }}</td>
+							<td>{{ "True" if info['vulnerable']==1 else "False" }}</td>
+                            <td><button class="btn btn-danger" id="view" data-package="{{ info }}">View Key</button></td>
+							<td><a class="btn btn-danger" href="/awstest/{{ info['package_name'] }}">AWS Check</a></td>
 						</tr>
 						{% endfor %}
 					</tbody>
 				</table>
 			</div>
-			<nav class="navbar navbar-expand">
+			<!--<nav class="navbar navbar-expand">
 				<button class="nav-item btn btn-danger ml-auto mr-0 my-2 my-md-0" id="select-remove" disabled>Select Remove</button>
-			</nav>
+			</nav>-->
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="keyViewModal" tabindex="-1" role="dialog" aria-labelledby="KeyViewModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="KeyViewModalLabel">Key View</h5>
+				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="card mb-3">
+                    <h5 class="card-header">Access Key</h5>
+                    <div class="card-body">
+                      <p class="card-text"></p>
+                    </div>
+                </div>
+                <div class="card mb-3">
+                    <h5 class="card-header">Secret Key</h5>
+                    <div class="card-body">
+                      <p class="card-text"></p>
+                    </div>
+                </div>
+                <div class="card">
+                    <h5 class="card-header">Session Token</h5>
+                    <div class="card-body">
+                      <p class="card-text"></p>
+                    </div>
+                </div>
+			</div>
 		</div>
 	</div>
 </div>

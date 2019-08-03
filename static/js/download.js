@@ -12,10 +12,15 @@ var download = new function(){
     };
     this.log_start = function(data){
         var tr = $("#apk_table tbody tr");
+        
         var i = 0;
-        for(i = 0;i<tr.length;i++)
-            if(tr[i].attributes.id.value == data.package)
+        for(i = 0;i<tr.length;i++){
+            var input = $("#apk_table tbody tr input");
+            var package_name = input.attr('id');
+            if(package_name == data.package){
                 break;
+            }
+        }
         if(data.step == "start"){
             tr[i].children[5].innerText = "DOWN_START";
         }else if(data.step == "finish"){
