@@ -12,6 +12,7 @@ from downloader import Downloader
 from assets import Assets
 from soFrida import soFrida
 from awstester import awsTester
+from getinstalledapps import getInstalledApps
 
 app = Flask(__name__)
 app.secret_key = "secret"
@@ -44,8 +45,25 @@ def assets_layout():
 def keylist_layout():
   asset = Assets()
   key_infos = asset.get_exist_key()
-  print(key_infos)
   return render_template("keylist.html", key_infos=key_infos)
+@app.route("/installed")
+def installed_layout():
+  package_list = []
+  try:
+    inst = getInstalledApps()
+    packages = inst.get_Applist()
+    for p in packages:
+      if downfile_check(p):
+        if inst.is_AWSSDK(p):
+          package_list.append({"package_name":p, "status": "SDK_EXIST"})
+        else:
+          package_list.append({"package_name":p, "status": "SDK_NO_EXIST"})
+      else:
+        package_list.append({"package_name":p, "status": ""})
+    return render_template("installed.html", result=package_list)
+  except:
+    return render_template("installed.html", result=package_list)
+
 @app.route("/awstest/<package_name>", methods=['GET'])
 def awstest_layout(package_name):
   return render_template("awstest.html")
@@ -146,10 +164,8 @@ def download(message):
     logger.stop()
 @socketio.on("select_remove", namespace="/assets")
 def select_remove(message):
-  print("select_remove")
   asset = Assets()
   for package in message['list']:
-    print(package)
     try:
       os.remove(os.path.join("./tmp/") + package + '.apk')
     except:
@@ -186,7 +202,6 @@ def soFrida_stop(message):
   if sofrida != "":
     sofrida.isStop = True
   if "keys" in message:
-    print(message)
     asset = Assets()
     asset.update_keys(message['package_name'], message['keys'])
     asset.update_status(message['package_name'], "analyzed")
@@ -217,6 +232,16 @@ def awstest_start(message):
     socketio.emit("log", data, namespace="/awstest")
   asset.update_one(package_name, "vulnerable", 1 if isvuln else 0)
   print("stoped")
+@socketio.on("select_pull", namespace="/installed")
+def select_pull(data):
+  inst = getInstalledApps()
+  for package in data['list']:
+    try:
+      inst.get_app(package)
+      socketio.emit("pull_result", {"package_name":package,"result":"SDK_EXIST" if inst.is_AWSSDK(package) else "SDK_NO_EXIST"}, namespace="/installed")
+    except Exception as e:
+      socketio.emit("pull_result", {"package_name":package,"result":"ERROR", "msg":str(e)}, namespace="/installed")
+
 def awstest(package_name, keys):
   global logger
   for service in keys['service'].split(","):

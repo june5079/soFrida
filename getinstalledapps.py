@@ -1,6 +1,7 @@
+from assets import Assets
 from adb.client import Client as AdbClient
 from termcolor import cprint
-import subprocess, os
+import subprocess, os, re
 
 class getInstalledApps:
 
@@ -9,6 +10,7 @@ class getInstalledApps:
         self.adb_device = self.client.devices()[0]
         self.applist = []
         self.apppath = []
+        self.asset = Assets()
         
     def get_Applist(self):
         self.ltemp = self.adb_device.shell("pm list packages ")
@@ -17,13 +19,19 @@ class getInstalledApps:
         del temp[len(temp)-1]
         
         self.applist = [x.split(":")[1] for x in temp]
-        print (self.applist)
+        #print (self.applist)
+        return self.applist
 
     def get_Path(self, pkgid):
-
         path_temp = self.adb_device.shell("pm path " + pkgid)
-        path = path_temp.split(":")[1]
+        path = path_temp.split(":")[1].strip()
         return path
+
+    def get_app(self, pkgid):
+        path = self.get_Path(pkgid)
+        tmp_path = os.path.join("./tmp/") + pkgid + '.apk'
+        data = self.adb_device.pull(path, tmp_path)
+        self.asset.add(pkgid, "", 0, "")
 
     def get_SDKApps(self, pkgid):
         apkpath = str(self.get_Path(pkgid))
@@ -40,3 +48,11 @@ class getInstalledApps:
         else:
             cprint ("[!] NO AWS_SDK FOUND", 'blue')
             os.remove(apkfinal_path)
+    def is_AWSSDK(self, pkgid):
+        apkfinal_path = os.path.join("./tmp/") + pkgid + '.apk'
+        if re.search(b'(?i)aws-android-sdk', open(apkfinal_path,"rb").read()):
+            self.asset.exist_sdk(pkgid, True)
+            return True
+        else:
+            self.asset.exist_sdk(pkgid, False)
+            return False

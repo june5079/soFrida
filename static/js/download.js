@@ -15,8 +15,7 @@ var download = new function(){
         
         var i = 0;
         for(i = 0;i<tr.length;i++){
-            var input = $("#apk_table tbody tr input");
-            var package_name = input.attr('id');
+            var package_name = $(tr[i]).find("input").attr('id');
             if(package_name == data.package){
                 break;
             }
