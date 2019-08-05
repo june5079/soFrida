@@ -1,3 +1,20 @@
+<p align="center">
+  <img src="static/soFrida_Logo.png" width="150">
+  <h1 align="center">soFrida</h1>
+  <p align="center">Dynamic analysis tool that <b>automates</b> find cloud-backend and vulnerability from mobile applications.<p>
+  <p align="center">
+    <a href="">
+      <img src="https://img.shields.io/badge/license-GPLv3-blue.svg" />
+    </a>
+    <a href="https://github.com/SeleniumHQ/selenium">
+      <img src="https://img.shields.io/badge/built%20with-Selenium-yellow.svg" />
+    </a>
+    <a href="https://www.python.org/">
+    	<img src="https://img.shields.io/badge/built%20with-Python3-red.svg" />
+  </p>
+</p>
+
+
 # soFrida
 
 With soFrida, you can analyze and detect Cloud API key misconfigurations automatically via dynamic analysis.
