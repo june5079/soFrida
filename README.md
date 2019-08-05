@@ -18,7 +18,7 @@
     	<img src="https://img.shields.io/badge/built%20with-Python3-red.svg" />
     </a>
     <a href="https://socket.io">
-    	<img src="https://img.shields.io/badge/socketio-logger-orange" />
+    	<img src="https://img.shields.io/badge/Logging%20with-socketio-orange>
     </a>
   </p>
 </p>
