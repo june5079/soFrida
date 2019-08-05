@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="static/soFrida_Logo.png" width="150">
+  <img src="static/soFrida_Logo.png" width="300">
   <h1 align="center">soFrida</h1>
   <p align="center">Dynamic analysis tool that <b>automates</b> find cloud-backend and vulnerability from mobile applications.<p>
   <p align="center">
