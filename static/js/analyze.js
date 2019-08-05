@@ -30,14 +30,14 @@ var analyze = new function(){
             if(log.result == "success"){
                 analyze.begreen("frida-connect", "frida-server connected with USB!");
             }else{
-                $("#frida-connect-text").text("frida connect error : "+log.msg);
+                $("#frida-connect-text").text("frida connection error : "+log.msg);
                 
             }
         }else if(log.step == "adb_connect"){
             if(log.result == "success"){
                 analyze.begreen("adb-connect", "adb connected with USB!");
             }else{
-                $("#adb-connect-text").text("adb connect error : "+log.msg);
+                $("#adb-connect-text").text("adb connection error : "+log.msg);
             }
         }else if(log.step == "apk_install"){
             if(log.result == "installed"){
@@ -45,7 +45,7 @@ var analyze = new function(){
                 if(analyze.spinner_div != "") analyze.spinner_div.remove();
                 $("#apk-install-icon").show();
             }else if(log.result == "installing"){
-                analyze.spinner("apk-install", "file installing start...");
+                analyze.spinner("apk-install", "Installing APK file on mobile phone");
             }else if(log.result == "not installed"){
                 $("#apk-install-text").text(log.package+" is not installed...");
             }else{
@@ -53,20 +53,20 @@ var analyze = new function(){
             }
         }else if(log.step == "spawn"){
             if(log.result == "success"){
-                analyze.begreen("spawn", "application is spawned !!");
+                analyze.begreen("spawn", "application has been spawned !!");
             }else{
                 $("#spawn-text").text("spawn error : "+log.msg);
             }
         }else if(log.step == "httprequest"){
             var class_name = log.class.substring(log.class.lastIndexOf(".")+1);
-            analyze.begreen("httprequest", "class \""+class_name+"\" class is Loaded");
+            analyze.begreen("httprequest", "class \""+class_name+"\" is loaded");
         }else if(log.step == "credentials"){
             var class_name = log.class.substring(log.class.lastIndexOf(".")+1);
             if(analyze.credentials == ""){
                 analyze.credentials = class_name;
-                analyze.begreen("credentials", "class \""+class_name+"\" class is Loaded. Tracing is Started!!");
+                analyze.begreen("credentials", "class \""+class_name+"\" is loaded. Start tracing");
             }else if(analyze.credentials != class_name){
-                analyze.begreen("credentials", "class \""+analyze.credentials+", "+class_name+"\" class is Loaded. Tracing is Started!!");
+                analyze.begreen("credentials", "class \""+analyze.credentials+", "+class_name+"\" is loaded. Start tracing");
             }
         }else if(log.step == "service"){
             analyze.service.add(log.name);
@@ -76,10 +76,10 @@ var analyze = new function(){
                 analyze.begreen("bucket", "This is not S3 Service!!");
             }
         }else if(log.step == "bucket"){
-            analyze.begreen("bucket", "Bucket Name is \""+log.name+"\"!!");
+            analyze.begreen("bucket", "Found bucket name is \""+log.name+"\"!!");
             analyze.bucket = log.name;
         }else if(log.step == "region"){
-            analyze.begreen("region", "Region is \""+log.name+"\"!!");
+            analyze.begreen("region", "AWS region is \""+log.name+"\"!!");
             analyze.region = log.name;
         }else if(log.step == "accesskeyid"){
             //analyze.begreen("accesskeyid", "AccessKeyId is "+log.name);
