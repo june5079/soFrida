@@ -1,6 +1,9 @@
+
 <p align="center">
   <img src="static/soFrida_Logo.png" width="450">
-  <p align="center">Dynamic analysis tool that <b>automates</b> find cloud-backend and vulnerability from mobile applications.<p>
+  <p align="center">Dynamic analysis tool that <b>automates</b> finding cloud-backend and vulnerability from mobile applications.<p>
+ <p align="center"> With soFrida, you can analyze and detect Cloud API key misconfigurations automatically via dynamic analysis.<P>
+<p align="center">This tool willl be released on Defcon 27 Demo Labs.<P>
   <p align="center">
     <a href="">
       <img src="https://img.shields.io/badge/license-GPLv3-blue.svg" />
@@ -14,11 +17,19 @@
 </p>
 
 
-# soFrida
+## Table of Contents
+- [How to install and run InstaPy](#installation)
+  * [Requirements for Analysis](#requirements)
+  * [Installing InstaPy](#installation)
+  * [Guides and tutorials](#guides)
+    * [Video tutorials](#video-tutorials)
+    * [Written guides](#written-guides)
+- [Credits](#credits)
+- [Disclaimer](#disclaimer)
 
-With soFrida, you can analyze and detect Cloud API key misconfigurations automatically via dynamic analysis.
-
-This tool willl be released on August (Maybe Defcon 27 Conference)
+## Requirements
+* Rooted Android mobile phone for hooking process
+* Ethical mind 👍
 
 ## How it works?
 
