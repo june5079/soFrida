@@ -166,6 +166,7 @@ class Getlists:
                 logger.info(json.dumps({"type":"result", "package_name": x, "info":self.result[x]}))
                 logger.info(json.dumps({"type": "log","data":"("+str(i)+"/"+str(len(l))+")" +x+ " pkgid info loaded."}))
                 i+=1
+            time.sleep(0.5)
             logger.info(json.dumps({"type":"exit"}))
         except Exception as e:
             logger.info(json.dumps({"type":"log", "data":str(e)}))

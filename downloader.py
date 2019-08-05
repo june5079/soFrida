@@ -78,15 +78,12 @@ class Downloader:
         try:
             fl = ""
             for codename in self.devices_codenames:
-                print("try "+codename)
                 self.server = GooglePlayAPI('ko_KR', 'Asia/Seoul', device_codename=codename)
                 self.server.login(None, None, self.gsfId, self.authSubToken)
                 try:
                     fl = self.server.download(self.pkgid)
-                    
                     break
                 except Exception as e:
-                    print(e)
                     continue
             if fl == "":
                 raise Exception("No Device")

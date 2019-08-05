@@ -20,18 +20,26 @@ var download = new function(){
                 break;
             }
         }
-        if(data.step == "start"){
+        /*if(data.step == "start"){
             tr[i].children[5].innerText = "DOWN_START";
         }else if(data.step == "finish"){
             tr[i].children[5].innerText = "DOWN_FINISH";
         }else if(data.step == "check"){
             tr[i].children[5].innerText = "SDK_CHECK";
-        }else if(data.step == "result"){
+        }*/
+        if(data.step == "start"){
+            //tr[i].children[5].innerText = "";
+            //tr[i].children[5].innerHtml = "<i class=\"fa fa-circle-notch fa-spin\"></i>";
+            $(tr[i].children[5]).html("<i class=\"fa fa-circle-notch fa-spin\"></i>");
+        }
+        else if(data.step == "result"){
             if(data.sdk){
                 tr[i].children[5].innerText = "SDK_EXIST";
             }else{
                 tr[i].children[5].innerText = "SDK_NOT_EXIST";
             }
+        }else{
+
         }
     }
     this.open_google_login = function(){

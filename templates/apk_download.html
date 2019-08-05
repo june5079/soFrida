@@ -16,7 +16,7 @@ APK Downloader
 				body = "<tr><td><div class=\"custom-control custom-checkbox\" align=\"center\">" +
 				"<input type=\"checkbox\" class=\"custom-control-input custom-control-input-item\" id=\""+package_name+"\">" +
 				"<label class=\"custom-control-label\" for=\""+package_name+"\"></label>" +
-				"</div></td><td>"+package_name+"</td><td>"+info.title+"</td><td>"+info.popular+"</td><td>"+info.category+"</td><td>"+info.status+"</td></tr>";
+				"</div></td><td>"+package_name+"</td><td>"+info.title+"</td><td>"+info.popular+"</td><td>"+info.category+"</td><td class=\"text-center\">"+info.status+"</td></tr>";
 				$("#apk_table tbody").append(body);
 			});
 			socket.on("log", function(data){
@@ -149,7 +149,7 @@ APK Downloader
 						<th>TITLE</th>
 						<th>POPULAR</th>
 						<th>CATEGORY</th>
-						<th>SAVED</th>
+						<th class="text-center">SAVED</th>
 					</thead>
 					<tbody></tbody>
 				</table>
