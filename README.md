@@ -27,10 +27,9 @@
 ## Table of Contents
 - [How to install and run InstaPy](#installation)
   * [Requirements for Analysis](#requirements)
-  * [Installing InstaPy](#installation)
+  * [Installing soFrida](#installation)
   * [Guides and tutorials](#guides)
     * [Video tutorials](#video-tutorials)
-    * [Written guides](#written-guides)
 - [Main Features](#main-features)
 - [Authors](#credits)
 - [Disclaimer](#disclaimer)
