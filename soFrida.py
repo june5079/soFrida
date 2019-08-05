@@ -177,7 +177,6 @@ class soFrida:
                 self.message_send({"step":"spawn", "result":"success"})
                 while self.isStop == False:
                     pass
-                print("self.isStop == True!!")
                 script_list.reverse()
                 for script in script_list:
                     script.unload()
@@ -391,7 +390,6 @@ class soFrida:
         sleep(1)
         while True:
             sleep(0.5)
-            print("isStop "+str(self.isStop))
             if self.isStop:
                 break
             device = self.frida_connect()

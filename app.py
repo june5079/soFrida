@@ -231,7 +231,7 @@ def awstest_start(message):
       isvuln = isvuln or False
     socketio.emit("log", data, namespace="/awstest")
   asset.update_one(package_name, "vulnerable", 1 if isvuln else 0)
-  print("stoped")
+
 @socketio.on("select_pull", namespace="/installed")
 def select_pull(data):
   inst = getInstalledApps()

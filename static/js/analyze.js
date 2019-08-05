@@ -22,7 +22,6 @@ var analyze = new function(){
         analyze.init();
         socket.emit("soFrida_start", {});
         socket.on("analyze_status", function(log){
-            console.log(log);
             analyze.setData(log);
         });
     }
@@ -83,16 +82,26 @@ var analyze = new function(){
             analyze.begreen("region", "Region is \""+log.name+"\"!!");
             analyze.region = log.name;
         }else if(log.step == "accesskeyid"){
-            analyze.begreen("accesskeyid", "AccessKeyId is "+log.name);
+            //analyze.begreen("accesskeyid", "AccessKeyId is "+log.name);
+            $("#accesskeyid-text").text(log.name);
             analyze.accesskeyid = log.name;
         }else if(log.step == "secretkeyid"){
-            analyze.begreen("secretkeyid", "SecretKeyId is "+log.name);
+            //analyze.begreen("secretkeyid", "SecretKeyId is "+log.name);
+            $("#secretkeyid-text").text(log.name);
             analyze.secretkeyid = log.name;
         }else if(log.step == "sessiontoken"){
-            analyze.begreen("sessiontoken", "SessionToken is "+log.name);
+            //analyze.begreen("sessiontoken", "SessionToken is "+log.name);
+            $("#sessiontoken-text").text(log.name);
             analyze.sessiontoken = log.name;
         }
     }
+    /*
+    var info = JSON.parse($(this).data('package').replace(/'/g, "\""));
+    var card = $(".modal-body .card");
+    card[0].children[1].innerHTML= "<p class=\"card-text\">"+info.access_key_id+"</p>";
+    card[1].children[1].innerHTML= "<p class=\"card-text\">"+info.secret_key_id+"</p>";
+    card[2].children[1].innerHTML= "<p class=\"card-text\">"+info.session_token+"</p>";
+    */
     this.begreen = function(step, text){
         $("#"+step+"-icon").attr("style","color:green");
         var ml = $("#"+step+"-icon").hasClass("ml-3");

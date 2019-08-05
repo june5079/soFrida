@@ -10,7 +10,6 @@ Analyze
             var package_name = document.baseURI.substring(document.baseURI.lastIndexOf("/")+1);
             analyze.soFrida_start(socket);
             $(window).on('beforeunload', function(){
-                console.log("beforeunload");
                 socket.emit("soFrida_stop",{"step":"stop"});
             });
             $("#stop_button").on("click", function(){
@@ -88,9 +87,27 @@ Analyze
         </div>
         <div class="card-body">
             <span class="fas fa-fw fa-times" id="credentials-icon" style="color:red"></span> <span id="credentials-text">Wainting class "BasicAWSCredentials" or "BasicSessionCredentials" is loaded..</span><br>
-            <span class="fas fa-fw fa-times ml-3" id="accesskeyid-icon" style="color:red"></span> <span id="accesskeyid-text">AccessKeyId is going to be found..</span><br>
+            <!--<span class="fas fa-fw fa-times ml-3" id="accesskeyid-icon" style="color:red"></span> <span id="accesskeyid-text">AccessKeyId is going to be found..</span><br>
             <span class="fas fa-fw fa-times ml-3" id="secretkeyid-icon" style="color:red"></span> <span id="secretkeyid-text">SecretKeyId is going to be found..</span><br>
-            <span class="fas fa-fw fa-times ml-3" id="sessiontoken-icon" style="color:red"></span> <span id="sessiontoken-text">SessionToken is going to be found..</span><br>
+            <span class="fas fa-fw fa-times ml-3" id="sessiontoken-icon" style="color:red"></span> <span id="sessiontoken-text">SessionToken is going to be found..</span><br>-->
+        </div>
+    </div>
+    <div class="card mb-3">
+        <div class="card-header">Access Key</div>
+        <div class="card-body">
+          <p class="card-text" id="accesskeyid-text"></p>
+        </div>
+    </div>
+    <div class="card mb-3">
+        <div class="card-header">Secret Key</div>
+        <div class="card-body">
+          <p class="card-text" id="secretkeyid-text"></p>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">Session Token</div>
+        <div class="card-body">
+          <p class="card-text" id="sessiontoken-text"></p>
         </div>
     </div>
     <div class="card mb-3">
