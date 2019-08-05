@@ -54,12 +54,12 @@ class awsTester:
                         cprint(o.get('Prefix'), 'blue')
                         self.message_send({"service":"s3", "type":"list", "msg":o.get('Prefix')})
                     cprint ("[!] This Cloud-Backend is vulnerable", 'blue')
-                    self.message_send({"service":"s3", "type":"vuln", "msg":"[!] This Cloud-Backend is vulnerable"})
+                    self.message_send({"service":"s3", "type":"vuln", "msg":"[!] This Cloud-Backend service is vulnerable"})
                                         
             except ClientError as e:
                 print (e)
                 cprint ("[!] This Cloud-Backend is not vulnerable", 'blue')
-                self.message_send({"service":"s3", "type":"novuln", "msg":"[!] This Cloud-Backend is not vulnerable"})
+                self.message_send({"service":"s3", "type":"novuln", "msg":"[!] This Cloud-Backend service is not vulnerable"})
 
     def kinesis_check(self, command):
         client = boto3.client(
@@ -74,14 +74,14 @@ class awsTester:
             try:
                 if client.list_streams() :
                     cprint ("[!] This Cloud-Backend is vulnerable", 'blue')
-                    self.message_send({"service":"kinesis", "type":"vuln", "msg":"[!] This Cloud-Backend is vulnerable"})
+                    self.message_send({"service":"kinesis", "type":"vuln", "msg":"[!] This Cloud-Backend service is vulnerable"})
                     cprint (client.list_streams(),'blue')
                     self.message_send({"service":"kinesis", "type":"list_streams", "msg":client.list_streams()})
 
             except ClientError as e:
                 print (e)
                 cprint ("[!] This Cloud-Backend is not vulnerable", 'blue')
-                self.message_send({"service":"kinesis", "type":"novuln", "msg":"[!] This Cloud-Backend is not vulnerable"})
+                self.message_send({"service":"kinesis", "type":"novuln", "msg":"[!] This Cloud-Backend service is not vulnerable"})
     
     def firehose_check(self, command):
         client = boto3.client(
@@ -97,11 +97,11 @@ class awsTester:
                 res = client.list_delivery_streams()
                 if res :
                     cprint ("[!] This Cloud-Backend is vulnerable", 'blue')
-                    self.message_send({"service":"firehose", "type":"vuln", "msg":"[!] This Cloud-Backend is vulnerable"})
+                    self.message_send({"service":"firehose", "type":"vuln", "msg":"[!] This Cloud-Backend service is vulnerable"})
                     cprint (res,'blue')
                     self.message_send({"service":"firehose", "type":"list_delivery_streams", "msg":res})
 
             except ClientError as e:
                 print (e)
                 cprint ("[!] This Cloud-Backend is not vulnerable", 'blue')
-                self.message_send({"service":"firehose", "type":"novuln", "msg":"[!] This Cloud-Backend is not vulnerable"})
+                self.message_send({"service":"firehose", "type":"novuln", "msg":"[!] This Cloud-Backend service is not vulnerable"})

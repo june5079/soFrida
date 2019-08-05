@@ -8,11 +8,18 @@
     <a href="">
       <img src="https://img.shields.io/badge/license-GPLv3-blue.svg" />
     </a>
+    <a href="https://frida.re">
+    	<img src="https://img.shields.io/badge/Powered%20by-Frida-red" />
+    </a>
     <a href="https://github.com/SeleniumHQ/selenium">
       <img src="https://img.shields.io/badge/built%20with-Selenium-yellow.svg" />
     </a>
     <a href="https://www.python.org/">
     	<img src="https://img.shields.io/badge/built%20with-Python3-red.svg" />
+    </a>
+    <a href="https://socket.io">
+    	<img src="https://img.shields.io/badge/socketio-logger-orange" />
+    </a>
   </p>
 </p>
 
@@ -24,68 +31,38 @@
   * [Guides and tutorials](#guides)
     * [Video tutorials](#video-tutorials)
     * [Written guides](#written-guides)
-- [Credits](#credits)
+- [Main Features](#main-features)
+- [Authors](#credits)
 - [Disclaimer](#disclaimer)
 
 ## Requirements
 * Rooted Android mobile phone for hooking process
 * Ethical mind 👍
 
-## How it works?
-
-soFrida find the cloud-misconfiguraion vulnerability with three steps.
-
-Step 1. Check if key-pairs are extraced by launching app
-
-Step 2. Call every possible activities of app while hooking, if no result on Step 1.
-
-Step 3. You can manually set the class name related to cloud authentication and trace all methods.
-        
-        In this case, you may need to trigger app to cause loading cloud APIs.
-
-## Getting Started
-
-This tool is intended to test APIBleed vulnerability - cloud backend - not for testing general mobile vulnerability.
-
-What you need is as following :
-
-* Android smartphone (Rooted) : newer is better
-
-* Package name : com.test.abc
-
-```
-python3 soFrida.py -t "TARGET_APK_Filename"
-```
-
-If you want to dwonload app from Google Playstore, use following command
-
-```
-python3 pluto.py -e "YOUR_GOOGLE_ID" -p "YOUR_GOOGLE_PASSWORD" -t "TARGET_PKG_NAME"
-```
-
-## Dependencies
-
-Install dependent packages with command as following.
-
+## Installing soFrida
 ```sudo pip install -r requirements.txt```
 
-## Other Useful Codes
+That's it. You're ready to hack Cloud-backend 😎
 
-You can check How many users downloaded the app with following code.
+## Main Features
 
-```python3 get_popularity.py [PKG_LIST_TEXT] ```
-
+- Download APK Files from Google Play
+<img src = 'static/apk_download.png'>
 
 ## Authors
 
-**Hyunjun Park** - Graduate student of SANE(Security Analysis aNd Evaluation) Lab at Korea Unviersity / Senior Engineer of Samsung SDS
+**Hyunjun Park** - Hyunjun Park is a senior engineer of Samsung SDS in South Korea and a graduate student of SANE Lab in Korea University (Supervisor : Seungjoo Gabriel Kim). His daily job is pentesting a broad range of Samsung products including smart phone, smart TV, wearable devices, etc. He also serves as a main staff of Kimchicon Security Conference in South Korea.
 
-**Soyeon Kim** - Engineer of Samsung SDS
+**Soyeon Kim** - Soyeon Kim is a security researcher of Samsung SDS in South Korea. She mainly doing a security assessment of Samsung IoT products. She is interested in analyzing Android apps and IOS apps using Frida.
 
-**Yeongjin Jang** - Assistant professor of Computer Science at Oregon State Univeristy
+**Seungjoo (Gabriel) Kim** - Seungjoo (Gabriel) Kim is a professor of Graduate School of Information Security at Korea University from 2011. For the past 7 years he was an associate professor of Sungkyunkwan University and have 5 years of back ground of team leader of Cryptographic Technology Team and also IT Security Evaluation Team of KISA(Korea Internet & Security Agency). In addition to being a professor, he is positioning a director of CHAOS(Center for High-Assurance Operating Systems), a head of SANE(Security Analysis aNd Evaluation) Lab, an adviser of hacking club ‘CyKor(two-times champion of DEF CON CTF 2015 & 2018)’ of Korea University, and a founder/advisory director of an international security & hacking conference ‘SECUINSIDE’. 
 
-**Seungjoo (Gabriel) Kim** - Professor of Graduate School of Information Security at Korea University /  Head of SANE (Security Analysis aNd Evaluation) Lab.
+## Disclaimer
+
+
+
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+
