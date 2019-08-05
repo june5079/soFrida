@@ -3,37 +3,34 @@ import subprocess
 from botocore.exceptions import ClientError
 from sflogger import sfLogger
 from termcolor import cprint
+import os
 
 class awsTester:
-    def __init__(self, pkgid, accesskey, secretkey, stoken, awsservice, region, logger=""):
+    def __init__(self, pkgid, accesskey, secretkey, stoken, region, logger=""):
         self.pkgid = pkgid
         self.accesskey = accesskey
         self.secretkey = secretkey
         self.stoken = stoken
-        self.awsservice = awsservice
         self.region = region
         self.logger = logger
-        self.client = boto3.client(
-            awsservice,
-            aws_access_key_id=self.accesskey,
-            aws_secret_access_key=self.secretkey,
-            aws_session_token=self.stoken,
-            region_name=self.region
-        )
-
-    def manual_check(self, command):
+        
+    def configure(self):
         subprocess.call("aws configure set aws_access_key_id %s"%self.accesskey, shell=True)
         subprocess.call("aws configure set aws_secret_access_key %s"%self.secretkey, shell=True)
         if self.stoken != None:
             subprocess.call("aws configure set aws_session_token %s"%self.stoken, shell=True)
         subprocess.call("aws configure set region %s"%self.region, shell=True)
 
+    def manual_check(self, cmd):
         # cmd is from user input : ex) "aws s3 ls s3://bucketname"
-        cmd = command
         res = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        data = []
         while res.poll() is None:
             l = res.stdout.readline() # This blocks until it receives a newline.
             cprint (l, 'blue')
+            data.append(str(l, "utf-8").strip())
+        print(data)
+        return data
 
     def message_send(self, data):
         if self.logger != "":
@@ -48,7 +45,7 @@ class awsTester:
             region_name=self.region
         )
         if command == 'ls':
-            self.message_send({"service":"s3", "type":"start", "msg":"[*] S3 Service Check Start"})
+            self.message_send({"service":"s3", "type":"start", "msg":"[*] S3 Service Check Start : "+bucket})
             try:
                 res = s3.Bucket(bucket)
                 if res:
@@ -65,7 +62,13 @@ class awsTester:
                 self.message_send({"service":"s3", "type":"novuln", "msg":"[!] This Cloud-Backend is not vulnerable"})
 
     def kinesis_check(self, command):
-        client = self.client
+        client = boto3.client(
+            "kinesis",
+            aws_access_key_id=self.accesskey,
+            aws_secret_access_key=self.secretkey,
+            aws_session_token=self.stoken,
+            region_name=self.region
+        )
         if command == 'list_streams':
             self.message_send({"service":"kinesis", "type":"start", "msg":"[*] Kinesis Service Check Start"})
             try:
@@ -81,7 +84,13 @@ class awsTester:
                 self.message_send({"service":"kinesis", "type":"novuln", "msg":"[!] This Cloud-Backend is not vulnerable"})
     
     def firehose_check(self, command):
-        client = self.client
+        client = boto3.client(
+            "firehose",
+            aws_access_key_id=self.accesskey,
+            aws_secret_access_key=self.secretkey,
+            aws_session_token=self.stoken,
+            region_name=self.region
+        )
         if command == 'list_delivery_streams':
             self.message_send({"service":"firehose", "type":"start", "msg":"[*] Firehose Service Check Start"})
             try:

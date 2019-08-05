@@ -14,6 +14,16 @@ AWS Vulnerability Test
             socket.on("log", function(data){
                 $("#aws_log").append(data['msg']+"<br>");
             });
+            socket.on("manual_log", function(data){
+                $("#aws_manual_log").append(data.data+"<br>");
+            });
+            $("#cmd_form").on("keyup", function(e){
+                if(e.keyCode == 13){
+                    $("#aws_manual_log").append($(this).val()+"<br>");
+                    socket.emit("manual_log_cmd", {"data":$(this).val()});
+                    $(this).val("");
+                }
+            });
         });
 	});
 </script>
@@ -38,6 +48,22 @@ AWS Vulnerability Test
             <p id="aws_log">
 
             </p>
+        </div>
+    </div>
+    <div class="card mb-3">
+        <!-- Card closing and opening animation : https://codepen.io/disjfa/pen/EZdMpe -->
+        <div class="card-header">
+            AWS Manual Test
+        </div>
+        <div class="card-body overflow-auto">
+            <p id="aws_manual_log" style="height: 40vh;">
+
+            </p>
+        </div>
+        <div class="card-footer">
+            <div class="input-group">
+				<input type="text" class="form-control" placeholder="ex) aws s3 ls s3://bucketname" spellcheck="false" id="cmd_form">
+			</div>
         </div>
     </div>
 </div>

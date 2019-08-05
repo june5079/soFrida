@@ -424,6 +424,7 @@ class soFrida:
                     self.message_send({"step":"stop"})
                     self.isStop = True
         if not self.isStop:
+            self.clear_recentapp(self.pkgid)
             self.get_class_maketrace(logger)
             
         

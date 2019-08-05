@@ -211,9 +211,11 @@ def manual_trace(message):
   global debuglogger
   cls = message['class']
   socketio.start_background_task(target=sofrida.manual_trace, cls=cls, logger=debuglogger)
+at = ""
 @socketio.on("awstest_start" ,namespace="/awstest")
 def awstest_start(message):
   global logger
+  global at
   package_name = message['package_name']
   asset = Assets()
   keys = asset.get(package_name)
@@ -231,7 +233,17 @@ def awstest_start(message):
       isvuln = isvuln or False
     socketio.emit("log", data, namespace="/awstest")
   asset.update_one(package_name, "vulnerable", 1 if isvuln else 0)
-
+  at = awsTester(package_name, keys['access_key_id'], keys['secret_key_id'], keys['session_token'], keys['region'])
+  socketio.emit("manual_log", {"data":"[!] AWS Configuration Start!!"}, namespace="/awstest")
+  at.configure()
+  socketio.emit("manual_log", {"data":"[!] AWS Configuration Complete!"}, namespace="/awstest")
+@socketio.on("manual_log_cmd", namespace="/awstest")
+def manual_log_cmd(data):
+  global at
+  for line in at.manual_check(data["data"]):
+    if line != "":
+      socketio.emit("manual_log", {"data":line}, namespace="/awstest")
+    
 @socketio.on("select_pull", namespace="/installed")
 def select_pull(data):
   inst = getInstalledApps()
@@ -244,15 +256,13 @@ def select_pull(data):
 
 def awstest(package_name, keys):
   global logger
+  at = awsTester(package_name, keys['access_key_id'], keys['secret_key_id'], keys['session_token'], keys['region'], logger.logger)
   for service in keys['service'].split(","):
     if service == "s3":
-      at = awsTester(package_name, keys['access_key_id'], keys['secret_key_id'], keys['session_token'], service, keys['region'], logger.logger)
       at.s3_check(keys['bucket'], "ls")
     elif service == "kinesis":
-      at = awsTester(package_name, keys['access_key_id'], keys['secret_key_id'], keys['session_token'], service, keys['region'], logger.logger)
       at.kinesis_check("list_streams")
     elif service == "firehorse":
-      at = awsTester(package_name, keys['access_key_id'], keys['secret_key_id'], keys['session_token'], service, keys['region'], logger.logger)
       at.firehose_check("list_delivery_streams")
   logger.logger.info(json.dumps({"service":"stop"}))
 if __name__ == '__main__':

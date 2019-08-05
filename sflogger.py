@@ -16,23 +16,22 @@ class sfLogger:
         self.isStop = False
 
     def start(self):
-        print("logger.start()")
+        #print("logger.start()")
         self.listener.start()
         self.isStop = False
 
     def loggenerator(self):
-        print("logger.loggenerator()")
+        #print("logger.loggenerator()")
         while self.isStop == False:
             yield self.log_queue.get().getMessage()
 
     def stop(self):
-        print("logger.stop()")
-        print("before stop length "+str(self.log_queue.qsize()))
+        #print("logger.stop()")
         self.listener.stop()
         self.isStop = True
         while self.log_queue.empty() == False:
-            print("throw "+str(self.log_queue.get().getMessage()))
-        print("after stop length "+str(self.log_queue.qsize()))
+            self.log_queue.get().getMessage()
+        #print("after stop length "+str(self.log_queue.qsize()))
         
 # if file logging needed:
 class sfFileLogger:
