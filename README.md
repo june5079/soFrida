@@ -4,6 +4,9 @@
   <p align="center">Dynamic analysis tool that <b>automates</b> finding cloud-backend and vulnerability from mobile applications.<p>
  <p align="center"> With soFrida, you can analyze and detect Cloud API key misconfigurations automatically via dynamic analysis.<P>
 <p align="center">This tool willl be released on Defcon 27 Demo Labs.<P>
+<p align="center">To see our research, please visit: https://sofrida.github.io<P>
+
+
   <p align="center">
     <a href="">
       <img src="https://img.shields.io/badge/license-GPLv3-blue.svg" />
