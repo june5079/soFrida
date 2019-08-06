@@ -53,6 +53,9 @@ That's it. You're ready to hack Cloud-backend 😎
 
 Open your favorite browser and connect to http://127.0.0.1:8888
 
+## Video Tutorials
+[![soFrida Video Tutorials](https://img.youtube.com/vi/l8B3vrJg7zk/0.jpg)](https://youtu.be/l8B3vrJg7zk "Click on to watch tutorials")
+
 ## Main Features
 - "APK Download" : Download APK Files from Google Play
 <img src = 'static/apk_download.png'>
