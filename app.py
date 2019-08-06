@@ -237,6 +237,7 @@ def awstest_start(message):
   for a in logger.loggenerator():
     data = json.loads(a)
     if data['service'] == "stop":
+      time.sleep(0.5)
       logger.stop()
       break
     elif data['type'] == "vuln":
@@ -269,13 +270,19 @@ def select_pull(data):
 def awstest(package_name, keys):
   global logger
   at = awsTester(package_name, keys['access_key_id'], keys['secret_key_id'], keys['session_token'], keys['region'], logger.logger)
+  auto_check = False
   for service in keys['service'].split(","):
     if service == "s3":
+      auto_check = True
       at.s3_check(keys['bucket'], "ls")
     elif service == "kinesis":
+      auto_check = True
       at.kinesis_check("list_streams")
     elif service == "firehorse":
+      auto_check = True
       at.firehose_check("list_delivery_streams")
+  if not auto_check:
+    logger.logger.info(json.dumps({"service":"auto_check", "type":"no", "msg":"[!] This app is not using \"s3\", \"kinesis\", \"firehorse\"."}))
   logger.logger.info(json.dumps({"service":"stop"}))
 if __name__ == '__main__':
     #app.run(host='127.0.0.1', port='8888', debug=True)
