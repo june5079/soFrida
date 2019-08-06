@@ -53,20 +53,20 @@ Open your favorite browser and connect to http://127.0.0.1:8888
 <img src = 'static/apk_download.png'>
 
 - "Installed AppList" : Check installed application on mobile phone (Searching available)
-<img src = 'static/installed_list.png>
+<img src = 'static/installed_list.png'>
 
 - "Installed AppList" : Pull APK Files from mobile phone and check cloud SDK
-<img src = 'static/pull_from_mobile.png>
+<img src = 'static/pull_from_mobile.png'>
 
 - "Assets" : You can manage downloaded APKs and Select application for analysis. 
 You can identify AWS services and authentication keys
-<img src = 'static/select_apk_for_analysis.png>
+<img src = 'static/select_apk_for_analysis.png'>
 
 - "Assests" : Result of analysis
-<img src = 'static/analyze.png>
+<img src = 'static/analyze.png'>
 
 - "Key Lists" : You can identify all key lists extracted by analysis.
-<img src = 'static/key_lists.png>
+<img src = 'static/key_lists.png'>
 
 ## Authors
 **Hyunjun Park** - Hyunjun Park is a senior engineer of Samsung SDS in South Korea and a graduate student of SANE Lab in Korea University (Supervisor : Seungjoo Gabriel Kim). His daily job is pentesting a broad range of Samsung products including smart phone, smart TV, wearable devices, etc. He also serves as a main staff of Kimchicon Security Conference in South Korea.
