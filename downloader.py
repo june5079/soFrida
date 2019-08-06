@@ -42,16 +42,8 @@ class Downloader:
             self.authSubToken = self.server.authSubToken
             return self.secondlogin()
         except:
-            traceback.print_exc()
+            #traceback.print_exc()
             return False
-            #print ("Need to unlock account")
-            #self.browser = webdriver.Chrome(self.chrome_driver, chrome_options=self.options)
-            #self.browser.get(self.request_url)
-            ##self.browser.find_element_by_css_selector("#submitChallenge").click()
-            #val = input("Recall firstlogin")
-            #self.browser.close()
-            #self.firstlogin(gid, gpw)
-            #self.UnlockCaptcha()
 
     def secondlogin(self):
         print('\nNow trying secondary login with ac2dm token and gsfId saved\n')

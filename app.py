@@ -132,14 +132,18 @@ def google_login():
   global downloader
   id = request.form['id']
   pw = request.form['pw']
-  if downloader.firstlogin(id, pw):
-    return jsonify(
-      result="success"
-    )
-  else:
-    return jsonify(
-      result="fail"
-    )
+  for i in range(10):
+    print("try : "+str(i+1)+"/10")
+    if downloader.firstlogin(id, pw):
+      print("login success")
+      return jsonify(
+        result="success"
+      )
+    time.sleep(0.5)
+  print("login fail")
+  return jsonify(
+    result="fail"
+  )
 @socketio.on("download", namespace="/apk_download")
 def download(message):
   global downloader
