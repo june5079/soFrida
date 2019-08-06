@@ -41,6 +41,7 @@
 ## Requirements
 * Rooted Android mobile phone for hooking process
 * Web browser without AD-Block plugins
+* [Chrome](https://chromedriver.chromium.org/downloads) or [Firfox](https://github.com/mozilla/geckodriver/releases) driver 
 * Support OS : MacOS, Windows, Ubuntu (Tested)
 * Only works with higher Python3.6
 * Ethical mind 👍
