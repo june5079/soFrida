@@ -8,7 +8,7 @@
 
 
   <p align="center">
-    <a href="">
+    <a href="LICENSE">
       <img src="https://img.shields.io/badge/license-GPLv3-blue.svg" />
     </a>
     <a href="https://frida.re">
@@ -34,8 +34,9 @@
   * [Guides and tutorials](#guides) - Available soon.
     * [Video tutorials](#video-tutorials)
 - [Main Features](#main-features)
-- [Authors](#credits)
+- [Authors](#authors)
 - [Disclaimer](#disclaimer)
+- [LICENSE](#license)
 
 ## Requirements
 * Rooted Android mobile phone for hooking process
@@ -83,5 +84,5 @@ Please Note that this is a research project. We are by no means responsible for 
 
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
 
