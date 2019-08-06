@@ -80,7 +80,7 @@ class Assets:
     def update_keys(self, package_name, keys):
         if self.exist(package_name):
             self.cur.execute('''update assets set %s=?, %s=?, %s=?, %s=?, %s=?, %s=? where package_name=?'''
-                        %("service", "bucket", "region","access_key_id", "secret_access_key","session_token"),
+                        %("service", "bucket", "region","access_key_id", "secret_key_id","session_token"),
                         (','.join(keys['service']), keys['bucket'], keys['region'], keys['accesskeyid'], keys['secretkeyid'], keys['sessiontoken'], package_name,))
             self.con.commit()
     def exist_sdk(self, package_name, tf):
