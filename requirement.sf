@@ -6,3 +6,6 @@ termcolor
 flask
 frida
 flask_socketio
+awscli
+bs4
+tqdm
