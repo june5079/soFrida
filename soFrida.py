@@ -230,7 +230,7 @@ class soFrida:
                                 self.message_send({"step":"service", "result":"success", "name":"s3"})
                             if s3temp.group('bucket') not in self.awsbucket:
                                 self.message_send({"step":"bucket", "result":"success", "name":s3temp.group('bucket')})
-                            if s3temp.group('region'):
+                            if "region" in s3temp.group():
                                 if s3temp.group('region') not in self.awsregion:
                                     self.message_send({"step":"region", "result":"success", "name":s3temp.group('region')})
                         self.awsservice.add("s3")
@@ -330,21 +330,6 @@ class soFrida:
             cprint("[+] Logcat sucessfully cleared", 'green')
         except :
             cprint ("[!] Error occured wuth cleaning logcat",'red')
-    
-    # def save_logcat(self, process):
-    #     adb_command = self.base_adb_command[:]
-    #     adb_command.append('logcat')
-    #     adb_command.extend(['-d'])
-    #     adb = subprocess.Popen(adb_command, stdout=subprocess.PIPE)
-    #     adb2 = subprocess.Popen(['grep','amazonaws'], stdin=adb.stdout ,stdout=subprocess.PIPE)
-    #     adb3 = subprocess.Popen(['grep',process], stdin=adb2.stdout ,stdout=subprocess.PIPE)
-    #     for line in adb3.stdout.readlines():
-    #         print (line.decode('utf-8'))
-    #         self.flogger.filelogger.info("[Logcat] :" + line.decode('utf-8'))
-
-    # def aws_autoconfig(self):
-    #     cprint ("[*] Setting Up AWS Configuration" , "yellow")
-    #     subprocess.call("aws configure set %s %s"%key %value, shell=True) 
                     
     def remove_dir(self):
         cprint("[*] Remove Apktool Dirctory", 'green')
@@ -366,40 +351,11 @@ class soFrida:
         except :
             cprint ("[!] Error occured wuth cleaning app",'red')
 
-    # def get_installedapps(self, pkgid):
-    #     adb_command = self.base_adb_command[:]
-    #     adb_command.append('shell') 
-    #     adb_command.append('pm')
-    #     adb_command.append('list')
-    #     adb_command.append('packages')
-    #     adb_command.append(pkgid)
-    #     try :
-    #         s = subprocess.Popen(adb_command, stdout=subprocess.PIPE)
-    #         installed_applist = s.stdout.readlines()
-    #         # print (installed_applist)
-    #         for x in installed_applist:
-    #             # cprint (x.split(':')[1],'blue')
-    #             cprint (str(x).split(":")[1].strip("\\n'"), 'blue')
-    #     except:
-    #         cprint ("Error", 'red')
-
     def soFrida_start(self, debuglogger):
         print("python soFrida_start")
         self.debuglogger = debuglogger
         logger = debuglogger.logger
         sleep(1)
-        while True:
-            sleep(0.5)
-            if self.isStop:
-                break
-            device = self.frida_connect()
-            if device == "":
-                self.message_send({"step":"frida_connect", "result":"fail", "msg":self.err})
-            else:
-                self.message_send({"step":"frida_connect", "result":"success"})
-                break
-            
-    
         while True:
             sleep(0.5)
             if self.isStop:
@@ -410,6 +366,18 @@ class soFrida:
             else:
                 self.message_send({"step":"adb_connect", "result":"success"})
                 break
+        
+        while True:
+            sleep(0.5)
+            if self.isStop:
+                break
+            device = self.frida_connect()
+            if device == "":
+                self.message_send({"step":"frida_connect", "result":"fail", "msg":self.err})
+            else:
+                self.message_send({"step":"frida_connect", "result":"success"})
+                break
+    
         if not self.isStop:             
             if adb_device.is_installed(self.pkgid):
                 self.message_send({"step":"apk_install", "result":"installed", "package":self.pkgid})

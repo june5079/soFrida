@@ -65,7 +65,7 @@ class Downloader:
     def download_packages(self, package_list, logger=""):
         for package in package_list:
             self.startdownload(package, logger)
-        logger.info({"step":"complete"})
+        logger.info(json.dumps({"step":"complete"}))
 
     def startdownload(self, pkgid="", logger=""):
         self.pkgid = pkgid

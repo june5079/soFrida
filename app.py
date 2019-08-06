@@ -4,6 +4,7 @@ from threading import Thread
 import frida
 import json
 import os
+import time
 from threading import Event
 
 from getapklist import Getlists
@@ -147,16 +148,24 @@ def download(message):
   package_list = message['list']
   for package_name in message['list']:
     asset = Assets()
+    info = getlist.result[package_name]
     if not asset.exist(package_name):
-      info = getlist.result[package_name]
       asset.add(package_name, info['title'], int(info['popular'].replace(",","")), info['category'])
       asset.close()
+    else:
+      ass = asset.get(package_name)
+      if ass['popular'] < int(info['popular'].replace(",","")):
+        print("update start")
+        asset.update_asset(package_name, ['title', 'popular', 'category'], [info['title'], int(info['popular'].replace(",","")), info['category'], package_name])
+        print("update complete")
+        print(asset.get(package_name))
   try:
     logger.start()
     socketio.start_background_task(target=downloader.download_packages, package_list=package_list, logger=logger.logger)        
     for a in logger.loggenerator():
       data = json.loads(a)
       if data['step'] == "complete":
+        time.sleep(0.5)
         logger.stop()
       socketio.emit("download_step", data, namespace="/apk_download")
   except Exception as e:

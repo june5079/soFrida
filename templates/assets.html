@@ -8,11 +8,12 @@ Assets
 		$(document).ready(function(){
 			let socket = io.connect("http://" + document.domain + ":" + location.port + "/assets");
 			finish_load_table();
-			
+			make_search_form();
 			$("#check-all").on("change", function(){
 				var checked = $(this).prop("checked");
 				$(this).parents(".table")
 					.first()
+					.find("tr[style!=\"display: none;\"]")
 					.find("input[type=checkbox]")
 					.prop("checked", checked);
 					button_change();
@@ -39,6 +40,31 @@ Assets
 					}
 				}
 			});
+			function make_search_form(){
+				$("#search_form").on("propertychange change keyup paste input", function(){
+					var curVal = $(this).val().toUpperCase();
+					var tr = document.getElementsByTagName("tr");
+					var result_count = 0;
+					for(var i = 1;i<tr.length;i++){
+						var td = tr[i].getElementsByTagName("td");
+						var found = false;
+						for(var j = 0;j<td.length;j++){
+							if(td[j]){
+								var txtval = td[j].textContent || td[j].innerText;
+								if(txtval.toUpperCase().indexOf(curVal) > -1 ){
+									found = true;
+								}
+							}
+						}
+						if(found){
+							tr[i].style.display = "";
+							result_count++;
+						}else{
+							tr[i].style.display = "none";
+						}
+					}
+				});
+			}
 		});
 		function button_change(){
 			var all = $('.custom-control-input-item');

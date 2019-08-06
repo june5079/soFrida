@@ -32,9 +32,7 @@ class Assets:
 
     def add(self, package_name, title, popular, category):
         #status : added, downloading, downloaded, analyzed
-        print(title)
         title = html.unescape(title)
-        print(title)
         self.cur.execute('''insert into assets(package_name, title, popular, category, status) values (?, ?, ?, ?, ?)''', (package_name, title, popular, category, "added",))
         self.con.commit()
     def get(self, package_name):
@@ -75,6 +73,15 @@ class Assets:
             self.con.commit()
         else:
             print("no package")
+    def update_asset(self, package_name, col_list, data_list):
+        query = "update assets set "
+        set_list = []
+        for i in range(len(col_list)):
+            set_list.append("%s=?" % col_list[i])
+        query += ", ".join(set_list)
+        query += " where package_name=?;"
+        self.cur.execute(query, (data_list))
+        self.con.commit()
     def update_status(self, package_name, status):
         self.update_one(package_name, 'status', status)
     def update_keys(self, package_name, keys):

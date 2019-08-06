@@ -4,6 +4,7 @@ from botocore.exceptions import ClientError
 from sflogger import sfLogger
 from termcolor import cprint
 import os
+import html
 
 class awsTester:
     def __init__(self, pkgid, accesskey, secretkey, stoken, region, logger=""):
@@ -23,12 +24,12 @@ class awsTester:
 
     def manual_check(self, cmd):
         # cmd is from user input : ex) "aws s3 ls s3://bucketname"
-        res = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        res = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         data = []
         while res.poll() is None:
             l = res.stdout.readline() # This blocks until it receives a newline.
             cprint (l, 'blue')
-            data.append(str(l, "utf-8").strip())
+            data.append(html.escape(str(l, "utf-8")))
         print(data)
         return data
 

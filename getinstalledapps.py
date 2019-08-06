@@ -31,7 +31,8 @@ class getInstalledApps:
         path = self.get_Path(pkgid)
         tmp_path = os.path.join("./tmp/") + pkgid + '.apk'
         data = self.adb_device.pull(path, tmp_path)
-        self.asset.add(pkgid, "", 0, "")
+        if self.asset.exist(pkgid) == False:
+            self.asset.add(pkgid, "", 0, "")
 
     def get_SDKApps(self, pkgid):
         apkpath = str(self.get_Path(pkgid))

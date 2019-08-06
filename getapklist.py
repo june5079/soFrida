@@ -136,11 +136,10 @@ class Getlists:
     def get_pkginfo_for_GUI(self, logger):
         print("Getlists.get_pkginfo_for_GUI()")
         l = self.apklist
-        # logger.info(json.dumps({"type":"log", "data": "Start Downloading "+str(len(l))+" apks."}))
         logger.info(json.dumps({"type":"log", "data": "Getting App Information from Google Play " + str(len(l))}))
-        try:
-            i = 1
-            for x in l:
+        i = 1
+        for x in l:
+            try:
                 r = requests.get(self.play_search_pkgid + x.strip("\n"))
                 res = r.text
 
@@ -165,8 +164,11 @@ class Getlists:
                 #logger.info(json.dumps({x:{"popular":fin_pop, "category":fin_cat2, "title":fin_title2}}))
                 logger.info(json.dumps({"type":"result", "package_name": x, "info":self.result[x]}))
                 logger.info(json.dumps({"type": "log","data":"("+str(i)+"/"+str(len(l))+")" +x+ " pkgid info loaded."}))
-                i+=1
-            time.sleep(0.5)
-            logger.info(json.dumps({"type":"exit"}))
-        except Exception as e:
-            logger.info(json.dumps({"type":"log", "data":str(e)}))
+            except Exception as e:
+                logger.info(json.dumps({"type":"log", "data":x+" : "+str(e)}))
+            i+=1
+        time.sleep(0.5)
+        logger.info(json.dumps({"type":"exit"}))
+        
+            
+        
