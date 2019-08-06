@@ -5,3 +5,4 @@ pure-python-adb
 termcolor
 flask
 frida
+flask_socketio

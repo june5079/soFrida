@@ -28,7 +28,7 @@
 - [How to install and run InstaPy](#installation)
   * [Requirements for Analysis](#requirements)
   * [Installing soFrida](#installation)
-  * [Guides and tutorials](#guides)
+  * [Guides and tutorials](#guides) - Available soon.
     * [Video tutorials](#video-tutorials)
 - [Main Features](#main-features)
 - [Authors](#credits)
@@ -36,20 +36,39 @@
 
 ## Requirements
 * Rooted Android mobile phone for hooking process
+* Web browser without AD-Block plugins
+* Support OS : MacOS, Windows, Ubuntu (Tested)
+* Only works with Python3 
 * Ethical mind 👍
 
 ## Installing soFrida
-```sudo pip install -r requirements.txt```
+```sudo pip install -r requirements.sf```
 
 That's it. You're ready to hack Cloud-backend 😎
 
-## Main Features
+Open your favorite browser and connect to http://127.0.0.1:8888
 
-- Download APK Files from Google Play
+## Main Features
+- "APK Download" : Download APK Files from Google Play
 <img src = 'static/apk_download.png'>
 
-## Authors
+- "Installed AppList" : Check installed application on mobile phone (Searching available)
+<img src = 'static/installed_list.png>
 
+- "Installed AppList" : Pull APK Files from mobile phone and check cloud SDK
+<img src = 'static/pull_from_mobile.png>
+
+- "Assets" : You can manage downloaded APKs and Select application for analysis. 
+You can identify AWS services and authentication keys
+<img src = 'static/select_apk_for_analysis.png>
+
+- "Assests" : Result of analysis
+<img src = 'static/analyze.png>
+
+- "Key Lists" : You can identify all key lists extracted by analysis.
+<img src = 'static/key_lists.png>
+
+## Authors
 **Hyunjun Park** - Hyunjun Park is a senior engineer of Samsung SDS in South Korea and a graduate student of SANE Lab in Korea University (Supervisor : Seungjoo Gabriel Kim). His daily job is pentesting a broad range of Samsung products including smart phone, smart TV, wearable devices, etc. He also serves as a main staff of Kimchicon Security Conference in South Korea.
 
 **Soyeon Kim** - Soyeon Kim is a security researcher of Samsung SDS in South Korea. She mainly doing a security assessment of Samsung IoT products. She is interested in analyzing Android apps and IOS apps using Frida.
@@ -57,11 +76,9 @@ That's it. You're ready to hack Cloud-backend 😎
 **Seungjoo (Gabriel) Kim** - Seungjoo (Gabriel) Kim is a professor of Graduate School of Information Security at Korea University from 2011. For the past 7 years he was an associate professor of Sungkyunkwan University and have 5 years of back ground of team leader of Cryptographic Technology Team and also IT Security Evaluation Team of KISA(Korea Internet & Security Agency). In addition to being a professor, he is positioning a director of CHAOS(Center for High-Assurance Operating Systems), a head of SANE(Security Analysis aNd Evaluation) Lab, an adviser of hacking club ‘CyKor(two-times champion of DEF CON CTF 2015 & 2018)’ of Korea University, and a founder/advisory director of an international security & hacking conference ‘SECUINSIDE’. 
 
 ## Disclaimer
-
-
+Please Note that this is a research project. We are by no means responsible for any usage of this tool. Use on your own behalf. We're not also not responsible if your accounts get banned due to extensive use of this tool.
 
 
 ## License
-
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
