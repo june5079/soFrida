@@ -42,7 +42,7 @@
 * Rooted Android mobile phone for hooking process
 * Web browser without AD-Block plugins
 * Support OS : MacOS, Windows, Ubuntu (Tested)
-* Only works with Python3 
+* Only works with higher Python3.6
 * Ethical mind 👍
 
 ## Installing soFrida
