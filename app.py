@@ -67,7 +67,9 @@ def installed_layout():
 
 @app.route("/awstest/<package_name>", methods=['GET'])
 def awstest_layout(package_name):
-  return render_template("awstest.html")
+  asset = Assets()
+  ass = asset.get(package_name)
+  return render_template("awstest.html", services=ass['service'])
 @app.route('/stream')
 def stream():
   global logger
@@ -159,10 +161,7 @@ def download(message):
     else:
       ass = asset.get(package_name)
       if ass['popular'] < int(info['popular'].replace(",","")):
-        print("update start")
         asset.update_asset(package_name, ['title', 'popular', 'category'], [info['title'], int(info['popular'].replace(",","")), info['category'], package_name])
-        print("update complete")
-        print(asset.get(package_name))
   try:
     logger.start()
     socketio.start_background_task(target=downloader.download_packages, package_list=package_list, logger=logger.logger)        
