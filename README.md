@@ -79,6 +79,8 @@ You can identify AWS services and authentication keys
 
 **Seungjoo (Gabriel) Kim** - Seungjoo (Gabriel) Kim is a professor of Graduate School of Information Security at Korea University from 2011. For the past 7 years he was an associate professor of Sungkyunkwan University and have 5 years of back ground of team leader of Cryptographic Technology Team and also IT Security Evaluation Team of KISA(Korea Internet & Security Agency). In addition to being a professor, he is positioning a director of CHAOS(Center for High-Assurance Operating Systems), a head of SANE(Security Analysis aNd Evaluation) Lab, an adviser of hacking club ‘CyKor(two-times champion of DEF CON CTF 2015 & 2018)’ of Korea University, and a founder/advisory director of an international security & hacking conference ‘SECUINSIDE’. 
 
+**Yeongjin Jang** - Yeongjin Jang is an assistant professor of Computer Science at Oregon State University. He hacks CPU, OS, iPhone, IoT devices, and anything that is operated by computers, and wish to make systems secure against the vulnerabilities discovered. He is a two-times champion of DEF CON CTF (DEFKOR and DEFKOR00T). Biography
+
 ## Disclaimer
 Please Note that this is a research project. We are by no means responsible for any usage of this tool. Use on your own behalf. We're not also not responsible if your accounts get banned due to extensive use of this tool.
 
