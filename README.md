@@ -51,6 +51,8 @@
 
 That's it. You're ready to hack Cloud-backend 😎
 
+```python3 app.py```
+
 Open your favorite browser and connect to http://127.0.0.1:8888
 
 ## Video Tutorials
