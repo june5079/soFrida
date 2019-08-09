@@ -14,6 +14,10 @@ Analyze
             });
             $("#stop_button").on("click", function(){
                 var keys = analyze.get_keys();
+                if(keys['region'] == ""){
+                    analyze.default_region();
+                    keys.region = "us-east-1";
+                }
                 //var package_name = document.baseURI.substring(document.baseURI.lastIndexOf("/")+1);
                 socket.emit("soFrida_stop", {"step":"stop", "package_name":package_name, "keys":keys});
                 $("#awstest_button").prop("disabled", false);

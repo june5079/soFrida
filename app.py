@@ -285,5 +285,4 @@ def awstest(package_name, keys):
     logger.logger.info(json.dumps({"service":"auto_check", "type":"no", "msg":"[!] This app is not using \"s3\", \"kinesis\", \"firehorse\"."}))
   logger.logger.info(json.dumps({"service":"stop"}))
 if __name__ == '__main__':
-    #app.run(host='127.0.0.1', port='8888', debug=True)
     socketio.run(app, host='127.0.0.1', port=8888,  debug=True, log_output=True)

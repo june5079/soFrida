@@ -112,4 +112,7 @@ var analyze = new function(){
         analyze.spinner_div.insertAfter(div);
         return analyze.spinner_div;
     }
+    this.default_region = function(){
+        analyze.begreen("region", "Region was not found. Setting region with us-east-1.");
+    }
 }
