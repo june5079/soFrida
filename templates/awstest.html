@@ -19,7 +19,7 @@ AWS Vulnerability Test
             });
             $("#cmd_form").on("keyup", function(e){
                 if(e.keyCode == 13){
-                    $("#aws_manual_log").append("<br>$ "+$(this).val()+"<br>");
+                    $("#aws_manual_log").append("<br><p class='text-success'>$ "+$(this).val()+"</p>");
                     socket.emit("manual_log_cmd", {"data":$(this).val()});
                     $(this).val("");
                 }
