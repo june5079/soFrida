@@ -18,7 +18,7 @@ class awsTester:
     def configure(self):
         subprocess.call("aws configure set aws_access_key_id %s"%self.accesskey, shell=True)
         subprocess.call("aws configure set aws_secret_access_key %s"%self.secretkey, shell=True)
-        if self.stoken != None:
+        if self.stoken != "":
             subprocess.call("aws configure set aws_session_token %s"%self.stoken, shell=True)
         subprocess.call("aws configure set region %s"%self.region, shell=True)
 

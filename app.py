@@ -262,6 +262,7 @@ def select_pull(data):
   inst = getInstalledApps()
   for package in data['list']:
     try:
+      socketio.emit("pull_result", {"package_name":package,"result":"start"}, namespace="/installed")
       inst.get_app(package)
       socketio.emit("pull_result", {"package_name":package,"result":"SDK_EXIST" if inst.is_AWSSDK(package) else "SDK_NO_EXIST"}, namespace="/installed")
     except Exception as e:

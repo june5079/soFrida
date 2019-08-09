@@ -104,13 +104,8 @@ class Assets:
         self.con.close()
 if __name__ == "__main__":
     ast = Assets()
-    #if ast.exist("com.happylabs.hps") == False:
-    #    ast.add("com.happylabs.hps", "Happy Pet Story: Virtual Sim", "5000000", "GAME_SIMULATION")
     ast.select_all()
-    #print(ast.get("com.happylabs.hps"))
-    #ast.update_status("com.happylabs.hps", "added")
-    #ast.exist_sdk("com.happylabs.hps", False)
-    #ast.select_all()
+    ast.get("com.mingle.asianmingle")
 
 
 

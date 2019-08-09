@@ -26,11 +26,14 @@ Installed Package List
                     if(package_name == data.package_name){
                         break;
                     }
-                }
-                tr[i].children[2].innerText = data.result;
-                if(data.result == "ERROR"){
-                    alert(data.msg)
-                }
+				}
+				if(data.result == "start"){
+					$(tr[i].children[2]).html("<i class=\"fa fa-circle-notch fa-spin\"></i>");
+				}else if(data.result == "ERROR"){
+					alert(data.msg)
+				}else{
+					tr[i].children[2].innerText = data.result;
+				}
             });
             $("#select-pull").on("click", function(){
                 var package_list = [];
