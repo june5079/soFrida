@@ -16,7 +16,7 @@ import platform
 
 class Getlists:
 
-    def __init__(self, option, search_keyword):
+    def __init__(self, option, search_keyword, proxy={}):
         # Define base info
         self.option = option
         self.search_keyword = search_keyword
@@ -26,6 +26,7 @@ class Getlists:
         self.apklist = []
         self.result = dict()
         self.reslist = []
+        self.proxy = proxy
 
         if self.option == "basic" :
             self.request_url = self.play_search_basic + self.search_keyword + "&c=apps"
@@ -103,7 +104,7 @@ class Getlists:
         for x in tqdm(l):
             try:
                 print (x)
-                r = requests.get(self.play_search_pkgid + x.strip("\n"))
+                r = requests.get(self.play_search_pkgid + x.strip("\n"), proxies=self.proxy)
                 res = r.text
 
                 soup = BeautifulSoup(res, "html.parser" )
@@ -140,7 +141,7 @@ class Getlists:
         i = 1
         for x in l:
             try:
-                r = requests.get(self.play_search_pkgid + x.strip("\n"))
+                r = requests.get(self.play_search_pkgid + x.strip("\n"), proxies=self.proxy)
                 res = r.text
 
                 soup = BeautifulSoup(res, "html.parser" )

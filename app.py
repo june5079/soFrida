@@ -5,7 +5,9 @@ import frida
 import json
 import os
 import time
+import argparse
 from threading import Event
+import gpapi
 
 from getapklist import Getlists
 from sflogger import sfLogger
@@ -94,7 +96,7 @@ def search(data):
   global logger
   print("Getlists(\"%s\", \"%s\")" % (data['mode'].lower().strip(), data['text'].strip()))
   logger.start()
-  getlist = Getlists(data['mode'].lower().strip(), data['text'])
+  getlist = Getlists(data['mode'].lower().strip(), data['text'], proxy)
   getlist.init_request()
   socketio.start_background_task(target=getlist.get_pkginfo_for_GUI, logger=logger.logger)
   ev = Event()
@@ -134,18 +136,15 @@ def google_login():
   global downloader
   id = request.form['id']
   pw = request.form['pw']
-  for i in range(10):
-    print("try : "+str(i+1)+"/10")
-    if downloader.firstlogin(id, pw):
-      print("login success")
-      return jsonify(
-        result="success"
-      )
-    time.sleep(0.5)
-  print("login fail")
-  return jsonify(
-    result="fail"
-  )
+  if downloader.firstlogin(id, pw):
+    return jsonify(
+      result="success"
+    )
+  else:
+    print("login fail")
+    return jsonify(
+      result="fail"
+    )
 @socketio.on("download", namespace="/apk_download")
 def download(message):
   global downloader
@@ -286,4 +285,11 @@ def awstest(package_name, keys):
     logger.logger.info(json.dumps({"service":"auto_check", "type":"no", "msg":"[!] This app is not using \"s3\", \"kinesis\", \"firehorse\"."}))
   logger.logger.info(json.dumps({"service":"stop"}))
 if __name__ == '__main__':
-    socketio.run(app, host='127.0.0.1', port=8888,  debug=True, log_output=True)
+  ap = argparse.ArgumentParser(description='SoFridaGUI')
+  ap.add_argument('-p', '--proxy', dest='proxy', required=False, help='http://xxx.xxx.xxx.xxx:YYYY')
+  args = ap.parse_args()
+  proxy = {}
+  if "p" in args:
+    proxy = {"http":args.p, "https":args.p}
+    downloader.proxy = proxy
+  socketio.run(app, host='127.0.0.1', port=8888,  debug=True, log_output=True)

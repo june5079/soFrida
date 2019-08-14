@@ -1,4 +1,4 @@
-from gpapi.googleplay import GooglePlayAPI, RequestError
+from gpapi.googleplay import GooglePlayAPI, RequestError, SecurityCheckError
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from assets import Assets
@@ -22,11 +22,11 @@ class Downloader:
         if platform.system() == "Windows":
             self.chrome_driver = "./chromedriver.exe"
         self.request_url = "https://accounts.google.com/b/0/DisplayUnlockCaptcha"
-
+        self.proxy = {}
         self.apkfile_path = os.path.join("./tmp/")
         if os.path.exists(self.apkfile_path) == False:
             os.mkdir(self.apkfile_path)
-        self.server = GooglePlayAPI('ko_KR', 'Asia/Seoul')
+        self.server = GooglePlayAPI('ko_KR', 'Asia/Seoul', proxies_config=self.proxy)
         self.devices_codenames = GooglePlayAPI.getDevicesCodenames()
         self.devices_codenames.reverse()
 
@@ -34,20 +34,27 @@ class Downloader:
     def firstlogin(self, gid, gpw):
         self.gid = gid
         self.gpw = gpw
-        #print(self.gid+" "+self.gpw)
-        try:
-            print('\nLogging in with email and password\n')
-            self.server.login(self.gid, self.gpw, None, None)
-            self.gsfId = self.server.gsfId
-            self.authSubToken = self.server.authSubToken
-            return self.secondlogin()
-        except:
-            #traceback.print_exc()
-            return False
+        for i in range(10):
+            try:
+                print("try : "+str(i+1)+"/10")
+                print('\nLogging in with email and password\n')
+                self.server.login(self.gid, self.gpw, None, None)
+                self.gsfId = self.server.gsfId
+                self.authSubToken = self.server.authSubToken
+                return self.secondlogin()
+            except SecurityCheckError:
+                #traceback.print_exc()
+                print("SecurityCheckError")
+                return False
+            except Exception:
+                time.sleep(0.5)
+                pass
+        print("UNKNOWNERROR")
+        return False
 
     def secondlogin(self):
         print('\nNow trying secondary login with ac2dm token and gsfId saved\n')
-        self.server = GooglePlayAPI('ko_KR', 'Asia/Seoul')
+        self.server = GooglePlayAPI('ko_KR', 'Asia/Seoul', proxies_config=self.proxy)
         self.server.login(None, None, self.gsfId, self.authSubToken)
 
         # call DOWNLOAD
@@ -70,7 +77,7 @@ class Downloader:
         try:
             fl = ""
             for codename in self.devices_codenames:
-                self.server = GooglePlayAPI('ko_KR', 'Asia/Seoul', device_codename=codename)
+                self.server = GooglePlayAPI('ko_KR', 'Asia/Seoul', device_codename=codename, proxies_config=self.proxy)
                 self.server.login(None, None, self.gsfId, self.authSubToken)
                 try:
                     fl = self.server.download(self.pkgid)
