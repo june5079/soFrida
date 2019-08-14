@@ -3,6 +3,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from assets import Assets
 
+import requests
 import sys, os, time
 import traceback
 import argparse
@@ -12,7 +13,7 @@ import re
 import json
 
 class Downloader:
-    def __init__ (self):
+    def __init__ (self, proxy={}):
         self.gid = ""
         self.gwd = ""
         self.authSubToken = ""
@@ -22,7 +23,7 @@ class Downloader:
         if platform.system() == "Windows":
             self.chrome_driver = "./chromedriver.exe"
         self.request_url = "https://accounts.google.com/b/0/DisplayUnlockCaptcha"
-        self.proxy = {}
+        self.proxy = proxy
         self.apkfile_path = os.path.join("./tmp/")
         if os.path.exists(self.apkfile_path) == False:
             os.mkdir(self.apkfile_path)
@@ -81,19 +82,25 @@ class Downloader:
                 self.server.login(None, None, self.gsfId, self.authSubToken)
                 try:
                     fl = self.server.download(self.pkgid)
+                    if fl == "":
+                        raise Exception("No Device")
+                    with open(self.apkfile_path + self.pkgid + '.apk', 'wb') as apk_file:
+                        for chunk in fl.get('file').get('data'):
+                            apk_file.write(chunk)
+                    print('\n[+] Download successful\n')
+                    logger.info(json.dumps({"step":"finish","package":self.pkgid}))
+                    self.asset.update_status(self.pkgid, "downloaded")
+                    logger.info(json.dumps({"step":"check","package":self.pkgid}))
+                    self.check_aws_sdk_common(self.pkgid, logger)
                     break
-                except Exception as e:
+                except requests.exceptions.SSLError:
+                    logger.info(json.dumps({"step":"error", "msg":"sslerror", "package":self.pkgid}))
+                    print("requests.exceptions.SSLError")
+                    break
+                except Exception:
+                    traceback.print_exc()
                     continue
-            if fl == "":
-                raise Exception("No Device")
-            with open(self.apkfile_path + self.pkgid + '.apk', 'wb') as apk_file:
-                for chunk in fl.get('file').get('data'):
-                    apk_file.write(chunk)
-            print('\n[+] Download successful\n')
-            logger.info(json.dumps({"step":"finish","package":self.pkgid}))
-            self.asset.update_status(self.pkgid, "downloaded")
-            logger.info(json.dumps({"step":"check","package":self.pkgid}))
-            self.check_aws_sdk_common(self.pkgid, logger)
+            
         except :
             print("Unexpected error:", sys.exc_info()[0])
             traceback.print_exc()

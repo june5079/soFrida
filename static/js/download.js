@@ -29,8 +29,9 @@ var download = new function(){
             }else{
                 tr[i].children[5].innerText = "SDK_NOT_EXIST";
             }
-        }else{
-
+        }else if(data.step == "error"){
+            tr[i].children[5].innerText = "ERROR";
+            alert("if you have custom ca, execute \"python3 cert.py [pem file path] and retry download\"");
         }
     }
     this.open_google_login = function(){

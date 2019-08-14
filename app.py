@@ -22,6 +22,7 @@ app.secret_key = "secret"
 socketio = SocketIO(app, async_mode="threading", engineio_logger=True)
 BASE_URI = os.path.dirname(__file__)
 getlist = ""
+proxy = {}
 
 # Use for logging info message
 logger = sfLogger("apk_download")
@@ -94,12 +95,12 @@ def downfile_check(package_name):
 def search(data):
   global getlist
   global logger
+  global proxy
   print("Getlists(\"%s\", \"%s\")" % (data['mode'].lower().strip(), data['text'].strip()))
   logger.start()
   getlist = Getlists(data['mode'].lower().strip(), data['text'], proxy)
   getlist.init_request()
   socketio.start_background_task(target=getlist.get_pkginfo_for_GUI, logger=logger.logger)
-  ev = Event()
   for a in logger.loggenerator():
     data = json.loads(a)
     if data['type'] == "result":
@@ -167,7 +168,7 @@ def download(message):
     for a in logger.loggenerator():
       data = json.loads(a)
       if data['step'] == "complete":
-        time.sleep(0.5)
+        time.sleep(1)
         logger.stop()
       socketio.emit("download_step", data, namespace="/apk_download")
   except Exception as e:
@@ -288,8 +289,7 @@ if __name__ == '__main__':
   ap = argparse.ArgumentParser(description='SoFridaGUI')
   ap.add_argument('-p', '--proxy', dest='proxy', required=False, help='http://xxx.xxx.xxx.xxx:YYYY')
   args = ap.parse_args()
-  proxy = {}
-  if "p" in args:
+  if args.proxy is not None:
     proxy = {"http":args.p, "https":args.p}
-    downloader.proxy = proxy
+    downloader = Downloader(proxy)
   socketio.run(app, host='127.0.0.1', port=8888,  debug=True, log_output=True)
