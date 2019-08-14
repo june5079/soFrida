@@ -290,6 +290,6 @@ if __name__ == '__main__':
   ap.add_argument('-p', '--proxy', dest='proxy', required=False, help='http://xxx.xxx.xxx.xxx:YYYY')
   args = ap.parse_args()
   if args.proxy is not None:
-    proxy = {"http":args.p, "https":args.p}
+    proxy = {"http":args.proxy, "https":args.proxy}
     downloader = Downloader(proxy)
   socketio.run(app, host='127.0.0.1', port=8888,  debug=True, log_output=True)
