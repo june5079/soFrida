@@ -9,3 +9,4 @@ flask_socketio
 awscli
 bs4
 tqdm
+pathos
