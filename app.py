@@ -96,9 +96,9 @@ def search(data):
   global getlist
   global logger
   global proxy
-  print("Getlists(\"%s\", \"%s\")" % (data['mode'].lower().strip(), data['text'].strip()))
+  print("Getlists(\"%s\", \"%s\", \"%s\")" % (data['mode'].lower().strip(), data['text'].strip(), data['country']))
   logger.start()
-  getlist = Getlists(data['mode'].lower().strip(), data['text'], proxy)
+  getlist = Getlists(data['mode'].lower().strip(), data['text'], data['country'], proxy)
   getlist.init_request()
   socketio.start_background_task(target=getlist.get_pkginfo_for_GUI, logger=logger.logger)
   for a in logger.loggenerator():
@@ -267,7 +267,11 @@ def select_pull(data):
       socketio.emit("pull_result", {"package_name":package,"result":"SDK_EXIST" if inst.is_AWSSDK(package) else "SDK_NO_EXIST"}, namespace="/installed")
     except Exception as e:
       socketio.emit("pull_result", {"package_name":package,"result":"ERROR", "msg":str(e)}, namespace="/installed")
-
+@app.route("/counties")
+def countries():
+  return jsonify(
+    list=json.loads(open(BASE_URI+"/static/countries.json","r", encoding="utf-8").read())
+  )
 def awstest(package_name, keys):
   global logger
   at = awsTester(package_name, keys['access_key_id'], keys['secret_key_id'], keys['session_token'], keys['region'], logger.logger)

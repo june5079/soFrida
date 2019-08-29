@@ -37,9 +37,14 @@ APK Downloader
 			$("#search_form").on('keyup', function(e){
 				if(e.keyCode == 13){
 					var mode = $("#search_mode_button").text();
+					var country = $("#country_button").text();
 					if(mode != "Search Mode"){
 						var text = $(this).val();
-						search(mode, text);
+						if(country == "Country"){
+							alert("Setted by default country \"US\"");
+							$("#country_button").text("US");
+						}
+						search(mode, text, country);
 					}
 				}
 			});
@@ -82,12 +87,33 @@ APK Downloader
 					login();
 				}
 			});
-		
-			function search(mode, text){
+			$("#country_button").on("click", function(){
+				$.ajax({
+					url:"/counties",
+					type:"GET",
+					success:function(res){
+						data = ""
+						res.list.forEach(function(e){
+							data+="<tr><td>"+e.name+"</td><td>"+e.code+"</td>"+
+								"<td><button class='btn btn-danger'>Select</button></td></tr>";
+						});
+						$("#countries tbody").html(data);
+						$("#countries button").on("click", function(){
+							var code = $($(this).parents("tr").children()[1]).text();
+							$("#country_button").text(code);
+							$("#CountryModal").attr("aria-hidden", true);
+        					$("#CountryModal").modal("hide");
+						});
+						$("#CountryModal").attr("aria-hidden", false);
+        				$("#CountryModal").modal();
+					}
+				})
+			});
+			function search(mode, text, country){
 				$("#log").text("Searching with Chorme DevTools...");
 				$("#log").show();
 				$("#apk_table tbody").html("");
-				socket.emit("search", {"mode":mode, "text":text});
+				socket.emit("search", {"mode":mode, "text":text, "country":country});
 				
 			}
 			function button_change(){
@@ -133,6 +159,7 @@ APK Downloader
 						<a class="dropdown-item" href="#">DevID</a>
 					</div>	
 				</div>
+				<button class="btn btn-danger ml-2" id="country_button">Country</button>
 				<input type="text" class="form-control rounded-left ml-2" placeholder="Input Search Text" spellcheck="false" id="search_form">
 			</div>
 			<div id="log" class="alert alert-warning" role="alert" style="margin-top:20px;"></div>
@@ -189,6 +216,31 @@ APK Downloader
 			<div class="modal-footer">
 				<button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
 				<button class="btn btn-primary" type="button" id="login">Login</a>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="CountryModal" tabindex="-1" role="dialog" aria-labelledby="CountryModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="CountryModalLabel">Key View</h5>
+				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="card mb-3">
+					<table class="table" id="countries">
+						<thead>
+							<th>Country</th>
+							<th>Country Code</th>
+							<th>SELECT</th>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+				</div>
 			</div>
 		</div>
 	</div>

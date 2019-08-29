@@ -16,7 +16,7 @@ import platform
 
 class Getlists:
 
-    def __init__(self, option, search_keyword, proxy={}):
+    def __init__(self, option, search_keyword, country, proxy={}):
         # Define base info
         self.option = option
         self.search_keyword = search_keyword
@@ -27,19 +27,21 @@ class Getlists:
         self.result = dict()
         self.reslist = []
         self.proxy = proxy
+        self.country = country
 
         if self.option == "basic" :
             self.request_url = self.play_search_basic + self.search_keyword + "&c=apps"
             print (self.request_url)
         elif self.option == "pkgid" :
             self.request_url = self.play_search_pkgid + self.search_keyword
-            print (self.request_url)
             self.apklist = [search_keyword]
         elif self.option == "devid" :
             self.request_url = self.play_search_devid + self.search_keyword
         else :
             print ("Wrong categories")
             exit()
+        self.request_url+="&gl="+self.country
+        print (self.request_url)
         if platform.system() == "Windows":
             self.chrome_driver = "./chromedriver.exe"
         else:
