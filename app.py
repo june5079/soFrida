@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, jsonify, g, Response, stream_with_context
 from flask_socketio import SocketIO, emit
+from werkzeug import secure_filename
+
 from threading import Thread
 import frida
 import json
@@ -96,9 +98,11 @@ def search(data):
   global getlist
   global logger
   global proxy
-  print("Getlists(\"%s\", \"%s\", \"%s\")" % (data['mode'].lower().strip(), data['text'].strip(), data['country']))
+  global downloader
+  print("Getlists(\"%s\", \"%s\", \"%s\")" % (data['mode'].lower().strip(), data['text'].strip(), data['locale'].split("_")[1]))
+  downloader.set_locale(data['locale'])
   logger.start()
-  getlist = Getlists(data['mode'].lower().strip(), data['text'], data['country'], proxy)
+  getlist = Getlists(data['mode'].lower().strip(), data['text'], data['locale'].split("_")[1], proxy)
   getlist.init_request()
   socketio.start_background_task(target=getlist.get_pkginfo_for_GUI, logger=logger.logger)
   for a in logger.loggenerator():
@@ -189,6 +193,40 @@ def analyze(package_name):
   sofrida = soFrida(package_name)
   return render_template("analyze.html", package_name=package_name)
 
+@app.route("/import_file", methods=["POST"])
+def import_file():
+  global getlist
+  global proxy
+  global downloader
+  
+  f = request.files['data']
+  f.save(secure_filename(f.filename))
+  downloader.set_locale(request.form['locale'])
+
+  file_data = open(f.filename, "r").read().strip()
+  pkg_list = file_data.split("\n")
+  return jsonify(
+    list=pkg_list
+  )
+@socketio.on("import_file_result", namespace="/apk_download")
+def import_file_result(msg):
+  global downloader
+  global getlist
+  get_list = {}
+  i = 1
+  for pkg_id in msg['pkg_list']:
+    getlist = Getlists("pkgid", pkg_id, downloader.locale.split("_")[1], proxy)
+    getlist.init_request()
+    success = getlist.get_pkginfo_for_socket_io(socketio)
+    while getlist.finished == False:
+      pass
+    get_list[pkg_id] = getlist.result[pkg_id]
+    socketio.emit("log", {"type": "log","data":"("+str(i)+"/"+str(len(msg['pkg_list']))+")" +pkg_id+ " pkgid info loaded."}, namespace="/apk_download")
+    i+=1
+  getlist.result = get_list
+  socketio.emit("exit", {"type":"exit"}, namespace="/apk_download", callback=test_func)
+def test_func():
+  print("exit emit")
 @socketio.on('soFrida_start', namespace="/analyze")
 def soFrida_start(message):
   global sofrida
@@ -270,7 +308,7 @@ def select_pull(data):
 @app.route("/counties")
 def countries():
   return jsonify(
-    list=json.loads(open(BASE_URI+"/static/countries.json","r", encoding="utf-8").read())
+    list=json.loads(open(BASE_URI+"/static/locale.json","r", encoding="utf-8").read())
   )
 def awstest(package_name, keys):
   global logger

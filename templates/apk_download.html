@@ -37,14 +37,15 @@ APK Downloader
 			$("#search_form").on('keyup', function(e){
 				if(e.keyCode == 13){
 					var mode = $("#search_mode_button").text();
-					var country = $("#country_button").text();
+					var locale = $("#locale_button").text();
 					if(mode != "Search Mode"){
 						var text = $(this).val();
-						if(country == "Country"){
-							alert("Setted by default country \"US\"");
-							$("#country_button").text("US");
+						if(locale == "Locale"){
+							alert("Setted by default locale \"en_US\"");
+							$("#locale_button").text("en_US");
+							locale = "en_US";
 						}
-						search(mode, text, country);
+						search(mode, text, locale);
 					}
 				}
 			});
@@ -70,6 +71,34 @@ APK Downloader
 					
 				});
 			});
+			$('#import_file').on('click', function() {
+				$('#file-input').trigger('click');
+			});
+			$("#file-input").on("change", function(){
+				var locale = $("#locale_button").text();
+				if(locale == "Locale"){
+					alert("Setted by default locale \"en_US\"");
+					$("#locale_button").text("en_US");
+					locale = "en_US";
+				}
+				var formData = new FormData();
+				formData.append("data", $("#file-input")[0].files[0]);
+				formData.append("locale", locale)
+				//var file_name = $("#file-input").val().split('\\').pop();
+				$.ajax({
+					url:"/import_file",
+					type:"POST",
+					processData: false,
+    				contentType: false,
+					data: formData,
+					success:function(res){
+						$("#log").text("Searching with Chorme DevTools...");
+						$("#log").show();
+						$("#apk_table tbody").html("");
+						socket.emit("import_file_result", {"pkg_list":res.list});
+					}
+				});
+			});
 			function login(){
 				$("#login_alert").html("<p class=\"text-info\">Wait a seconds for login.</p>");
 				$("#login_alert").attr("aria-hidden", false);
@@ -87,20 +116,20 @@ APK Downloader
 					login();
 				}
 			});
-			$("#country_button").on("click", function(){
+			$("#locale_button").on("click", function(){
 				$.ajax({
 					url:"/counties",
 					type:"GET",
 					success:function(res){
 						data = ""
 						res.list.forEach(function(e){
-							data+="<tr><td>"+e.name+"</td><td>"+e.code+"</td>"+
+							data+="<tr><td>"+e.name+"</td><td>"+e.locale+"</td>"+
 								"<td><button class='btn btn-danger'>Select</button></td></tr>";
 						});
 						$("#countries tbody").html(data);
 						$("#countries button").on("click", function(){
 							var code = $($(this).parents("tr").children()[1]).text();
-							$("#country_button").text(code);
+							$("#locale_button").text(code);
 							$("#CountryModal").attr("aria-hidden", true);
         					$("#CountryModal").modal("hide");
 						});
@@ -109,12 +138,11 @@ APK Downloader
 					}
 				})
 			});
-			function search(mode, text, country){
+			function search(mode, text, locale){
 				$("#log").text("Searching with Chorme DevTools...");
 				$("#log").show();
 				$("#apk_table tbody").html("");
-				socket.emit("search", {"mode":mode, "text":text, "country":country});
-				
+				socket.emit("search", {"mode":mode, "text":text, "locale":locale});
 			}
 			function button_change(){
 				var all = $('.custom-control-input-item');
@@ -159,7 +187,7 @@ APK Downloader
 						<a class="dropdown-item" href="#">DevID</a>
 					</div>	
 				</div>
-				<button class="btn btn-danger ml-2" id="country_button">Country</button>
+				<button class="btn btn-danger ml-2" id="locale_button">Locale</button>
 				<input type="text" class="form-control rounded-left ml-2" placeholder="Input Search Text" spellcheck="false" id="search_form">
 			</div>
 			<div id="log" class="alert alert-warning" role="alert" style="margin-top:20px;"></div>
@@ -181,8 +209,10 @@ APK Downloader
 					<tbody></tbody>
 				</table>
 			</div>
-			<nav class="navbar navbar-expand">
-				<button class="nav-item btn btn-danger ml-auto mr-0 my-2 my-md-0" id="download" disabled>Download</button>
+			<nav class="navbar navbar-expand" align="right">
+				<button class="nav-item btn btn-danger ml-auto mr-0 my-2 my-md-0" id="import_file">Import File</button>
+				<input id="file-input" type="file" style="display: none;" />
+				<button class="nav-item btn btn-danger ml-2 mr-0 my-2 my-md-0" id="download" disabled>Download</button>
 			</nav>
 		</div>
 	</div>
@@ -234,7 +264,7 @@ APK Downloader
 					<table class="table" id="countries">
 						<thead>
 							<th>Country</th>
-							<th>Country Code</th>
+							<th>Locale Code</th>
 							<th>SELECT</th>
 						</thead>
 						<tbody>

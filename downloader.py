@@ -27,12 +27,16 @@ class Downloader:
         self.apkfile_path = os.path.join("./tmp/")
         if os.path.exists(self.apkfile_path) == False:
             os.mkdir(self.apkfile_path)
-        self.server = GooglePlayAPI('ko_KR', 'Asia/Seoul', proxies_config=self.proxy)
+        self.locale = "en_US" #'ko_KR'
+        self.timezone = None #'Asia/Seoul'
         self.devices_codenames = GooglePlayAPI.getDevicesCodenames()
         self.devices_codenames.reverse()
 
+    def set_locale(self, locale):
+        self.locale = locale
     # LOGIN
     def firstlogin(self, gid, gpw):
+        self.server = GooglePlayAPI(self.locale, self.timezone, proxies_config=self.proxy)
         self.gid = gid
         self.gpw = gpw
         for i in range(10):
@@ -55,7 +59,7 @@ class Downloader:
 
     def secondlogin(self):
         print('\nNow trying secondary login with ac2dm token and gsfId saved\n')
-        self.server = GooglePlayAPI('ko_KR', 'Asia/Seoul', proxies_config=self.proxy)
+        self.server = GooglePlayAPI(self.locale, self.timezone, proxies_config=self.proxy)
         self.server.login(None, None, self.gsfId, self.authSubToken)
 
         # call DOWNLOAD
@@ -78,7 +82,7 @@ class Downloader:
         try:
             fl = ""
             for codename in self.devices_codenames:
-                self.server = GooglePlayAPI('ko_KR', 'Asia/Seoul', device_codename=codename, proxies_config=self.proxy)
+                self.server = GooglePlayAPI(self.locale, self.timezone, device_codename=codename, proxies_config=self.proxy)
                 self.server.login(None, None, self.gsfId, self.authSubToken)
                 try:
                     fl = self.server.download(self.pkgid)

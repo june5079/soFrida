@@ -1,6 +1,7 @@
 import requests
 import time, sys
 import json
+import os
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -28,6 +29,7 @@ class Getlists:
         self.reslist = []
         self.proxy = proxy
         self.country = country
+        self.finished = False
 
         if self.option == "basic" :
             self.request_url = self.play_search_basic + self.search_keyword + "&c=apps"
@@ -172,6 +174,36 @@ class Getlists:
             i+=1
         time.sleep(0.5)
         logger.info(json.dumps({"type":"exit"}))
-        
+    def get_pkginfo_for_socket_io(self, socketio):
+        l = self.apklist
+        i = 1
+        for x in l:
+            try:
+                r = requests.get(self.play_search_pkgid + x.strip("\n"), proxies=self.proxy)
+                res = r.text
+
+                soup = BeautifulSoup(res, "html.parser" )
+
+                pop = (soup.select ('div[class=IQ1z0d]'))[2]
+                pop_cat = (soup.select ('span > a'))
+                pop_title = (soup.select('h1 > span'))
+
+                
+                fin=''.join(str(e) for e in pop)  
+                fin_pop = fin.split('+')[0].split('>')[1]
+                
+                fin_cat=''.join(str(k) for k in pop_cat)  
+                fin_cat2 = fin_cat.split("category/")[1].split('"')[0]
+
+                fin_title=''.join(str(g) for g in pop_title)
+                fin_title2 = fin_title.split('>')[1].split('<')[0] 
+
+                self.result[x]={"popular":fin_pop, "category":fin_cat2, "title":fin_title2}
+                self.result[x]['status'] = os.path.exists(os.path.join("./tmp/") + x + '.apk')
+                socketio.emit("search_result", {"type":"result", "package_name": x, "info":self.result[x]}, namespace="/apk_download")
+            except Exception as e:
+                socketio.emit("log", {"type":"log", "data":x+" : "+str(e)}, namespace="/apk_download")
+            i+=1
+        self.finished = True
             
         
