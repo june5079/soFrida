@@ -45,7 +45,7 @@ def apk_download_layout():
 @app.route("/assets")
 def assets_layout():
   asset = Assets()
-  asset_infos = asset.get_all()
+  asset_infos = asset.get_exist_sdk()
   return render_template("assets.html", asset_infos=asset_infos)
 @app.route("/keylist")
 def keylist_layout():

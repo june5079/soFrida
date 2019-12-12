@@ -46,24 +46,24 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('apk_download_layout') }}">
+                    <a class="nav-link" href="#">
                     <i class="fas fa-fw fa-download"></i>
-                    <span>APK Download</span></a>
+                    <span>Pull - Device</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('assets_layout') }}">
-                    <i class="fas fa-fw fa-inbox"></i>
-                    <span>Assets</span></a>
+                    <a class="nav-link" href="{{ url_for('apk_download_layout')}}">
+                    <i class="fab fa-google-play"></i>
+                    <span>Download - Play Store</span></a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('keylist_layout')}}">
-                    <i class="fas fa-fw fa-key"></i>
-                    <span>Key List</span></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('installed_layout')}}">
-                    <i class="fas fa-mobile-alt"></i>
-                    <span>Installed AppList</span></a>
+                <li class="nav-item dropdown show">
+                    <a class="nav-link dropdown-toggle" href="#" id="analysisDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-search"></i>
+                        <span>Analysis</span>
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="analysisDropdown" x-placement="bottom-start" style="position: absolute; transform: translate3d(5px, 56px, 0px); top: 0px; left: 0px; will-change: transform;">
+                        <a class="dropdown-item" href="{{ url_for('assets_layout') }}">Cloud</a>
+                        <a class="dropdown-item" href="#">Manual</a>
+                    </div>
                 </li>
             </ul>
             <div id="content-wrapper">

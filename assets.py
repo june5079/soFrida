@@ -52,6 +52,17 @@ class Assets:
                     package[self.columns[i]] = row[i]
             package_list.append(package)
         return package_list
+    def get_exist_sdk(self):
+        package_list = []
+        for row in self.cur.execute('''select * from assets where exist_sdk=1'''):
+            package = dict()
+            for i in range(len(self.columns)):
+                if row[i] == None:
+                    package[self.columns[i]] = ""
+                else:    
+                    package[self.columns[i]] = row[i]
+            package_list.append(package)
+        return package_list
     def get_exist_key(self):
         package_list = []
         for row in self.cur.execute('''select * from assets where access_key_id is not null'''):
