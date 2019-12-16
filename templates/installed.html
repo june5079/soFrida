@@ -6,9 +6,7 @@ Installed Package List
 <script type='text/javascript'>
     $(function(){
 		$(document).ready(function(){
-			let socket = io.connect("http://" + document.domain + ":" + location.port + "/installed");
-			finish_load_table();
-			
+			device_connect();			
 			$("#check-all").on("change", function(){
 				var checked = $(this).prop("checked");
 				$(this).parents(".table")
@@ -16,77 +14,24 @@ Installed Package List
                     .find("tr[style!=\"display: none;\"]")
                     .find("input[type=checkbox]")
 					.prop("checked", checked);
-                    button_change();
+                    button_change("installed_card");
+			});
+			let socket_installed = io.connect("http://" + document.domain + ":" + location.port + "/installed");
+            socket_installed.on("pull_res", function(data){
+				$($("#installed_table tbody").find("[id=\""+data.name+"\"]").parents("tr").children("td")[3]).text("DOWNLOADED");
             });
-            socket.on("pull_result", function(data){
-                var tr = $("#installed_table tbody tr");
-                var i = 0;
-                for(i = 0;i<tr.length;i++){
-                    var package_name = $(tr[i]).find("input").attr('id');
-                    if(package_name == data.package_name){
-                        break;
-                    }
-				}
-				if(data.result == "start"){
-					$(tr[i].children[2]).html("<i class=\"fa fa-circle-notch fa-spin\"></i>");
-				}else if(data.result == "ERROR"){
-					alert(data.msg)
-				}else{
-					tr[i].children[2].innerText = data.result;
-				}
-            });
-            $("#select-pull").on("click", function(){
+            $("#action").on("click", function(){
                 var package_list = [];
                 $('.custom-control-input-item').filter(function(){
                     return $(this).prop('checked');}).each(function(){
-                        package_list.push($(this).attr('id'));});
-                socket.emit("select_pull", {"list":package_list});
-            });  
-        });
-        function make_search_form(){
-            $("#search_form").on("propertychange change keyup paste input", function(){
-                var curVal = $(this).val().toUpperCase();
-                var tr = document.getElementsByTagName("tr");
-                var result_count = 0;
-                for(var i = 1;i<tr.length;i++){
-                    var td = tr[i].getElementsByTagName("td");
-                    var found = false;
-                    for(var j = 0;j<td.length;j++){
-                        if(td[j]){
-                            var txtval = td[j].textContent || td[j].innerText;
-                            if(txtval.toUpperCase().indexOf(curVal) > -1 ){
-                                found = true;
-                            }
-                        }
-                    }
-                    if(found){
-                        tr[i].style.display = "";
-                        result_count++;
-                    }else{
-                        tr[i].style.display = "none";
-                    }
-                }
+						var p = JSON.parse($(this).data('package').replace(/'/g, "\""));
+						console.log(p);
+						package_list.push(p);
+					});
+					socket_installed.emit("pull", {"list":package_list});
             });
-        }
-		function button_change(){
-			var all = $('.custom-control-input-item');
-			$('#select-pull').prop('disabled',function(){
-				return all.filter(function(){ return $(this).prop('checked'); }).length === 0;
-			});
-		}
-		function checkbox_change(){
-			var all = $('.custom-control-input-item');
-			$('#check-all').prop('checked',function(){
-				return all.length === all.filter(function(){ return $(this).prop('checked'); }).length;
-			});
-		}
-		function finish_load_table(){
-            make_search_form();
-			$('.custom-control-input-item').on('change', function(){
-				button_change();
-                checkbox_change();
-			});
-		}	
+        });
+        	
 	});
 </script>
 <div class="container-fluid">
@@ -96,12 +41,11 @@ Installed Package List
 		</li>
 		<li class="breadcrumb-item active">Installed</li>
 	</ol>
-	<div class="card mb-3">
+	<div class="card mb-3" id="installed_card">
 		<div class="card-header">
-			<i class="fas fa-table"></i>
 			Installed Package Table
 		</div>
-		<div class="card-body">
+		<div class="card-body" >
 			<div class="input-group">
 				<input type="text" class="form-control" placeholder="Input Search Text" spellcheck="false" id="search_form">
 			</div>
@@ -110,30 +54,21 @@ Installed Package List
 					<thead>
                         <th style="width: 10%">
 							<div class="custom-control custom-checkbox" align="center">
-								<input type="checkbox" class="custom-control-input" id="check-all">
-								<label class="custom-control-label" for="check-all"></label>
+								<input type="checkbox" class="custom-control-input" id="installed_check_all">
+								<label class="custom-control-label" for="installed_check_all"></label>
 							</div>
 						</th>
-                        <th style="width: 70%">PKGID</th>
+						<th style="width: 30%">PKGNAME</th>
+						<th style="width: 40%">PATH</th>
                         <th style="width: 20%">STATUS</th>
 					</thead>
 					<tbody>
-						{% for package in result %}
-						<tr>
-							<td>
-								<div class="custom-control custom-checkbox" align="center">
-									<input type="checkbox" class="custom-control-input custom-control-input-item" id="{{ package['package_name'] }}"><label class="custom-control-label" for="{{ package['package_name'] }}"></label>
-								</div>
-							</td>
-                            <td>{{ package['package_name'] }}</td>
-                            <td>{{ package['status'] }}</td>
-						</tr>
-						{% endfor %}
+						
 					</tbody>
 				</table>
 			</div>
 			<nav class="navbar navbar-expand">
-				<button class="nav-item btn btn-danger ml-auto mr-0 my-2 my-md-0" id="select-pull" disabled>Select Pull</button>
+				<button class="nav-item btn btn-danger ml-auto mr-0 my-2 my-md-0" id="action" disabled>Select Pull</button>
 			</nav>
 		</div>
 	</div>

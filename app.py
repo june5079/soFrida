@@ -19,7 +19,10 @@ from soFrida import soFrida
 from awstester import awsTester
 from getinstalledapps import getInstalledApps
 
+from FridaGUI import FridaGUI
+
 app = Flask(__name__)
+fg = FridaGUI()
 app.secret_key = "secret"
 socketio = SocketIO(app, async_mode="threading", engineio_logger=True)
 BASE_URI = os.path.dirname(__file__)
@@ -52,24 +55,163 @@ def keylist_layout():
   asset = Assets()
   key_infos = asset.get_exist_key()
   return render_template("keylist.html", key_infos=key_infos)
+
+#device
+@app.route("/devices", methods=["GET"])
+def devices():
+  devices = fg.get_device_list()
+  return render_template("modal/device.html", devices=devices)
+@app.route("/device", methods=["GET"])
+def device():
+  return jsonify(serial=fg.serial)
+@socketio.on("connect", namespace="/device")
+def installed_connect():
+  if fg.serial != "":
+    device = fg.get_current_device()
+    socketio.emit("device", {"devices":[device]}, namespace="/device")
+  else:
+    devices = fg.get_device_list()
+    socketio.emit("device", {"devices":devices}, namespace="/device") 
+
+#installed
 @app.route("/installed")
 def installed_layout():
-  package_list = []
-  try:
-    inst = getInstalledApps()
-    packages = inst.get_Applist()
-    for p in packages:
-      if downfile_check(p):
-        if inst.is_AWSSDK(p):
-          package_list.append({"package_name":p, "status": "SDK_EXIST"})
-        else:
-          package_list.append({"package_name":p, "status": "SDK_NO_EXIST"})
-      else:
-        package_list.append({"package_name":p, "status": ""})
-    return render_template("installed.html", result=package_list)
-  except:
-    return render_template("installed.html", result=package_list)
+  return render_template("installed.html")
+@app.route("/installed_list/<serial>", methods=["GET"])
+def installed_list_layout(serial):
+  package_list = fg.installed_list(serial)
+  return render_template("card/installed.html", result=package_list)
+@socketio.on("pull", namespace="/installed")
+def apk_pull(data):
+  for package in data['list']:
+    fg.apk_pull(package)
+    socketio.emit("pull_res", {"name":package['name']}, namespace="/installed")
 
+#download
+@app.route("/downloaded")
+def downloaded_layout():
+  downloaded_list = fg.get_downloaded_list()
+  return render_template("downloaded.html", result=downloaded_list)
+@socketio.on("remove", namespace="/donwloaded")
+def apk_remove(data):
+  for package in data['list']:
+    fg.apk_remove(package)
+    socketio.emit("remove_res", {"name":package}, namespace="/donwloaded")
+
+#dex
+@app.route("/dex/<package_name>")
+def dex(package_name):
+  fg.package_name = package_name
+  return render_template("dex.html")
+@app.route("/classes")
+def get_classes():
+  return get_classes_apk(fg.package_name)
+@app.route("/classes/<package_name>", methods=["GET"])
+def get_classes_apk(package_name):
+  classes = fg.get_dex(package_name)
+  class_list = []
+  for c in classes:
+    class_list.append(c)
+  return jsonify(
+    result=class_list
+  )
+@app.route("/class_table", methods=["POST"])
+def class_table():
+  class_list = request.get_json(force=True)['list']
+  return render_template("card/class_table.html", result=class_list)
+
+@app.route("/methods/<class_name>", methods=["GET"])
+def methods(class_name):
+  methods = fg.get_methods(class_name)
+  return render_template("card/method_table.html", result=methods)
+@app.route("/code/<class_name>/<index>", methods=["GET"])
+def code(class_name, index):
+  code = fg.intercept_code(class_name, index)
+  return render_template("card/code.html", code=code)
+@app.route("/codes/<class_name>", methods=["POST"])
+def codes(class_name):
+  print(class_name)
+  index_list = request.get_json(force=True)['list']
+  print(index_list)
+  code = ""
+  for index in index_list:
+    code += fg.intercept_code(class_name, index)+"\n"
+  return render_template("card/code.html", code=code)
+
+@app.route("/load", methods=["POST"])
+def load():
+  fg.loaded = False
+  data = request.get_json(force=True)
+  code = data['code']
+  pid = int(data['pid'])
+  package_name = data['package_name']
+  print(code)
+  print(pid)
+  print(package_name)
+  def callback(message, data):
+    print(message)
+    if "payload" in message:
+      socketio.emit("load_result", message['payload'], namespace="/load")
+    else:
+      socketio.emit("load_error", message['stack'], namespace="/load")
+  socketio.start_background_task(fg.load, pid=pid, js=code, callback=callback)
+  #fg.load(pid, code, callback)
+  return jsonify(
+    result = "success"
+  )
+@app.route("/spawn", methods=["POST"])
+def spawn():
+  fg.loaded = False
+  data = request.get_json(force=True)
+  code = data['code']
+  package_name = data['package_name']
+  process = fg.spawn()
+  print(process['pid'])
+  print(code)
+  print(package_name)
+  socketio.emit("process", {"processes":[process]}, namespace="/process")
+  def callback(message, data):
+    print(message)
+    if "payload" in message:
+      socketio.emit("load_result", message['payload'], namespace="/load")
+    else:
+      socketio.emit("load_error", message['stack'], namespace="/load")
+  socketio.start_background_task(fg.load_and_resume, pid=process['pid'], js=code, callback=callback)
+  return jsonify(
+    result = "success"
+  )
+@socketio.on("script_unload", namespace="/load")
+def unload():
+  fg.loaded = False
+@app.route("/reload", methods=["POST"])
+def reload():
+  fg.loaded = False
+  data = request.get_json(force=True)
+  code = data['code']
+  pid = int(data['pid'])
+  package_name = data['package_name']
+  print(code)
+  print(pid)
+  print(package_name)
+  return jsonify(
+      result = "success"
+  )
+@socketio.on("connect", namespace="/process")
+def connect_process():
+  process_list = fg.get_process()
+  if process_list == None:
+    socketio.emit("process", {"processes":[]}, namespace="/process")
+  else:
+    if len(process_list) == 0:
+      process = fg.spawn()
+      fg.resume(process['pid'])
+      socketio.emit("process", {"processes":[process]}, namespace="/process")
+    else:
+      socketio.emit("process", {"processes":process_list}, namespace="/process")
+
+
+
+#aws
 @app.route("/awstest/<package_name>", methods=['GET'])
 def awstest_layout(package_name):
   asset = Assets()

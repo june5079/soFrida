@@ -1,0 +1,11 @@
+{% for cls in result %}
+<tr>
+    <td>
+        <div class="custom-control custom-checkbox" align="center">
+            <input type="checkbox" class="custom-control-input custom-control-input-item" id="{{ cls }}"><label class="custom-control-label" for="{{ cls }}"></label>
+        </div>
+    </td>
+    <td><div>{{ cls }}</div></td>
+    <td><button class="btn btn-sm btn-danger method" >Methods</button></td>
+</tr>
+{% endfor %}

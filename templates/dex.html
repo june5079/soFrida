@@ -1,0 +1,230 @@
+{% extends "layout.html" %}
+{% block title %}
+Classes From Dex
+{% endblock %}
+{% block content %}
+<script type='text/javascript'>
+    $(function(){
+		$(document).ready(function(){
+			current_serial();
+			device_connect();
+			let socket = io.connect("http://" + document.domain + ":" + location.port + "/dex");
+			var process_socket = "";
+			$(window).on('beforeunload', function(){
+                hook.unload();
+            });
+			var class_list = [];
+			$.ajax({
+				url:"/classes",
+				type:"GET",
+				success:function(res){
+					class_list = res.result
+				},
+				complete:function(){
+					pagination.init(class_list, class_table);
+					pagination.set(1);
+					pagination_search_form(class_list, "class_card", class_table);
+				}
+			});
+			function class_table(filtered){
+				$.ajax({
+					url:"/class_table",
+					type:"POST",
+					contentType:"applicaton/json",
+					dataType:"html",
+					data:JSON.stringify({"list":filtered}),
+					success:function(res){
+						$("#class_card tbody").html(res);
+						method_button();
+					}
+				});
+			}
+			function method_button(){
+				$(".method").off().on("click", function(){
+					var class_name = $(this).parents("tr").find("input").attr('id');
+					$.ajax({
+						url:"/methods/"+class_name,
+						type:"GET",
+						success:function(res){
+							$("#method_card tbody").html(res);
+							finish_load_table("method_card");
+							hook_start();
+							multi_hook_start();
+						}
+					});
+					$("#method_card #search_form").val("");
+					$("#method_card").removeClass("d-none");
+
+					var data = "<a class=\"text-dark\" href=\"#\"><strong>"+class_name+"</strong></a>";
+					$('#class_card .card-header').html(data);
+					$('#class_card .collapse').collapse('hide');
+				});
+			}
+			function collapse_show_class(){
+				if($('#class_card .collapse').css('display') == "none"){
+					$('#class_card .card-header').text("Classes");
+					$('#class_card .collapse').collapse('show');
+					
+					$("#method_card").addClass("d-none");
+					method_button();
+				}
+			}
+			function collapse_show_method(){
+				hook.unload();
+				hook.clear();
+				close_process_socket();
+				if($('#method_card .collapse').css('display') == "none"){
+					$('#method_card .card-header').text("Methods");
+					$('#method_card .collapse').collapse('show');
+					
+					$("#code_card").addClass("d-none");
+					finish_load_table("method_card");
+				}
+			}
+			$("#class_card .card-header").on("click", function(){
+				collapse_show_method();
+				collapse_show_class();
+			});
+			$("#method_card .card-header").on("click", function(){
+                collapse_show_method();
+			});
+            socket.on("trace_res", function(data){
+
+			});
+			function close_process_socket(){
+				if(process_socket != ""){
+					process_socket.close();
+				}
+			}
+			function hook_start(){
+				$(".hook").off().on("click", function(){
+					var index = $(this).parents("tr").find("input").attr('id');
+					var method = $(this).parents("tr").children()[1].innerText;
+					var ret = $(this).parents("tr").children()[2].innerText;
+					var args = $(this).parents("tr").children()[3].innerText;
+					var class_name = $("#class_card .card-header").text();
+					$.ajax({
+						url:"/code/"+class_name+"/"+index,
+						type:"GET",
+						success:function(res){
+							$("#code_card .card-body").html(res);
+							process_socket = finish_load_code();
+							hook.init();
+						}
+					});
+					$("#code_card").removeClass("d-none");
+					var data = "<a class=\"text-dark\" href=\"#\"><strong>"+ret+" "+method+"("+args+")</strong></a>";
+					$('#method_card .card-header').html(data);
+					$('#method_card .collapse').collapse('hide');
+				});
+			}
+			function multi_hook_start(){
+				var class_name = $("#class_card .card-header").text();
+				$("#select-hook").off().on("click", function(){
+					var checked_list = [];
+					$('.custom-control-input-item').filter(function(){
+						return $(this).prop('checked');}).each(function(){
+							checked_list.push($(this).attr('id'));
+						});
+					$.ajax({
+						url:"/codes/"+class_name,
+						type:"POST",
+						contentType:"applicaton/json",
+						data:JSON.stringify({"list":checked_list}),
+						success:function(res){
+							$("#code_card .card-body").html(res);
+							process_socket = finish_load_code();
+							hook.init();
+						}
+					});
+					$("#code_card").removeClass("d-none");
+					var data = "<a class=\"text-dark\" href=\"#\"><strong>Multiple Methods</strong></a>";
+					$('#method_card .card-header').html(data);
+					$('#method_card .collapse').collapse('hide');
+				});
+			}
+        });
+	});
+</script>
+<div class="container-fluid">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item">
+			<a href="#">Instruction</a>
+		</li>
+		<li class="breadcrumb-item active">Dex</li>
+	</ol>
+	<div class="card mb-3" id="class_card">
+		<div class="card-header">
+			<strong>Classes</strong>
+        </div>
+		<div class="card-body collapse show">
+			<div class="input-group">
+				<input type="text" class="form-control" placeholder="Input Search Text" spellcheck="false" id="search_form">
+			</div>
+			<div style="margin-top:20px;" class="table-responsive" id="classes_list">
+				<table class="table" id="classes_table">
+					<thead>
+                        <th style="width: 10%">
+							<div class="custom-control custom-checkbox" align="center">
+								<input type="checkbox" class="custom-control-input" id="class_check_all">
+								<label class="custom-control-label" for="class_check_all"></label>
+							</div>
+						</th>
+						<th>CLASS</th>
+						<th>METHODS</th>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+			<nav aria-label="Page navigation">
+				<ul class="pagination justify-content-center">
+				</ul>
+			  </nav>
+		</div>
+    </div>
+    <div class="card mb-3 d-none" id="method_card">
+		<div class="card-header">
+			<strong>Methods</strong>
+        </div>
+		<div class="card-body collapse show">
+			<div class="input-group">
+				<input type="text" class="form-control" placeholder="Input Search Text" spellcheck="false" id="search_form">
+			</div>
+			<div style="margin-top:20px;" class="table-responsive" id="method_list">
+				<table class="table" id="method_table">
+					<thead>
+                        <th style="width: 10%">
+							<div class="custom-control custom-checkbox" align="center">
+								<input type="checkbox" class="custom-control-input" id="method_check_all">
+								<label class="custom-control-label" for="method_check_all"></label>
+							</div>
+						</th>
+						<th>METHOD</th>
+                        <th>RETURN</th>
+						<th>ARGUMENTS</th>
+						<th>HOOK</th>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+			<nav class="navbar navbar-expand">
+				<button class="nav-item btn btn-danger ml-auto mr-0 my-2 my-md-0" id="select-hook" disabled>Select Hook</button>
+			</nav>
+		</div>
+	</div>
+	<div class="card mb-3 d-none" id="code_card">
+		<div class="card-header">
+			<strong>Code</strong>
+		</div>
+		<div class="card-body">
+
+		</div>
+	</div>
+	<div class="card mb-3 d-none" id="result_card">
+		<div class="card-body" style='font-family: Consolas, monospace'>
+		</div>
+	</div>
+</div>
+{% endblock %}

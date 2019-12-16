@@ -14,17 +14,35 @@
 
         <!-- Custom styles for this template-->
         <link  rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/sb-admin.css')}}">
+        <link class="codestyle" rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/dracula.css')}}" />
         <!-- Bootstrap core JavaScript-->
         <script type='text/javascript' src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
         <script type='text/javascript' src="{{ url_for('static', filename='vendor/jquery/jquery.min.js') }}"></script>
         <script type='text/javascript' src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+
+        <script type='text/javascript' src="{{ url_for('static', filename='js/hook.js') }}"></script>
+        <script type='text/javascript' src="{{ url_for('static', filename='js/pagination.js') }}"></script>
+        <script type='text/javascript' src="{{ url_for('static', filename='js/common.js') }}"></script>
+        <script type='text/javascript' src="{{ url_for('static', filename='js/highlight.pack.js') }}"></script>
+        <script type='text/javascript' src="{{ url_for('static', filename='js/highlightjs-line-numbers.min.js') }}"></script>
+        <script type='text/javascript' src="{{ url_for('static', filename='js/rangy-core.js') }}"></script>
+        <script type='text/javascript' src="{{ url_for('static', filename='js/rangy-textrange.js') }}"></script>
+        <script type='text/javascript' src="{{ url_for('static', filename='js/rangy-selectionsaverestore.js') }}"></script>    
 
         <!-- Custom scripts for all pages-->
         <script type='text/javascript' src="{{ url_for('static', filename='js/sb-admin.min.js') }}"></script>
         <script type='text/javascript' src="{{ url_for('static', filename='js/download.js') }}"></script>
         <script type='text/javascript' src="{{ url_for('static', filename='js/analyze.js') }}"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
-
+        <script type='text/javascript'>
+            $(function(){
+                $(document).ready(function(){
+                    $("#current_device").on("click", function(){
+                        select_device("installed");
+                    });
+                });
+            });
+        </script>
     </head>
     <body id="page-top">
 
@@ -33,6 +51,7 @@
             <a class="navbar-brand mr-1" href="{{ url_for('index') }}">SoFridaGUI</a>
             <button class="btn btn-link btn-sm text-white order-1 order-sm-0" id="sidebarToggle" href="#">
             </button>
+            <button class="nav-item btn btn-secondary ml-auto mr-0 my-2 my-md-0" id="current_device" hidden></button>
         </nav>
 
         <div id="wrapper">
@@ -46,7 +65,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="{{ url_for('installed_layout')}}">
                     <i class="fas fa-fw fa-download"></i>
                     <span>Pull - Device</span></a>
                 </li>
@@ -62,7 +81,7 @@
                     </a>
                     <div class="dropdown-menu" aria-labelledby="analysisDropdown" x-placement="bottom-start" style="position: absolute; transform: translate3d(5px, 56px, 0px); top: 0px; left: 0px; will-change: transform;">
                         <a class="dropdown-item" href="{{ url_for('assets_layout') }}">Cloud</a>
-                        <a class="dropdown-item" href="#">Manual</a>
+                        <a class="dropdown-item" href="{{ url_for('downloaded_layout')}}">Manual</a>
                     </div>
                 </li>
             </ul>
@@ -81,6 +100,56 @@
 
             </div>
             <!-- /.content-wrapper -->
+        </div>
+        <div class="modal fade" id="devicesModal" tabindex="-1" role="dialog" aria-labelledby="DevicesModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="DevicesModalLabel">Key View</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="card mb-3">
+                            <table class="table" id="devices">
+                                <thead>
+                                    <th>DEVICE SERIAL</th>
+                                    <th>STATUS</th>
+                                    <th>SELECT</th>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="processModal" tabindex="-1" role="dialog" aria-labelledby="ProcessModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="ProcessModalLabel">Key View</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="card mb-3">
+                            <table class="table" id="processes">
+                                <thead>
+                                    <th>PID</th>
+                                    <th>NAME</th>
+                                    <th>SELECT</th>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <!-- /#wrapper -->
 
