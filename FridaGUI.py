@@ -1,11 +1,12 @@
 import frida
-from adb.client import Client as AdbClient
+from ppadb.client import Client as AdbClient
 import re
 import os
 import traceback
 import time
 from dexparse import DexParse
 from ScriptMaker import ScriptMaker
+from assets import Assets
     
 class FridaGUI:
     def __init__(self):
@@ -53,6 +54,7 @@ class FridaGUI:
     def apk_pull(self, pkg):
         apk_path = "%s%s.apk" % (self.apk_dir, pkg['name'])
         self.device.pull(pkg['path'], apk_path)
+        self.is_AWSSDK(pkg['name'])
     def get_downloaded_list(self):
         downloaded_list = []
         for f in os.listdir(self.apk_dir):
@@ -172,3 +174,11 @@ class FridaGUI:
         code = intercept.format(class_name, over['method'], overload, args_code, ret_code)
         return code
         
+    def is_AWSSDK(self, pkgid):
+        asset = Assets()
+        apkfinal_path = os.path.join("./apk/") + pkgid + '.apk'
+        if re.search(b'(?i)aws-android-sdk', open(apkfinal_path,"rb").read()):
+            if asset.exist(pkgid) == False:
+                asset.add(pkgid, "", 0, "")
+            asset.exist_sdk(pkgid, True)
+            return True

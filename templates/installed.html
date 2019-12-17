@@ -25,7 +25,6 @@ Installed Package List
                 $('.custom-control-input-item').filter(function(){
                     return $(this).prop('checked');}).each(function(){
 						var p = JSON.parse($(this).data('package').replace(/'/g, "\""));
-						console.log(p);
 						package_list.push(p);
 					});
 					socket_installed.emit("pull", {"list":package_list});
