@@ -2,8 +2,8 @@
 <p align="center">
   <img src="static/soFrida_Logo.png" width="450">
   <p align="center">Dynamic analysis tool that <b>automates</b> finding cloud-backend and vulnerability from mobile applications.<p>
- <p align="center"> With soFrida, you can analyze and detect Cloud API key misconfigurations automatically via dynamic analysis.<P>
-<p align="center">This tool willl be released on Defcon 27 Demo Labs.<P>
+ <p align="center"> With soFrida+, you can analyze and detect Cloud API key misconfigurations automatically via dynamic analysis.<P>
+<p align="center">This tool was released on Defcon 27 Demo Labs.<P>
 <p align="center">To see our research, please visit: https://sofrida.github.io<P>
 
 
@@ -28,9 +28,9 @@
 
 
 ## Table of Contents
-- [How to install and run InstaPy](#installation)
+- [How to install and run soFrida+](#installation)
   * [Requirements for Analysis](#requirements)
-  * [Installing soFrida](#installation)
+  * [Installing soFrida+](#installation)
   * [Guides and tutorials](#guides) - Available soon.
     * [Video tutorials](#video-tutorials)
 - [Main Features](#main-features)
@@ -39,44 +39,33 @@
 - [LICENSE](#license)
 
 ## Requirements
-* Rooted Android mobile phone for hooking process
+* Rooted Android mobile phone or Jailbroken iPhone for hooking process
 * Web browser without AD-Block plugins
 * [Chrome](https://chromedriver.chromium.org/downloads) or [Firfox](https://github.com/mozilla/geckodriver/releases) driver 
 * Support OS : MacOS, Windows, Ubuntu (Tested)
 * Only works with higher Python3.6
 * Ethical mind 👍
 
-## Installing soFrida
-```sudo pip install -r requirements.sf```
+## Installing soFrida+
+```python3 -m pip install -r requirements.sf```
 
 That's it. You're ready to hack Cloud-backend 😎
 
 ```python3 app.py```
 
 Open your favorite browser and connect to http://127.0.0.1:8888
+You can change port by modifying app.py (End of the code)
 
 ## Video Tutorials
-[![soFrida Video Tutorials](https://img.youtube.com/vi/l8B3vrJg7zk/0.jpg)](https://youtu.be/l8B3vrJg7zk "Click on to watch tutorials")
+[![soFrida+ Video Tutorials](https://img.youtube.com/vi/l8B3vrJg7zk/0.jpg)](https://youtu.be/l8B3vrJg7zk "Click on to watch tutorials")
 
 ## Main Features
-- "APK Download" : Download APK Files from Google Play
+- "Download - Playstore" : Download APK Files from Google Play
 <img src = 'static/apk_download.png'>
 
-- "Installed AppList" : Check installed application on mobile phone (Searching available)
-<img src = 'static/installed_list.png'>
+- "Pull - Device" : Pull APK Files from mobile phone and check cloud SDK
+<img src = 'static/pull_device.png'>
 
-- "Installed AppList" : Pull APK Files from mobile phone and check cloud SDK
-<img src = 'static/pull_from_mobile.png'>
-
-- "Assets" : You can manage downloaded APKs and Select application for analysis. 
-You can identify AWS services and authentication keys
-<img src = 'static/select_apk_for_analysis.png'>
-
-- "Assests" : Result of analysis
-<img src = 'static/analyze.png'>
-
-- "Key Lists" : You can identify all key lists extracted by analysis.
-<img src = 'static/key_lists.png'>
 
 ## Authors
 **Hyunjun Park** - Hyunjun Park is a senior engineer of Samsung SDS in South Korea and a graduate student of SANE Lab in Korea University (Supervisor : Seungjoo Gabriel Kim). His daily job is pentesting a broad range of Samsung products including smart phone, smart TV, wearable devices, etc. He also serves as a main staff of Kimchicon Security Conference in South Korea.
