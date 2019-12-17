@@ -1,0 +1,7 @@
+{% for device in devices %}
+<tr>
+    <td>{{ device.serial }}</td>
+    <td>{{ device.status }}</td>
+    <td><a class="btn btn-danger" href="#" onclick=installed_table('{{ device.serial }}')>Select</a></td>
+</tr>
+{% endfor %}

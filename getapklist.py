@@ -17,20 +17,30 @@ import platform
 
 class Getlists:
 
-    def __init__(self, option, search_keyword, country, proxy={}):
+    def __init__(self, socketio):
         # Define base info
-        self.option = option
-        self.search_keyword = search_keyword
         self.play_search_basic = "https://play.google.com/store/search?q="
         self.play_search_pkgid = "https://play.google.com/store/apps/details?id="
         self.play_search_devid = "https://play.google.com/store/apps/dev?id="
         self.apklist = []
         self.result = dict()
         self.reslist = []
-        self.proxy = proxy
-        self.country = country
         self.finished = False
+        self.socketio = socketio
+        self.namespace = "/apk_download"
+        self.proxy = {}
+    
+    def emit(self, t, data):
+        self.socketio.emit(t, data, namespace=self.namespace)
 
+    def set_proxy(self, proxy):
+        self.proxy = proxy
+
+    def init_request(self, option, search_keyword, country):
+        self.option = option
+        self.search_keyword = search_keyword
+        self.country = country
+        
         if self.option == "basic" :
             self.request_url = self.play_search_basic + self.search_keyword + "&c=apps"
             print (self.request_url)
@@ -42,18 +52,16 @@ class Getlists:
         else :
             print ("Wrong categories")
             exit()
+
+        
         self.request_url+="&gl="+self.country
         print (self.request_url)
         if platform.system() == "Windows":
             self.chrome_driver = "./chromedriver.exe"
         else:
             self.chrome_driver = "./chromedriver"
-    
-    def init_request(self):
-        if self.option == "pkgid":
-            #self.get_pkginfo()
-            pass
-        else:
+
+        if self.option != "pkgid":
             # self.f = open ("apklist_{0}.txt".format(self.search_keyword),"w")
             self.options = Options()    
             self.options.add_argument("--start-maximized")
@@ -97,51 +105,17 @@ class Getlists:
             pass
 
     def load_pkglists(self):
-        for i in range(0, 5):
+        for _ in range(0, 5):
             self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(2)
         self.click_more()
-    
+
+    def downfile_check(self, package_name):
+        return os.path.exists(os.path.join("./apk/") + package_name + '.apk')
+
     def get_pkginfo(self):
         l = self.apklist
-   
-        for x in tqdm(l):
-            try:
-                print (x)
-                r = requests.get(self.play_search_pkgid + x.strip("\n"), proxies=self.proxy)
-                res = r.text
-
-                soup = BeautifulSoup(res, "html.parser" )
-
-                pop = (soup.select ('div[class=IQ1z0d]'))[2]
-                pop_cat = (soup.select ('span > a'))
-                pop_title = (soup.select('h1 > span'))
-
-                
-                fin=''.join(str(e) for e in pop)  
-                fin_pop = fin.split('+')[0].split('>')[1]
-                
-                fin_cat=''.join(str(k) for k in pop_cat)  
-                fin_cat2 = fin_cat.split("category/")[1].split('"')[0]
-
-                fin_title=''.join(str(g) for g in pop_title)
-                fin_title2 =  fin_title.split('>')[1].split('<')[0]
-
-                self.result[x] = []
-                self.result[x].append({"popular":fin_pop, "category":fin_cat2, "title":fin_title2})
-
-            except:
-                print (x.strip("\n") + " : " + "ERROR\n")
-                pass
-
-        # print (self.result)
-        with open ("apklist_{0}.json".format(self.search_keyword), 'w') as outfile:
-            json.dump(self.result, outfile)
-
-    def get_pkginfo_for_GUI(self, logger):
-        print("Getlists.get_pkginfo_for_GUI()")
-        l = self.apklist
-        logger.info(json.dumps({"type":"log", "data": "Getting App Information from Google Play " + str(len(l))}))
+        self.emit("log", {"data": "Getting App Information from Google Play " + str(len(l))})
         i = 1
         for x in l:
             try:
@@ -164,17 +138,18 @@ class Getlists:
                 fin_title=''.join(str(g) for g in pop_title)
                 fin_title2 = fin_title.split('>')[1].split('<')[0] 
 
-                #self.result[x] = []
                 self.result[x]={"popular":fin_pop, "category":fin_cat2, "title":fin_title2}
-                #logger.info(json.dumps({x:{"popular":fin_pop, "category":fin_cat2, "title":fin_title2}}))
-                logger.info(json.dumps({"type":"result", "package_name": x, "info":self.result[x]}))
-                logger.info(json.dumps({"type": "log","data":"("+str(i)+"/"+str(len(l))+")" +x+ " pkgid info loaded."}))
+                if self.downfile_check(x):
+                    self.result[x]['status'] = "YES"
+                else:
+                    self.result[x]['status'] = "NO"
+                self.emit("search_result", {"package_name": x, "info":self.result[x]})
             except Exception as e:
-                logger.info(json.dumps({"type":"log", "data":x+" : "+str(e)}))
+                self.emit("log", {"data":x+" : "+str(e)})
             i+=1
         time.sleep(0.5)
-        logger.info(json.dumps({"type":"exit"}))
-    def get_pkginfo_for_socket_io(self, socketio):
+        self.emit("exit", {})
+    def get_pkginfo_for_socket_io(self):
         l = self.apklist
         i = 1
         for x in l:
@@ -199,10 +174,10 @@ class Getlists:
                 fin_title2 = fin_title.split('>')[1].split('<')[0] 
 
                 self.result[x]={"popular":fin_pop, "category":fin_cat2, "title":fin_title2}
-                self.result[x]['status'] = os.path.exists(os.path.join("./tmp/") + x + '.apk')
-                socketio.emit("search_result", {"type":"result", "package_name": x, "info":self.result[x]}, namespace="/apk_download")
+                self.result[x]['status'] = os.path.exists(os.path.join("./apk/") + x + '.apk')
+                self.emit("search_result", {"type":"result", "package_name": x, "info":self.result[x]})
             except Exception as e:
-                socketio.emit("log", {"type":"log", "data":x+" : "+str(e)}, namespace="/apk_download")
+                self.emit("log", {"type":"log", "data":x+" : "+str(e)})
             i+=1
         self.finished = True
             

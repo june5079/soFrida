@@ -22,11 +22,10 @@ APK Downloader
 			socket.on("log", function(data){
 				$("#log").text(data.data);
 			});
-			socket.on("exit", function(data, fn){
+			socket.on("exit", function(data){
 				$("#log").text("Loading Complete!!");
 				$("#log").append("<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button>");
 				finish_load_table();
-				fn();
 			})
 			$("#search_mode_button").on("click", function(){
 				$("#search_mode_button").html($(this).text()+"<span style=\"transform: rotate(180deg);\" class=\"caret\"></span>");

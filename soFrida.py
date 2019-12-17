@@ -7,7 +7,7 @@ import json,time
 import re
 import logging
 from threading import Thread
-from adb.client import Client as AdbClient
+from ppadb.client import Client as AdbClient
 from termcolor import colored, cprint
 from sflogger import sfLogger, sfFileLogger
 from awstester import awsTester
@@ -16,25 +16,14 @@ from time import sleep
 APKTOOL_PATH = "/usr/local/bin/apktool"
 
 class soFrida:
-    def __init__(self, pkgid):
-        self.pkgid = pkgid
-        self.process = pkgid
-        self.acc_key_list = set()
-        self.sec_key_list = set()
-        self.session_token = set()
-        self.awsregion = set()
-        self.awsservice = set()
-        self.awsbucket = set()
-        self.key_found = False
+    def __init__(self, socketio):
+        self.socketio = socketio
+        self.namespace="/analyze"
+        
         self.base_adb_command = ['adb']
-        self.flogger = sfFileLogger(self.pkgid)
-        self.flogger.filelogger.info("[+] Vulnerable PKG_ID : " + self.pkgid)
-        self.flogger.filelogger.info("[!] Logging Start")
-        #self.dbglogger = sfLogger()
-        self.debuglogger = ""
         self.isStop = False
         self.isManual = False
-        self.apk_path = "./tmp/"
+        self.apk_path = "./apk/"
 
         self.javaperform = """
                             setTimeout(function() {
@@ -45,8 +34,19 @@ class soFrida:
         # User can add aws service which is supported with awscli
         self.aws_servicelist = ['s3', 'lambda', 'kinesis', 'cognito', 'sns', 'dynamodb', 'simpledb']
         self.aws_regions = ['us-west-1', 'us-west-2', 'us-east-1', 'us-east-2','ap-east-1', 'ap-south-1', 'ap-northeast-2','ap-southeast-1','ap-southeast-2','ca-central-1','cn-north-1','cn-northwest-1','eu-central-1','eu-west-1','eu-west-2','eu-west-3','eu-north-1','sa-east-1']
+    
     def __del__(self):
         pass
+    def set_pkgid(self, pkgid):
+        self.pkgid = pkgid
+        self.flogger = sfFileLogger(self.pkgid)
+        self.flogger.filelogger.info("[+] Vulnerable PKG_ID : " + self.pkgid)
+        self.flogger.filelogger.info("[!] Logging Start")
+
+    def emit(self, data):
+        print(data)
+        self.socketio.emit("analyze_status", data, namespace=self.namespace)
+
     def frida_connect(self, mode='usb', host=None):
         if mode == 'usb':
             try:
@@ -100,23 +100,16 @@ class soFrida:
     def uninstall_apk(self):
         cprint("[*] Start Uninstall Pakcage : %s" % self.package, 'yellow')
         self.adb_device.uninstall(self.package)
-    def manual_trace(self, cls, logger):
-        def trace_callback(message, data):
-            if 'payload' in message:
-                self.findAccessKeyId(message['payload'], logger)
-            else:
-                print(message['stack'])
-        catch_trace_js = open('catch_make_trace.js', 'r').read()
-        start_function = "make_trace(\"%s\");" % (cls)
-        script = self.run(catch_trace_js+start_function, trace_callback)
-        while self.isStop == False:
-            pass
-    def message_send(self, data):
-        if self.debuglogger != "":
-            logger = self.debuglogger.logger
-            logger.info(json.dumps(data))
-    def get_class_maketrace(self, logger=""):
+
+    def get_class_maketrace(self):
         print("get_class_maketrace !!!!")
+        self.acc_key_list = set()
+        self.sec_key_list = set()
+        self.session_token = set()
+        self.awsregion = set()
+        self.awsservice = set()
+        self.awsbucket = set()
+        self.key_found = False
 
         catch_trace_js = open('catch_make_trace.js', 'r').read()
         self.trace_flag = False
@@ -134,61 +127,43 @@ class soFrida:
                     cls = message['payload'].split(":")[1]
                     cprint("[+] %s Trace Start!!" % (cls), 'yellow')
                     
-                    if logger != "":
-                        if cls in self.target_cls:
-                            if cls == "com.amazonaws.http.HttpRequest":
-                                step = "httprequest" 
-                            else:
-                                step = "credentials"
-                            self.message_send({"step":step, "result":"success", "class":cls})
+                    if cls in self.target_cls:
+                        if cls == "com.amazonaws.http.HttpRequest":
+                            step = "httprequest" 
+                        else:
+                            step = "credentials"
+                        self.emit({"step":step, "result":"success", "class":cls})
                     self.target_cls.remove(cls)
                     if len(self.target_cls) <2 and "com.amazonaws.http.HttpRequest" not in self.target_cls:
                         self.trace_flag = True
                 #elif message['payload'] =="search complete":
                 #    self.search_flag = False
                 else:
-                    self.findAccessKeyId(message['payload'], logger)
+                    self.findAccessKeyId(message['payload'])
             else:
                 print(message['stack'])
         ########################################################### 
 
         script_list = []
 
-        # if logger is "" means cli mode else is gui mode
-        if logger == "":
-            try:
-                script = self.spwan(catch_trace_js+start_function, trace_callback)
-                script_list.append(script)
-
-                input ("Press enter key")
-                if self.debuglogger != "":
-                    self.message_send({"step":"stop"})            
-                    script_list.reverse()
-                    for script in script_list:
-                        script.unload()
-                    script.off("message", trace_callback)
-                    self.session.detach()
-            except Exception as e:
-                cprint("[*] Spawn Error : "+str(e), 'red')
-        else:
-            try:
-                script = self.spwan(catch_trace_js+start_function, trace_callback)
-                script_list.append(script)
-                self.message_send({"step":"spawn", "result":"success"})
-                while self.isStop == False:
-                    pass
-                script_list.reverse()
-                for script in script_list:
-                    script.unload()
-                    script.off("message", trace_callback)
-                self.session.detach()
-            except Exception as e:
-                self.message_send({"step":"spawn", "result":"fail", "msg":str(e)})
-                return
+        try:
+            script = self.spwan(catch_trace_js+start_function, trace_callback)
+            script_list.append(script)
+            self.emit({"step":"spawn", "result":"success"})
+            while self.isStop == False:
+                pass
+            script_list.reverse()
+            for script in script_list:
+                script.unload()
+                script.off("message", trace_callback)
+            self.session.detach()
+        except Exception as e:
+            self.emit({"step":"spawn", "result":"fail", "msg":str(e)})
+            return
         
         
     def spwan(self, runjs, message_callback):
-        pid = self.device.spawn(self.process)
+        pid = self.device.spawn(self.pkgid)
         self.session = self.device.attach(pid)
         script = self.session.create_script(runjs)
         script.on("message", message_callback)
@@ -197,13 +172,13 @@ class soFrida:
         return script
 
     def run(self, runjs, message_callback):
-        self.session = self.device.attach(self.process)
+        self.session = self.device.attach(self.pkgid)
         script = self.session.create_script(runjs)
         script.on("message", message_callback)
         script.load()
         return script
     
-    def findAccessKeyId (self, text, logger=""):
+    def findAccessKeyId (self, text):
             
         # Recognize AWS Key Pairs by RegEx
         regex_acc = re.compile(r"(?<![A-Z0-9])[A-Z0-9]{20}(?![A-Z0-9])")
@@ -225,14 +200,13 @@ class soFrida:
                     s3temp = regex_s3.search(text)
                     if s3temp is not None:
                         # print (text)
-                        if logger != "":
-                            if "s3" not in self.awsservice:
-                                self.message_send({"step":"service", "result":"success", "name":"s3"})
-                            if s3temp.group('bucket') not in self.awsbucket:
-                                self.message_send({"step":"bucket", "result":"success", "name":s3temp.group('bucket')})
-                            if "region" in s3temp.group():
-                                if s3temp.group('region') not in self.awsregion:
-                                    self.message_send({"step":"region", "result":"success", "name":s3temp.group('region')})
+                        if "s3" not in self.awsservice:
+                            self.emit({"step":"service", "result":"success", "name":"s3"})
+                        if s3temp.group('bucket') not in self.awsbucket:
+                            self.emit({"step":"bucket", "result":"success", "name":s3temp.group('bucket')})
+                        if "region" in s3temp.group():
+                            if s3temp.group('region') not in self.awsregion:
+                                self.emit({"step":"region", "result":"success", "name":s3temp.group('region')})
                         self.awsservice.add("s3")
                         self.awsbucket.add(s3temp.group('bucket'))
                         if s3temp.group('region'):
@@ -249,11 +223,10 @@ class soFrida:
                 if svc_tempA != None:
                     print (text)
                     if svc_tempA.group('region').find("s3") == -1:
-                        if logger != "":
-                            if svc_tempA.group('svc') not in self.awsservice:
-                                self.message_send({"step":"service", "result":"success", "name":svc_tempA.group('svc')})
-                            if svc_tempA.group('region') not in self.awsregion:
-                                self.message_send({"step":"region", "result":"success", "name":svc_tempA.group('region')})
+                        if svc_tempA.group('svc') not in self.awsservice:
+                            self.emit({"step":"service", "result":"success", "name":svc_tempA.group('svc')})
+                        if svc_tempA.group('region') not in self.awsregion:
+                            self.emit({"step":"region", "result":"success", "name":svc_tempA.group('region')})
                         self.awsservice.add(svc_tempA.group('svc'))
                         self.awsregion.add(svc_tempA.group('region'))
                         print (self.awsservice)
@@ -263,7 +236,7 @@ class soFrida:
         if sec != None:
             #print("[*] SecretKeyId : %s" % str(sec.group()))
             if len(self.sec_key_list) == 0:
-                self.message_send({"step":"secretkeyid", "result":"success", "name":str(sec.group())})
+                self.emit({"step":"secretkeyid", "result":"success", "name":str(sec.group())})
             self.sec_key_list.add(str(sec.group()))
             print (self.sec_key_list)
 
@@ -271,13 +244,13 @@ class soFrida:
         if acc != None:
             #print("[*] AccessKeyId : %s" % str(acc.group()))
             if len(self.acc_key_list) == 0:
-                self.message_send({"step":"accesskeyid", "result":"success", "name":str(acc.group())})
+                self.emit({"step":"accesskeyid", "result":"success", "name":str(acc.group())})
             self.acc_key_list.add(str(acc.group()))
             print (self.acc_key_list)
 
         if (text.endswith ("=") or text.endswith ("==")) and ("http" not in text):
             if len(self.session_token) == 0:
-                self.message_send({"step":"sessiontoken", "result":"success", "name":text})
+                self.emit({"step":"sessiontoken", "result":"success", "name":text})
             self.session_token.add(text)
             print (self.session_token)
         
@@ -324,7 +297,7 @@ class soFrida:
         adb_command.append('-c')
         try :
                 
-            adb_clear = subprocess.Popen(adb_command)
+            subprocess.Popen(adb_command)
             # Wait for cleaning logcat
             time.sleep(1)
             cprint("[+] Logcat sucessfully cleared", 'green')
@@ -351,49 +324,52 @@ class soFrida:
         except :
             cprint ("[!] Error occured wuth cleaning app",'red')
 
-    def soFrida_start(self, debuglogger):
+    def soFrida_start(self):
         print("python soFrida_start")
-        self.debuglogger = debuglogger
-        logger = debuglogger.logger
+
+        self.isStop = False
         sleep(1)
         while True:
             sleep(0.5)
+            print("1", self.isStop)
             if self.isStop:
                 break
             adb_device = self.adb_connect()
             if adb_device == "":
-                self.message_send({"step":"adb_connect", "result":"fail", "msg":self.err})
+                self.emit({"step":"adb_connect", "result":"fail", "msg":self.err})
             else:
-                self.message_send({"step":"adb_connect", "result":"success"})
+                self.emit({"step":"adb_connect", "result":"success"})
                 break
         
         while True:
             sleep(0.5)
+            print("2", self.isStop)
             if self.isStop:
                 break
             device = self.frida_connect()
             if device == "":
-                self.message_send({"step":"frida_connect", "result":"fail", "msg":self.err})
+                self.emit({"step":"frida_connect", "result":"fail", "msg":self.err})
             else:
-                self.message_send({"step":"frida_connect", "result":"success"})
+                self.emit({"step":"frida_connect", "result":"success"})
                 break
-    
+        print("3", self.isStop)
         if not self.isStop:             
             if adb_device.is_installed(self.pkgid):
-                self.message_send({"step":"apk_install", "result":"installed", "package":self.pkgid})
+                self.emit({"step":"apk_install", "result":"installed", "package":self.pkgid})
             else:
-                self.message_send({"step":"apk_install", "result":"not installed", "package":self.pkgid})
-                self.message_send({"step":"apk_install", "result":"installing", "package":self.pkgid})
+                self.emit({"step":"apk_install", "result":"not installed", "package":self.pkgid})
+                self.emit({"step":"apk_install", "result":"installing", "package":self.pkgid})
                 try:
                     adb_device.install(self.apk_path+self.pkgid+".apk")
-                    self.message_send({"step":"apk_install", "result":"installed", "package":self.pkgid})
+                    self.emit({"step":"apk_install", "result":"installed", "package":self.pkgid})
                 except Exception as e:
-                    self.message_send({"step":"apk_install", "result":"fail", "msg":str(e), "package":self.pkgid})
-                    self.message_send({"step":"stop"})
+                    self.emit({"step":"apk_install", "result":"fail", "msg":str(e), "package":self.pkgid})
+                    self.emit({"step":"stop"})
                     self.isStop = True
+        print("4", self.isStop)
         if not self.isStop:
             self.clear_recentapp(self.pkgid)
-            self.get_class_maketrace(logger)
+            self.get_class_maketrace()
             
         
 if __name__ == '__main__':
@@ -424,7 +400,7 @@ if __name__ == '__main__':
     cprint ("[+] Done")
     # sf.aws_finder()
     # sf.bucket_finder(args.process+".log")
-    sf.get_installedapps("com")
+    #sf.get_installedapps("com")
     print (sf.awsservice)
     print (sf.awsregion)
     print (sf.awsbucket)

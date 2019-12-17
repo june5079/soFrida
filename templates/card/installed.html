@@ -1,0 +1,12 @@
+{% for package in result %}
+<tr>
+    <td>
+        <div class="custom-control custom-checkbox" align="center">
+            <input type="checkbox" class="custom-control-input custom-control-input-item" data-package="{{ package }}" id="{{ package['name'] }}"><label class="custom-control-label" for="{{ package['name'] }}"></label>
+        </div>
+    </td>
+    <td><div>{{ package['name'] }}</div></td>
+    <td><div>{{ package['path'] }}</div></td>
+    <td>{{ "DOWNLOADED" if package['downloaded'] else "" }}</td>
+</tr>
+{% endfor %}

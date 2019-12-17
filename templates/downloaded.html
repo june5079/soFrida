@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+{% block title %}
+Downloaded Package List
+{% endblock %}
+{% block content %}
+<script type='text/javascript'>
+    $(function(){
+		$(document).ready(function(){
+			let socket = io.connect("http://" + document.domain + ":" + location.port + "/donwloaded");
+			finish_load_table("downloaded_card");
+			current_serial();
+			/*$("#check-all").on("change", function(){
+				var checked = $(this).prop("checked");
+				$(this).parents(".table")
+                    .first()
+                    .find("tr[style!=\"display: none;\"]")
+                    .find("input[type=checkbox]")
+					.prop("checked", checked);
+                    button_change();
+			});*/
+            socket.on("remove_res", function(data){
+				$("#downloaded_table tbody").find("[id=\""+data.name+"\"]").parents("tr").remove();
+				button_change();
+				checkbox_change();
+            });
+            $("#action").on("click", function(){
+                var package_list = [];
+                $('.custom-control-input-item').filter(function(){
+                    return $(this).prop('checked');}).each(function(){
+						package_list.push($(this).attr('id'));
+					});
+                socket.emit("remove", {"list":package_list});
+            });
+        });
+        	
+	});
+</script>
+<div class="container-fluid">
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item">
+			<a href="#">Instruction</a>
+		</li>
+		<li class="breadcrumb-item active">Downloaded Package List</li>
+	</ol>
+	<div class="card mb-3" id="downloaded_card">
+		<div class="card-header">
+			Downloaded Package Table
+		</div>
+		<div class="card-body">
+			<div class="input-group">
+				<input type="text" class="form-control" placeholder="Input Search Text" spellcheck="false" id="search_form">
+			</div>
+			<div style="margin-top:20px;" class="table-responsive" id="downloaded_list">
+				<table class="table" id="downloaded_table">
+					<thead>
+                        <th style="width: 10%">
+							<div class="custom-control custom-checkbox" align="center">
+								<input type="checkbox" class="custom-control-input" id="downloaded_check_all">
+								<label class="custom-control-label" for="downloaded_check_all"></label>
+							</div>
+						</th>
+						<th>PKGNAME</th>
+						<th>BINARY</th>
+						<th>MEMORY</th>
+					</thead>
+					<tbody>
+						{% for package in result %}
+						<tr>
+							<td>
+								<div class="custom-control custom-checkbox" align="center">
+									<input type="checkbox" class="custom-control-input custom-control-input-item" id="{{ package }}"><label class="custom-control-label" for="{{ package }}"></label>
+								</div>
+							</td>
+							<td>{{ package }}</td>
+							<td><a class="btn btn-danger" href="/dex/{{ package }}">Binary</a></td>
+							<td><a class="btn btn-danger" href="/memory/{{ package }}">Memory</a></td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+			<nav class="navbar navbar-expand">
+				<button class="nav-item btn btn-danger ml-auto mr-0 my-2 my-md-0" id="action" disabled>Select Remove</button>
+			</nav>
+		</div>
+	</div>
+</div>
+{% endblock %}

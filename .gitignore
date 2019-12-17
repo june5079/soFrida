@@ -5,5 +5,5 @@
 test.py
 selenium/
 __pycache__/
-tmp/
+apk/
 assets.db

@@ -13,7 +13,7 @@ import re
 import json
 
 class Downloader:
-    def __init__ (self, proxy={}):
+    def __init__ (self, socketio):
         self.gid = ""
         self.gwd = ""
         self.authSubToken = ""
@@ -23,17 +23,25 @@ class Downloader:
         if platform.system() == "Windows":
             self.chrome_driver = "./chromedriver.exe"
         self.request_url = "https://accounts.google.com/b/0/DisplayUnlockCaptcha"
-        self.proxy = proxy
-        self.apkfile_path = os.path.join("./tmp/")
+        self.apkfile_path = os.path.join("./apk/")
         if os.path.exists(self.apkfile_path) == False:
             os.mkdir(self.apkfile_path)
         self.locale = "en_US" #'ko_KR'
         self.timezone = None #'Asia/Seoul'
         self.devices_codenames = GooglePlayAPI.getDevicesCodenames()
         self.devices_codenames.reverse()
+        self.proxy = {}
+        self.socketio = socketio
+        self.namespace = "/apk_download"
+
+    def emit(self, t, data):
+        self.socketio.emit(t, data, namespace=self.namespace)
 
     def set_locale(self, locale):
         self.locale = locale
+    def set_proxy(self, proxy):
+        self.proxy = proxy
+
     # LOGIN
     def firstlogin(self, gid, gpw):
         self.server = GooglePlayAPI(self.locale, self.timezone, proxies_config=self.proxy)
@@ -62,23 +70,18 @@ class Downloader:
         self.server = GooglePlayAPI(self.locale, self.timezone, proxies_config=self.proxy)
         self.server.login(None, None, self.gsfId, self.authSubToken)
 
-        # call DOWNLOAD
-        self.startdownload()
         return True
 
-    def download_packages(self, package_list, logger=""):
+    def download_packages(self, package_list):
         for package in package_list:
-            self.startdownload(package, logger)
-        logger.info(json.dumps({"step":"complete"}))
+            self.startdownload(package)
 
-    def startdownload(self, pkgid="", logger=""):
+    def startdownload(self, pkgid):
         self.pkgid = pkgid
-        if self.pkgid == "":
-            return
         self.asset = Assets()
         self.asset.update_status(self.pkgid, "downloading")
         print('\nAttempting to download %s\n' % self.pkgid)
-        logger.info(json.dumps({"step":"start","package":self.pkgid}))
+        self.emit("download_step", {"step":"start", "package":self.pkgid})
         try:
             fl = ""
             for codename in self.devices_codenames:
@@ -92,13 +95,13 @@ class Downloader:
                         for chunk in fl.get('file').get('data'):
                             apk_file.write(chunk)
                     print('\n[+] Download successful\n')
-                    logger.info(json.dumps({"step":"finish","package":self.pkgid}))
+                    self.emit("download_step", {"step":"finish", "package":self.pkgid})
                     self.asset.update_status(self.pkgid, "downloaded")
-                    logger.info(json.dumps({"step":"check","package":self.pkgid}))
-                    self.check_aws_sdk_common(self.pkgid, logger)
+                    self.emit("download_step", {"step":"check","package":self.pkgid})
+                    self.check_aws_sdk_common(self.pkgid)
                     break
                 except requests.exceptions.SSLError:
-                    logger.info(json.dumps({"step":"error", "msg":"sslerror", "package":self.pkgid}))
+                    self.emit("download_step", {"step":"error", "msg":"sslerror", "package":self.pkgid})
                     print("requests.exceptions.SSLError")
                     break
                 except Exception:
@@ -124,18 +127,16 @@ class Downloader:
             print ("[!] NO AWS_SDK FOUND")
             os.remove(apkfinal_path)
 
-    def check_aws_sdk_common(self, pkgid, logger=""):
+    def check_aws_sdk_common(self, pkgid):
         print('[+] Checking AWS_SDK')
         apkfinal_path = self.apkfile_path + pkgid + '.apk'
         
         if re.search(b'(?i)aws-android-sdk', open(apkfinal_path,"rb").read()):
             print ("[!] This Application use AWS_SDK")
             self.asset.exist_sdk(pkgid, True)
-            logger.info(json.dumps({"step":"result","package":self.pkgid, "sdk":True}))
+            self.emit("download_step", {"step":"result","package":self.pkgid, "sdk":True})
             pass
         else:
             print ("[!] NO AWS_SDK FOUND")
             self.asset.exist_sdk(pkgid, False)
-            logger.info(json.dumps({"step":"result","package":self.pkgid, "sdk":False}))
-            #os.remove(apkfinal_path)
-
+            self.emit("download_step", {"step":"result","package":self.pkgid, "sdk":False})
