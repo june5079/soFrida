@@ -59,10 +59,13 @@ def device():
 @socketio.on("connect", namespace="/device")
 def installed_connect():
   if fg.serial != "":
+    print(fg.serial)
     device = fg.get_current_device()
     socketio.emit("device", {"devices":[device]}, namespace="/device")
   else:
+    print("no serial")
     devices = fg.get_device_list()
+    print(devices)
     socketio.emit("device", {"devices":devices}, namespace="/device") 
 
 #installed
@@ -354,6 +357,17 @@ def awstest(package_name, keys):
   socketio.emit("manual_log", {"data":"[!] AWS Configuration Start!!"}, namespace="/awstest")
   at.configure()
   socketio.emit("manual_log", {"data":"[!] AWS Configuration Complete!"}, namespace="/awstest")
+
+#ios_process
+@app.route("/ios_process")
+def ios_process_layout():
+    return render_template("ios_process.html")
+@app.route("/ios_process_list/<serial>", methods=["GET"])
+def ios_process_list_layout(serial):
+  process_list = fg.get_ios_process_list(serial)
+  return render_template("card/ios_process.html", result=process_list)
+
+
 
 if __name__ == '__main__':
   ap = argparse.ArgumentParser(description='SoFridaGUI')

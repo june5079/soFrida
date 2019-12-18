@@ -1,0 +1,12 @@
+{% for package in result %}
+<tr>
+    <td>
+        <div class="custom-control custom-checkbox" align="center">
+            <input type="checkbox" class="custom-control-input custom-control-input-item" id="{{ package['pid'] }}"><label class="custom-control-label" for="{{ package['pid'] }}"></label>
+        </div>
+    </td>
+    <td><div>{{ package['pid'] }}</div></td>
+    <td><div>{{ package['name'] }}</div></td>
+    <td><a class="btn btn-danger" href="/memory/{{ package['pid'] }}/{{ package['name'] }}">Memory</a></td>
+</tr>
+{% endfor %}

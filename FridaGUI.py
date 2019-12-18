@@ -20,25 +20,25 @@ class FridaGUI:
             os.mkdir(self.apk_dir)
     def get_device_list(self):
         try:
-            self.devices = AdbClient().devices()
+            self.devices = frida.enumerate_devices()
             device_list = []
-            for device in self.devices:
-                device_list.append({"serial":device.serial, "status":device.get_state()})
+            for device in self.devices[2:]:
+                device_list.append({"serial":device.id, "name":device.name, "type":device.type})
             return device_list
         except Exception as e:
             self.err = str(e)
             return None
     def get_current_device(self):
         print("GET CURRENT DEVICE!!!!!!!!!")
-        self.device = AdbClient().device(self.serial)
-        return {"serial":self.device.serial, "status":self.device.get_state()}
+        self.frida_device = frida.get_device(self.serial)
+        return {"serial":self.frida_device.id, "name":self.frida_device.name, "type":self.frida_device.type}
     def installed_list(self, serial):
         self.serial = serial
-        self.device = AdbClient().device(self.serial)
+        self.adb_device = AdbClient().device(self.serial)
         p = re.compile("package:(.*)=(.*)")
         packages = []
         try:
-            for pm in self.device.shell("pm list packages -f").split("\n"):
+            for pm in self.adb_device.shell("pm list packages -f").split("\n"):
                 if pm == "":
                     break
                 matched = p.search(pm)
@@ -53,7 +53,7 @@ class FridaGUI:
             return []
     def apk_pull(self, pkg):
         apk_path = "%s%s.apk" % (self.apk_dir, pkg['name'])
-        self.device.pull(pkg['path'], apk_path)
+        self.adb_device.pull(pkg['path'], apk_path)
         self.is_AWSSDK(pkg['name'])
     def get_downloaded_list(self):
         downloaded_list = []
@@ -65,6 +65,22 @@ class FridaGUI:
         apk_path = "%s%s.apk" % (self.apk_dir, pkg)
         print(apk_path)
         os.remove(apk_path)
+    def get_ios_process_list(self, serial):
+        self.serial = serial
+        self.frida_device = frida.get_device(self.serial)
+        if self.frida_device != "":
+            process_list = []
+            is_ios = False
+            for app in self.frida_device.enumerate_processes():
+                if app.pid == 1 and app.name == "launchd":
+                    is_ios = True
+                process_list.append({"name":app.name, "pid":app.pid})
+            if is_ios:
+                return process_list
+            else:
+                return []
+        else:
+            return []
     def get_dex(self, pkg):
         apk_path = "%s%s.apk" % (self.apk_dir, pkg)
         self.dp = DexParse(apk_path)
@@ -82,8 +98,8 @@ class FridaGUI:
         return overloads
     def get_frida_device(self, serial):
         self.serial = serial
-        self.device = frida.get_device(self.serial)
-        return self.device
+        self.frida_device = frida.get_device(self.serial)
+        return self.frida_device
     def get_process(self):
         print(self.serial)
         print(self.frida_device)
