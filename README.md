@@ -60,8 +60,13 @@ You can change port by modifying app.py (End of the code)
 [![soFrida+ Video Tutorials](https://img.youtube.com/vi/l8B3vrJg7zk/0.jpg)](https://youtu.be/l8B3vrJg7zk "Click on to watch tutorials")
 
 ## Main Features
+- "Select Device" : Select a target device. soFrida+ automatically detects devices.
+<img src = 'static/select_device.png'>
+
+
 - "Download - Playstore" : Download APK Files from Google Play
 <img src = 'static/apk_download.png'>
+
 
 - "Pull - Device" : Pull APK Files from mobile phone and check cloud SDK
 <img src = 'static/pull_device.png'>
