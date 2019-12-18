@@ -1,21 +1,20 @@
 {% extends "layout.html" %}
 {% block title %}
-Classes From Dex
+Classes From Memory
 {% endblock %}
 {% block content %}
 <script type='text/javascript'>
     $(function(){
 		$(document).ready(function(){
-			current_serial();
-			device_connect();
+			//current_serial();
+			//device_connect();
 			let socket = io.connect("http://" + document.domain + ":" + location.port + "/dex");
-			var process_socket = "";
 			$(window).on('beforeunload', function(){
                 hook.unload();
             });
 			var class_list = [];
 			$.ajax({
-				url:"/classes_android",
+				url:"/classes_ios",
 				type:"GET",
 				success:function(res){
 					class_list = res.result
@@ -72,7 +71,6 @@ Classes From Dex
 			function collapse_show_method(){
 				hook.unload();
 				hook.clear();
-				close_process_socket();
 				if($('#method_card .collapse').css('display') == "none"){
 					$('#method_card .card-header').text("Methods");
 					$('#method_card .collapse').collapse('show');
@@ -90,30 +88,21 @@ Classes From Dex
 			});
             socket.on("trace_res", function(data){
 
-			});
-			function close_process_socket(){
-				if(process_socket != ""){
-					process_socket.close();
-				}
-			}
+            });
 			function hook_start(){
 				$(".hook").off().on("click", function(){
-					var index = $(this).parents("tr").find("input").attr('id');
 					var method = $(this).parents("tr").children()[1].innerText;
-					var ret = $(this).parents("tr").children()[2].innerText;
-					var args = $(this).parents("tr").children()[3].innerText;
 					var class_name = $("#class_card .card-header").text();
 					$.ajax({
-						url:"/code/"+class_name+"/"+index,
+						url:"/code/"+class_name+"/"+method,
 						type:"GET",
 						success:function(res){
 							$("#code_card .card-body").html(res);
-							process_socket = finish_load_code();
-							hook.init();
+							finish_load_code();
 						}
 					});
 					$("#code_card").removeClass("d-none");
-					var data = "<a class=\"text-dark\" href=\"#\"><strong>"+ret+" "+method+"("+args+")</strong></a>";
+					var data = "<a class=\"text-dark\" href=\"#\"><strong>"+method+"</strong></a>";
 					$('#method_card .card-header').html(data);
 					$('#method_card .collapse').collapse('hide');
 				});
@@ -133,8 +122,7 @@ Classes From Dex
 						data:JSON.stringify({"list":checked_list}),
 						success:function(res){
 							$("#code_card .card-body").html(res);
-							process_socket = finish_load_code();
-							hook.init();
+							finish_load_code();
 						}
 					});
 					$("#code_card").removeClass("d-none");
@@ -151,7 +139,7 @@ Classes From Dex
 		<li class="breadcrumb-item">
 			<a href="#">Instruction</a>
 		</li>
-		<li class="breadcrumb-item active">Dex</li>
+		<li class="breadcrumb-item active">Memory</li>
 	</ol>
 	<div class="card mb-3" id="class_card">
 		<div class="card-header">
@@ -201,8 +189,6 @@ Classes From Dex
 							</div>
 						</th>
 						<th>METHOD</th>
-                        <th>RETURN</th>
-						<th>ARGUMENTS</th>
 						<th>HOOK</th>
 					</thead>
 					<tbody>

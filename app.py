@@ -93,15 +93,22 @@ def apk_remove(data):
     fg.apk_remove(package)
     socketio.emit("remove_res", {"name":package}, namespace="/donwloaded")
 
-#dex
+#dex or class
 @app.route("/dex/<package_name>")
 def dex(package_name):
   fg.package_name = package_name
   return render_template("dex.html")
-@app.route("/classes")
-def get_classes():
+
+@app.route("/memory/<pid>/<package_name>")
+def memory(pid, package_name):
+    fg.pid = pid
+    fg.package_name = package_name
+    return render_template("memory.html")
+  
+@app.route("/classes_android")
+def get_classes_android():
   return get_classes_apk(fg.package_name)
-@app.route("/classes/<package_name>", methods=["GET"])
+@app.route("/classes_android/<package_name>", methods=["GET"])
 def get_classes_apk(package_name):
   classes = fg.get_dex(package_name)
   class_list = []
@@ -110,6 +117,17 @@ def get_classes_apk(package_name):
   return jsonify(
     result=class_list
   )
+@app.route("/classes_ios")
+def get_classes_ios():
+    return get_classes_memory(fg.pid)
+@app.route("/classes_ios/<pid>", methods=["GET"])
+def get_classes_memory(pid):
+    classes = fg.get_classes(pid)
+    return jsonify(
+        result=classes
+    )
+
+
 @app.route("/class_table", methods=["POST"])
 def class_table():
   class_list = request.get_json(force=True)['list']
