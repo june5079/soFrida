@@ -34,9 +34,9 @@
   * [Guides and tutorials](#guides)
     * [Video tutorials](#video-tutorials)
 - [Main Features]
-    * [Main Features - Getting Ready](#Main-Features---Getting-Ready)
-    * [Main Features - Analysis of Vulnerabilities (Android App)](#Main-Features---Analysis-of-Vulnerabilities-(Android-App))
-    * [Main Features - Analysis of Vulnerabilities (iOS App)](#Main-Features---Analysis-of-Vulnerabilities-(iOS-App))
+    * [Main Features - Getting Ready](#Main-Features-:-Getting-Ready)
+    * [Main Features - Analysis of Vulnerabilities (Android App)](#Main-Features-:-Analysis-of-Vulnerabilities-(Android-App))
+    * [Main Features - Analysis of Vulnerabilities (iOS App)](#Main-Features-:-Analysis-of-Vulnerabilities-(iOS-App))
 - [Authors](#Authors)
 - [Disclaimer](#Disclaimer)
 - [LICENSE](#License)
@@ -67,7 +67,7 @@ You can change port by modifying app.py (End of the code)
 [![soFrida Video Tutorials](https://img.youtube.com/vi/l8B3vrJg7zk/0.jpg)](https://youtu.be/l8B3vrJg7zk "Click on to watch tutorials")
 
 
-## Main Features - Getting Ready
+## Main Features : Getting Ready
 - ```Select Device : Select a target device. soFrida+ automatically detects devices.```
 <img src = 'static/README_Images/select_device.png'>
 
@@ -80,7 +80,7 @@ You can change port by modifying app.py (End of the code)
 <img src = 'static/README_Images/pull_device.png'>
 
 
-## Main Features - Analysis of Vulnerabilities (Android App)
+## Main Features : Analysis of Vulnerabilities (Android App)
 - ```Analysis - Cloud : Automated analysis for cloud SDK misconfiguration. Select a target appliation and click on "Analyze" button.```
 <img src = 'static/README_Images/analysis_cloud_select.png'>
 
@@ -92,7 +92,7 @@ You can change port by modifying app.py (End of the code)
 
 <img src = 'static/README_Images/code_modification.png'>
 
-## Main Features - Analysis of Vulnerabilities (iOS App)
+## Main Features : Analysis of Vulnerabilities (iOS App)
 - ```Analysis - iOS Manual : You can select speific target object and methods to hook. soFrida+ will automatically generate hooking script based on your choice.```
 <img src = 'static/README_Images/iOS_Manual.png'>
 
