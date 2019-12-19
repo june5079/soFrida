@@ -47,19 +47,13 @@ class soFrida:
         print(data)
         self.socketio.emit("analyze_status", data, namespace=self.namespace)
 
-    def frida_connect(self, mode='usb', host=None):
-        if mode == 'usb':
-            try:
-                self.device = frida.get_usb_device()
-                print(self.device)
-                cprint("[*] USB Connected", 'green')                
-            except Exception as e:
-                self.device = ""
-                self.err = str(e)
-            return self.device
-        elif mode == 'host':
-            self.device = frida.get_device_manager().add_remote_device(host)
-            cprint("[*] Host Connect", 'green')
+    def frida_connect(self):
+        try:
+            self.device = frida.get_device(self.serial)     
+        except Exception as e:
+            self.device = ""
+            self.err = str(e)
+        return self.device
     def adb_connect(self):
         try:
             client = AdbClient(host="127.0.0.1", port=5037)
@@ -324,14 +318,12 @@ class soFrida:
         except :
             cprint ("[!] Error occured wuth cleaning app",'red')
 
-    def soFrida_start(self):
-        print("python soFrida_start")
-
+    def soFrida_start(self, serial):
+        self.serial = serial
         self.isStop = False
         sleep(1)
         while True:
             sleep(0.5)
-            print("1", self.isStop)
             if self.isStop:
                 break
             adb_device = self.adb_connect()
@@ -343,7 +335,6 @@ class soFrida:
         
         while True:
             sleep(0.5)
-            print("2", self.isStop)
             if self.isStop:
                 break
             device = self.frida_connect()
@@ -352,7 +343,6 @@ class soFrida:
             else:
                 self.emit({"step":"frida_connect", "result":"success"})
                 break
-        print("3", self.isStop)
         if not self.isStop:             
             if adb_device.is_installed(self.pkgid):
                 self.emit({"step":"apk_install", "result":"installed", "package":self.pkgid})
@@ -366,41 +356,7 @@ class soFrida:
                     self.emit({"step":"apk_install", "result":"fail", "msg":str(e), "package":self.pkgid})
                     self.emit({"step":"stop"})
                     self.isStop = True
-        print("4", self.isStop)
         if not self.isStop:
             self.clear_recentapp(self.pkgid)
             self.get_class_maketrace()
             
-        
-if __name__ == '__main__':
-    ap = argparse.ArgumentParser(description='Test APIBleed vulnerability - cloud backend - not for testing general mobile vulnerability.')
-    ap.add_argument('-t', '--target', dest='target', required=False, help='apk file path')
-    ap.add_argument('-p', '--process', dest='process', required=False, help='Prcess Nmae')
-    ap.add_argument('-U', '--usb', action='store_true')
-    ap.add_argument('-H', '--host', dest='host', nargs='?', default='', required=False)
-
-    args = ap.parse_args()
-    sf = soFrida(args.process)
-    if args.usb and args.host == None:
-        cprint("Usage : %s -U -t [target] or %s -H [frida_listen_ip] -t [target]" % (sys.argv[0], sys.argv[0]), 'red')
-    elif args.usb:
-        sf.frida_connect('usb')
-    elif args.H != None:
-        sf.frida_connect('host', args.host)
-    sf.adb_connect()
-    sf.clear_recentapp(args.process)
-    time.sleep(0.5)
-    # Clear Logcat
-    sf.clear_logcat()
-    time.sleep(1)
-    sf.process = args.process
-    sf.get_class_maketrace()
-    sf.print_key()
-    # sf.save_logcat(args.process)
-    cprint ("[+] Done")
-    # sf.aws_finder()
-    # sf.bucket_finder(args.process+".log")
-    #sf.get_installedapps("com")
-    print (sf.awsservice)
-    print (sf.awsregion)
-    print (sf.awsbucket)

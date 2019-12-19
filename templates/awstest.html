@@ -44,7 +44,9 @@ AWS Vulnerability Test
             Service List
         </div>
         <div class="card-body">
-            {{ services }}
+            {% for path in services %}
+                <img src="{{ path }}" alt="">
+            {% endfor %}
         </div>
     </div>
     <div class="card mb-3">

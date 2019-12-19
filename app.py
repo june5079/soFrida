@@ -231,7 +231,10 @@ def connect_process():
 def awstest_layout(package_name):
   asset = Assets()
   ass = asset.get(package_name)
-  return render_template("awstest.html", services=ass['service'])
+  dic_service = []
+  for s in ass['service'].split(","):
+    dic_service.append("/static/icons/AWS-"+s+".svg")
+  return render_template("awstest.html", services=dic_service)
 
 def downfile_check(package_name):
   return os.path.exists(os.path.join("./apk/") + package_name + '.apk')
@@ -326,7 +329,7 @@ def test_func():
 
 @socketio.on('soFrida_start', namespace="/analyze")
 def soFrida_start(message):
-  socketio.start_background_task(target=sofrida.soFrida_start)
+  socketio.start_background_task(target=sofrida.soFrida_start, serial=fg.serial)
   
 @socketio.on('soFrida_stop', namespace="/analyze")
 def soFrida_stop(message):
