@@ -6,7 +6,7 @@ Classes From Memory
 <script type='text/javascript'>
     $(function(){
 		$(document).ready(function(){
-			//current_serial();
+			current_serial();
 			//device_connect();
 			let socket = io.connect("http://" + document.domain + ":" + location.port + "/dex");
 			$(window).on('beforeunload', function(){
@@ -98,7 +98,9 @@ Classes From Memory
 						type:"GET",
 						success:function(res){
 							$("#code_card .card-body").html(res);
-							finish_load_code();
+							//finish_load_code();
+							process_socket = finish_load_code();
+							hook.init();
 						}
 					});
 					$("#code_card").removeClass("d-none");

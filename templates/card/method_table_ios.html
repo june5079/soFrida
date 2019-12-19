@@ -1,0 +1,11 @@
+{% for method in result %}
+<tr>
+    <td>
+        <div class="custom-control custom-checkbox" align="center">
+            <input type="checkbox" class="custom-control-input custom-control-input-item" id="{{ method }}"><label class="custom-control-label" for="{{ method }}"></label>
+        </div>
+    </td>
+    <td><div>{{ method }}</div></td>
+    <td><button class="btn btn-danger hook">Hook</button></td>
+</tr>
+{% endfor %}

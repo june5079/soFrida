@@ -5,7 +5,7 @@ import os
 import traceback
 import time
 from dexparse import DexParse
-from ScriptMaker import ScriptMaker
+from ScriptMaker import ScriptMaker, ScriptMaker_IOS
 from assets import Assets
     
 class FridaGUI:
@@ -30,7 +30,6 @@ class FridaGUI:
             self.err = str(e)
             return None
     def get_current_device(self):
-        print("GET CURRENT DEVICE!!!!!!!!!")
         self.frida_device = frida.get_device(self.serial)
         return {"serial":self.frida_device.id, "name":self.frida_device.name, "type":self.frida_device.type}
     def installed_list(self, serial):
@@ -64,7 +63,6 @@ class FridaGUI:
         return downloaded_list
     def apk_remove(self, pkg):
         apk_path = "%s%s.apk" % (self.apk_dir, pkg)
-        print(apk_path)
         os.remove(apk_path)
     def get_ios_process_list(self, serial):
         self.serial = serial
@@ -93,14 +91,16 @@ class FridaGUI:
             if app.name == self.package_name:
                 self.app_id = app.identifier
                 break
-        js = open(self.js_dir+"common.js", "r").read()
-        js += "get_classes();"
+        js = self.get_common_script("common")
+        js += "\nget_classes();\n"
         classes = []
         def callback(message, data):
             if "payload" in message:
                 for cls in message['payload']:
                     classes.append(cls)
                 self.loaded = False
+            else:
+                print(message)
         self.load(self.pid, js, callback)
         return classes
     def get_methods(self, class_name):
@@ -120,13 +120,14 @@ class FridaGUI:
                 i+=1
         return overloads
     def get_ios_methods(self, cls):
-        js = open(self.js_dir+"common.js", "r").read()
+        js = self.get_common_script("common")
         js += """get_methods("{0}");""".format(cls)
         methods = []
         def callback(message, data):
             if "payload" in message:
                 for method in message['payload']:
                     methods.append(method)
+                    print(method)
                 self.loaded = False
         self.load(self.pid, js, callback)
         method_names = []
@@ -140,8 +141,6 @@ class FridaGUI:
         self.frida_device = frida.get_device(self.serial)
         return self.frida_device
     def get_process(self):
-        print(self.serial)
-        print(self.frida_device)
         if self.frida_device == "" and self.serial != "":
             print(self.serial)
             self.frida_device = frida.get_device(self.serial)
@@ -151,17 +150,17 @@ class FridaGUI:
             for app in self.frida_device.enumerate_processes():
                 if app.name.find(self.package_name) != -1:
                     process_list.append({"name":app.name, "pid":app.pid})
-            print(process_list)
             return process_list
         else:
-            print("NO!!!!!NONE!!!!")
             return None
     def spawn(self):
-        pid = self.frida_device.spawn(self.package_name)
-        #session = self.frida_device.attach(pid)
+        if self.is_ios:
+            pid = self.frida_device.spawn([self.app_id])
+            self.pid = pid
+        else:
+            pid = self.frida_device.spawn(self.package_name)
         for app in self.frida_device.enumerate_processes():
             if app.pid == pid:
-                print(app.name)
                 if app.name.find(self.package_name) == -1:
                     return {"name":self.package_name, "pid":app.pid}
                 else:
@@ -186,7 +185,6 @@ class FridaGUI:
         return js
         
     def load_and_resume(self, pid, js, callback):
-        #js = js+"\n"+open(self.js_dir+"send.js").read()
         js += self.get_common_script("send")
         session = self.frida_device.attach(pid)
         script = session.create_script(js)
@@ -205,8 +203,8 @@ class FridaGUI:
         session = self.frida_device.attach(pid)
         script = session.create_script(js)
         script.on("message", callback)
-        script.load()
         self.loaded = True
+        script.load()
         while self.loaded:
             pass
         script.unload()
@@ -233,10 +231,10 @@ class FridaGUI:
     def intercept_code(self, class_name, method):
         if self.is_ios:
             over = self.method_dict[method]
-            sm = ScriptMaker(class_name, method)
+            sm = ScriptMaker_IOS(class_name, method)
             args_code = sm.arg_make(over['args'])
             ret_code = sm.ret_make(over['ret'])
-            intercept = open(self.js_dir+"intercept.js").read()
+            intercept = self.get_common_script("intercept")
             hook_name = "%s_%s" % (class_name, method.replace("- ","").replace("+ ","").replace(":","").replace(".",""))
             code = intercept.format(class_name, method, hook_name, args_code, ret_code)
             return code

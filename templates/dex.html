@@ -7,7 +7,7 @@ Classes From Dex
     $(function(){
 		$(document).ready(function(){
 			current_serial();
-			device_connect();
+			//device_connect();
 			let socket = io.connect("http://" + document.domain + ":" + location.port + "/dex");
 			var process_socket = "";
 			$(window).on('beforeunload', function(){

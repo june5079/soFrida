@@ -16,26 +16,21 @@ function uniqBy(array, key)
 	});
 }
 function get_classes(){
-    send(Object.keys(ObjC.classes));
+    var classes = Object.keys(ObjC.classes);
+    console.log("Got "+classes.length+" classes");
+    send(classes);
 }
 function get_methods(cls){
     var method_list = [];
     var methods = trace("*["+cls+" *]");
-    console.log(methods);
     methods.forEach(function(method) {
-        console.log(JSON.stringify(method));
-        //console.log(ObjC.classes[cls][method.name].argumentTypes);
-        //console.log(ObjC.classes[cls][method.name].returnType);
-	});
-    /*
-    for(var i = 0;i<methods.length;i++){
+        var matched = method.name.match(/([+-]+)\[(.*) (.*)\]/);
+        var method_name = matched[1]+" "+matched[3];
         var dict = {};
-        dict.method = methods[i];
+        dict.method = method_name;
         dict.args = ObjC.classes[cls][dict.method].argumentTypes;
         dict.ret = ObjC.classes[cls][dict.method].returnType;
         method_list.push(dict);
-    }*/
-    //send(method_list);
-    //console.log(method_list);
+    });
+    send(method_list);
 }
-get_methods("SMJailBreak");

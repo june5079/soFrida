@@ -119,14 +119,13 @@ def get_classes_apk(package_name):
   )
 @app.route("/classes_ios")
 def get_classes_ios():
-    return get_classes_memory(fg.pid)
+  return get_classes_memory(fg.pid)
 @app.route("/classes_ios/<pid>", methods=["GET"])
 def get_classes_memory(pid):
-    classes = fg.get_classes(pid)
-    return jsonify(
-        result=classes
-    )
-
+  classes = fg.get_classes(pid)
+  return jsonify(
+    result=classes
+  )
 
 @app.route("/class_table", methods=["POST"])
 def class_table():
@@ -136,7 +135,10 @@ def class_table():
 @app.route("/methods/<class_name>", methods=["GET"])
 def methods(class_name):
   methods = fg.get_methods(class_name)
-  return render_template("card/method_table.html", result=methods)
+  if fg.is_ios:
+    return render_template("card/method_table_ios.html", result=methods)
+  else:
+    return render_template("card/method_table.html", result=methods)
 @app.route("/code/<class_name>/<index>", methods=["GET"])
 def code(class_name, index):
   code = fg.intercept_code(class_name, index)
