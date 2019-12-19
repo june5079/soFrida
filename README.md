@@ -29,17 +29,17 @@
 
 ## Table of Contents
 - [How to install and run soFrida+]
-  * [Requirements for Analysis](#Requirements)
-  * [Installing soFrida+](#Installing-soFrida+)
+  * [Requirements for Analysis](#requirements)
+  * [Installing soFrida+](#installing-sofrida+)
   * [Guides and tutorials](#guides)
     * [Video tutorials](#video-tutorials)
 - [Main Features]
-    * [Main Features > Getting Ready](#Main-Features->-Getting-Ready)
-    * [Main Features > Analysis of Vulnerabilities (Android App)](#Main-Features->-Analysis-of-Vulnerabilities-(Android-App))
-    * [Main Features > Analysis of Vulnerabilities (iOS App)](#Main-Features->-Analysis-of-Vulnerabilities-(iOS-App))
-- [Authors](#Authors)
-- [Disclaimer](#Disclaimer)
-- [LICENSE](#License)
+    * [Main Features > Getting Ready](#main-features->-getting-ready)
+    * [Main Features > Analysis of Vulnerabilities (Android App)](#main-features->-analysis-of-vulnerabilities-(android-app))
+    * [Main Features > Analysis of Vulnerabilities (iOS App)](#main-features->-analysis-of-vulnerabilities-(ios-app))
+- [Authors](#authors)
+- [Disclaimer](#disclaimer)
+- [LICENSE](#license)
 
 
 ## Requirements
