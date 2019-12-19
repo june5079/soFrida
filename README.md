@@ -34,9 +34,9 @@
   * [Guides and tutorials](#guides)
     * [Video tutorials](#video-tutorials)
 - [Main Features]
-    * [Main Features - Getting Ready](#Main-Features-:-Getting-Ready)
-    * [Main Features - Analysis of Vulnerabilities (Android App)](#Main-Features-:-Analysis-of-Vulnerabilities-(Android-App))
-    * [Main Features - Analysis of Vulnerabilities (iOS App)](#Main-Features-:-Analysis-of-Vulnerabilities-(iOS-App))
+    * [Main Features : Getting Ready](#Main-Features-:-Getting-Ready)
+    * [Main Features : Analysis of Vulnerabilities (Android App)](#Main-Features-:-Analysis-of-Vulnerabilities-(Android-App))
+    * [Main Features : Analysis of Vulnerabilities (iOS App)](#Main-Features-:-Analysis-of-Vulnerabilities-(iOS-App))
 - [Authors](#Authors)
 - [Disclaimer](#Disclaimer)
 - [LICENSE](#License)
