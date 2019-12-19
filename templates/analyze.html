@@ -6,6 +6,7 @@ Analyze
 <script type='text/javascript'>
     $(function(){
 		$(document).ready(function(){
+            device_connect("");
             var socket = io.connect("http://" + document.domain + ":" + location.port + "/analyze")
             var package_name = document.baseURI.substring(document.baseURI.lastIndexOf("/")+1);
             analyze.soFrida_start(socket);

@@ -3,6 +3,6 @@
     <td>{{ device.serial }}</td>
     <td>{{ device.name }}</td>
     <td>{{ device.type }}</td>
-    <td><a class="btn btn-danger" href="#" onclick=device_after_table(document.baseURI.substring(document.baseURI.lastIndexOf('/')+1),"{{ device.serial }}")>Select</a></td>
+    <td><a class="btn btn-danger" href="#" onclick=device_after_table("{{ device.serial }}")>Select</a></td>
 </tr>
 {% endfor %}

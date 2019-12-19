@@ -56,6 +56,12 @@ def devices():
 @app.route("/device", methods=["GET"])
 def device():
   return jsonify(serial=fg.serial)
+@app.route("/serial/<serial>", methods=["GET"])
+def set_serial(serial):
+  fg.serial = serial
+  return jsonify(
+    serial=fg.serial
+  )
 @socketio.on("connect", namespace="/device")
 def installed_connect():
   if fg.serial != "":

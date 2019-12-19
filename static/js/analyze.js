@@ -29,13 +29,15 @@ var analyze = new function(){
         if(log.step == "frida_connect"){
             if(log.result == "success"){
                 analyze.begreen("frida-connect", "frida-server connected with USB!");
-            }else{
+            }else if(log.result == "fail"){
                 $("#frida-connect-text").text("frida connection error : "+log.msg);
-                
             }
         }else if(log.step == "adb_connect"){
             if(log.result == "success"){
                 analyze.begreen("adb-connect", "adb connected with USB!");
+            }else if(log.result == "no serial"){
+                $("#adb-connect-text").text("adb connection error : "+log.msg);
+                device_connect("");
             }else{
                 $("#adb-connect-text").text("adb connection error : "+log.msg);
             }

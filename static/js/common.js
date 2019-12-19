@@ -140,23 +140,44 @@ function select_device(){
     });
     socket.emit("devices", function(){});*/
 }
-function device_after_table(uri,serial){
-    //uri = "/"+"installed_list"+"/" or "/"+"ios_process_list"+"/"
-    console.log(uri);
+function device_after_table(serial){
     console.log(serial);
-    console.log("/"+uri+"_list/"+serial);
+    //uri = "/"+"installed_list"+"/" or "/"+"ios_process_list"+"/"
+    var uri = document.baseURI.substring(document.baseURI.lastIndexOf('/')+1);
     uri = uri.replace("#","");
+    console.log(uri);
+    if(!uri.startsWith("installed") && !uri.startsWith("ios_process")){
+        set_serial(serial);
+        if(document.baseURI.indexOf("/dex/")){
+            get_process();
+        }else{
+            location.reload(true);
+        }
+    }else{
+        $.ajax({
+            url:"/"+uri+"_list/"+serial,
+            type:"GET",
+            success:function(res){
+                $("#"+uri+"_card tbody").html(res);
+                $("#devicesModal").modal('hide');
+
+                $("#current_device").text(serial);
+                $("#current_device").prop('hidden', false);
+                
+                finish_load_table(uri+"_card");
+            }
+        });
+    }
+}
+function set_serial(serial){
     $.ajax({
-        url:"/"+uri+"_list/"+serial,
+        url:"/serial/"+serial,
         type:"GET",
         success:function(res){
-            $("#"+uri+"_card tbody").html(res);
             $("#devicesModal").modal('hide');
 
-            $("#current_device").text(serial);
+            $("#current_device").text(res.serial);
             $("#current_device").prop('hidden', false);
-            
-            finish_load_table(uri+"_card");
         }
     });
 }
@@ -168,9 +189,12 @@ function device_connect(mode){
             alert("error: no devices/emulators found");
         }else if(devices.length == 1){
             if(mode.startsWith("installed")){
-                device_after_table("installed", devices[0].serial);
+                device_after_table(devices[0].serial);
             }else if(mode.startsWith("ios_process")){
-                device_after_table("ios_process", devices[0].serial);
+                console.log(devices[0].serial);
+                device_after_table(devices[0].serial);
+            }else{
+                set_serial(devices[0].serial);
             }
         }else{
             select_device();
@@ -225,7 +249,8 @@ function get_process(){
     var socket_process = io.connect("http://" + document.domain + ":" + location.port + "/process");
     socket_process.on("process", function(data){
         if(data.processes.length == 0){
-            alert("Check ADB Connect and Frida Server Connect!!")
+            //alert("Check ADB Connect and Frida Server Connect!!")
+            select_device();
         }else{
             var process = "";
             for(var i =0;i<data.processes.length;i++){

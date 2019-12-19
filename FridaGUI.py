@@ -65,7 +65,11 @@ class FridaGUI:
         apk_path = "%s%s.apk" % (self.apk_dir, pkg)
         os.remove(apk_path)
     def get_ios_process_list(self, serial):
+        print("serial", serial)
+        if serial == "":
+            return []
         self.serial = serial
+        print("serial", self.serial)
         self.frida_device = frida.get_device(self.serial)
         if self.frida_device != "":
             process_list = []
@@ -141,9 +145,13 @@ class FridaGUI:
         self.frida_device = frida.get_device(self.serial)
         return self.frida_device
     def get_process(self):
-        if self.frida_device == "" and self.serial != "":
-            print(self.serial)
-            self.frida_device = frida.get_device(self.serial)
+        if self.serial == "":
+            dl = self.get_device_list()
+            if len(dl) == 1:
+                self.serial = dl[0]['serial']
+            else:
+                return None
+        self.frida_device = frida.get_device(self.serial)
         print(self.frida_device)
         if self.frida_device != "":
             process_list = []

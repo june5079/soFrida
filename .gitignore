@@ -7,3 +7,4 @@ selenium/
 __pycache__/
 apk/
 assets.db
+.DS_Store

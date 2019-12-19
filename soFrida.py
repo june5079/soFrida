@@ -49,15 +49,22 @@ class soFrida:
 
     def frida_connect(self):
         try:
-            self.device = frida.get_device(self.serial)     
+            self.device = frida.get_device(self.serial)
+            return self.device
         except Exception as e:
             self.device = ""
             self.err = str(e)
-        return self.device
+            return self.device
     def adb_connect(self):
         try:
             client = AdbClient(host="127.0.0.1", port=5037)
-            self.adb_device = client.devices()[0]
+            self.adb_device = client.device(self.serial)
+            #print(self.adb_device, self.adb_device == None)
+            if self.adb_device == None:
+                self.adb_device = "no serial"
+                self.err = str("Check Your Device!")
+            else:
+                return self.adb_device
         except Exception as e:
             self.adb_device = ""
             self.err = str(e)
@@ -327,14 +334,19 @@ class soFrida:
             if self.isStop:
                 break
             adb_device = self.adb_connect()
+            print(adb_device)
             if adb_device == "":
                 self.emit({"step":"adb_connect", "result":"fail", "msg":self.err})
+            elif adb_device == "no serial":
+                self.emit({"step":"adb_connect", "result":"no serial", "msg":self.err})
+                self.isStop = True
             else:
                 self.emit({"step":"adb_connect", "result":"success"})
                 break
         
         while True:
             sleep(0.5)
+            print("fridacheck", self.isStop)
             if self.isStop:
                 break
             device = self.frida_connect()
@@ -343,6 +355,7 @@ class soFrida:
             else:
                 self.emit({"step":"frida_connect", "result":"success"})
                 break
+        print("isinstalled", self.isStop)
         if not self.isStop:             
             if adb_device.is_installed(self.pkgid):
                 self.emit({"step":"apk_install", "result":"installed", "package":self.pkgid})
