@@ -82,8 +82,8 @@ You can change port by modifying app.py (End of the code)
 <img src = 'static/README_Images/analysis_cloud_select.png'>
 
 
-- ```Analysis - Manual : You can select speific target class and methods to hook. soFrida+ will automatically generate hooking script based on your choice```
-<img src = 'static/README_Images/select_class.png'>`
+- ```Analysis - Manual : You can select speific target class and methods to hook. soFrida+ will automatically generate hooking script based on your choice.```
+<img src = 'static/README_Images/select_class.png'>
 
 <img src = 'static/README_Images/select_method.png'>
 
