@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="static/soFrida_Logo.png" width="450">
+  <img src="static/README_Images/soFrida_Logo.png" width="450">
   <p align="center">Dynamic analysis tool that <b>automates</b> finding cloud-backend and vulnerability from mobile applications.<p>
  <p align="center"> With soFrida+, you can analyze and detect Cloud API key misconfigurations automatically via dynamic analysis.<P>
 <p align="center">This tool was released on Defcon 27 Demo Labs.<P>
@@ -57,19 +57,20 @@ Open your favorite browser and connect to http://127.0.0.1:8888
 You can change port by modifying app.py (End of the code)
 
 ## Video Tutorials
-[![soFrida+ Video Tutorials](https://img.youtube.com/vi/l8B3vrJg7zk/0.jpg)](https://youtu.be/l8B3vrJg7zk "Click on to watch tutorials")
+- We're preparing new video tutorials of soFrida+. See our previous tutorial video for reference.
+[![soFrida Video Tutorials](https://img.youtube.com/vi/l8B3vrJg7zk/0.jpg)](https://youtu.be/l8B3vrJg7zk "Click on to watch tutorials")
 
 ## Main Features
 - "Select Device" : Select a target device. soFrida+ automatically detects devices.
-<img src = 'static/select_device.png'>
+<img src = 'static/README_Images/select_device.png'>
 
 
 - "Download - Playstore" : Download APK Files from Google Play
-<img src = 'static/apk_download.png'>
+<img src = 'static/README_Images/apk_download.png'>
 
 
 - "Pull - Device" : Pull APK Files from mobile phone and check cloud SDK
-<img src = 'static/pull_device.png'>
+<img src = 'static/README_Images/pull_device.png'>
 
 
 ## Authors
