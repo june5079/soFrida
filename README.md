@@ -77,17 +77,25 @@ You can change port by modifying app.py (End of the code)
 <img src = 'static/README_Images/pull_device.png'>
 
 
-## Main Features - Analysis of Vulnerabilities
+## Main Features - Analysis of Vulnerabilities (Android App)
 - ```Analysis - Cloud : Automated analysis for cloud SDK misconfiguration. Select a target appliation and click on "Analyze" button.```
 <img src = 'static/README_Images/analysis_cloud_select.png'>
 
 
-- ```Analysis - Manual : You can select speific target class and method to hook. soFrida+ will automatically generate hooking script based on your choice```
-<img src = 'static/README_Images/select_class.png'>
+- ```Analysis - Manual : You can select speific target class and methods to hook. soFrida+ will automatically generate hooking script based on your choice```
+<img src = 'static/README_Images/select_class.png'>`
 
 <img src = 'static/README_Images/select_method.png'>
 
 <img src = 'static/README_Images/code_modification.png'>
+
+## Main Features - Analysis of Vulnerabilities (iOS App)
+- ```Analysis - iOS Manual : You can select speific target object and methods to hook. soFrida+ will automatically generate hooking script based on your choice.```
+<img src = 'static/README_Images/iOS_Manual.png'>
+
+<img src = 'static/README_Images/iOS_Object.png'>
+
+<img src = 'static/README_Images/iOS_hook.png'>
 
 
 ## Authors
