@@ -151,3 +151,62 @@ class ScriptMaker:
 
     def ret_void(self, t):
         return ""
+
+class ScriptMaker_IOS:
+    tab = "\t"*2
+    def __init__(self, cls, method):
+        self.cls = cls
+        self.method = method
+
+    def arg_make(self, args):
+        arg_code = ""
+        if len(args) != 0:
+            if len(args) > 2:
+                arg_code += self.tab+"var p=[];\n"
+            i = 0
+            for arg in args:
+                if i > 1:
+                    arg_code += self.arg_types(arg)(i, arg)
+                i+=1
+            if len(args) > 2:
+                arg_code += self.tab+self.send_arg()
+        return arg_code
+    def ret_make(self, ret):
+        return self.tab+self.ret_types(ret)(ret)
+
+    def arg_types(self, arg_type):
+        if arg_type in ["pointer"]:
+            return self.arg_pointer
+        else:
+            return self.arg_force_object
+    def ret_types(self, ret_type):
+        if ret_type in ["pointer"]:
+            return self.ret_pointer
+        elif ret_type == "void":
+            return self.ret_void
+        else:
+            return self.ret_force_object
+    
+    def arg_pointer(self, index, t):
+        code = """p.push({{"{0}": (new ObjC.Object(args[{1}])).toString()}});""".format(t, index)
+        code = "\n".join(self.tab+x for x in code.split("\n"))+"\n"
+        return code
+
+    def arg_force_object(self, index, t):
+        code = self.tab+"""p.push({{"{0}": args[{1}]}});\n""".format(t, index)
+        return code
+
+    def send_arg(self):
+        code = """send_arg("{0}", "{1}", p, this.context);""".format(self.cls, self.method)
+        return code
+
+    def ret_pointer(self, t):
+        code = """send_ret("{1}","{2}","{0}", (new ObjC.Object(retval)).toString(), this.context);""".format(t, self.cls, self.method)
+        return code
+
+    def ret_force_object(self, t):
+        code = self.tab+"""send_ret("{1}","{2}","{0}", retval, this.context);\n""".format(t, self.cls, self.method)
+        return code
+
+    def ret_void(self, t):
+        return ""

@@ -59,10 +59,13 @@ def device():
 @socketio.on("connect", namespace="/device")
 def installed_connect():
   if fg.serial != "":
+    print(fg.serial)
     device = fg.get_current_device()
     socketio.emit("device", {"devices":[device]}, namespace="/device")
   else:
+    print("no serial")
     devices = fg.get_device_list()
+    print(devices)
     socketio.emit("device", {"devices":devices}, namespace="/device") 
 
 #installed
@@ -90,15 +93,22 @@ def apk_remove(data):
     fg.apk_remove(package)
     socketio.emit("remove_res", {"name":package}, namespace="/donwloaded")
 
-#dex
+#dex or class
 @app.route("/dex/<package_name>")
 def dex(package_name):
   fg.package_name = package_name
   return render_template("dex.html")
-@app.route("/classes")
-def get_classes():
+
+@app.route("/memory/<pid>/<package_name>")
+def memory(pid, package_name):
+    fg.pid = pid
+    fg.package_name = package_name
+    return render_template("memory.html")
+  
+@app.route("/classes_android")
+def get_classes_android():
   return get_classes_apk(fg.package_name)
-@app.route("/classes/<package_name>", methods=["GET"])
+@app.route("/classes_android/<package_name>", methods=["GET"])
 def get_classes_apk(package_name):
   classes = fg.get_dex(package_name)
   class_list = []
@@ -107,6 +117,16 @@ def get_classes_apk(package_name):
   return jsonify(
     result=class_list
   )
+@app.route("/classes_ios")
+def get_classes_ios():
+  return get_classes_memory(fg.pid)
+@app.route("/classes_ios/<pid>", methods=["GET"])
+def get_classes_memory(pid):
+  classes = fg.get_classes(pid)
+  return jsonify(
+    result=classes
+  )
+
 @app.route("/class_table", methods=["POST"])
 def class_table():
   class_list = request.get_json(force=True)['list']
@@ -115,7 +135,10 @@ def class_table():
 @app.route("/methods/<class_name>", methods=["GET"])
 def methods(class_name):
   methods = fg.get_methods(class_name)
-  return render_template("card/method_table.html", result=methods)
+  if fg.is_ios:
+    return render_template("card/method_table_ios.html", result=methods)
+  else:
+    return render_template("card/method_table.html", result=methods)
 @app.route("/code/<class_name>/<index>", methods=["GET"])
 def code(class_name, index):
   code = fg.intercept_code(class_name, index)
@@ -354,6 +377,17 @@ def awstest(package_name, keys):
   socketio.emit("manual_log", {"data":"[!] AWS Configuration Start!!"}, namespace="/awstest")
   at.configure()
   socketio.emit("manual_log", {"data":"[!] AWS Configuration Complete!"}, namespace="/awstest")
+
+#ios_process
+@app.route("/ios_process")
+def ios_process_layout():
+    return render_template("ios_process.html")
+@app.route("/ios_process_list/<serial>", methods=["GET"])
+def ios_process_list_layout(serial):
+  process_list = fg.get_ios_process_list(serial)
+  return render_template("card/ios_process.html", result=process_list)
+
+
 
 if __name__ == '__main__':
   ap = argparse.ArgumentParser(description='SoFridaGUI')

@@ -140,29 +140,38 @@ function select_device(){
     });
     socket.emit("devices", function(){});*/
 }
-function installed_table(serial){
+function device_after_table(uri,serial){
+    //uri = "/"+"installed_list"+"/" or "/"+"ios_process_list"+"/"
+    console.log(uri);
+    console.log(serial);
+    console.log("/"+uri+"_list/"+serial);
+    uri = uri.replace("#","");
     $.ajax({
-        url:"/installed_list/"+serial,
+        url:"/"+uri+"_list/"+serial,
         type:"GET",
         success:function(res){
-            $("#installed_card tbody").html(res);
+            $("#"+uri+"_card tbody").html(res);
             $("#devicesModal").modal('hide');
 
             $("#current_device").text(serial);
             $("#current_device").prop('hidden', false);
             
-            finish_load_table("installed_card");
+            finish_load_table(uri+"_card");
         }
     });
 }
-function device_connect(){
+function device_connect(mode){
     var socket_device = io.connect("http://" + document.domain + ":" + location.port + "/device");
     socket_device.on("device", function(data){
         var devices = data.devices;
         if(devices.length == 0){
             alert("error: no devices/emulators found");
         }else if(devices.length == 1){
-            installed_table(devices[0].serial);
+            if(mode.startsWith("installed")){
+                device_after_table("installed", devices[0].serial);
+            }else if(mode.startsWith("ios_process")){
+                device_after_table("ios_process", devices[0].serial);
+            }
         }else{
             select_device();
         }
