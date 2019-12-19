@@ -31,9 +31,12 @@
 - [How to install and run soFrida+](#installation)
   * [Requirements for Analysis](#requirements)
   * [Installing soFrida+](#installation)
-  * [Guides and tutorials](#guides) - Available soon.
+  * [Guides and tutorials](#guides)
     * [Video tutorials](#video-tutorials)
 - [Main Features](#main-features)
+    * [Main Features - Getting Ready](#get-ready)
+    * [Main Features - Analysis of Vulnerabilities (Android App)](#analysis-android)
+    * [Main Features - Analysis of Vulnerabilities (iOS App)](#analysis-ios)
 - [Authors](#authors)
 - [Disclaimer](#disclaimer)
 - [LICENSE](#license)
@@ -83,7 +86,7 @@ You can change port by modifying app.py (End of the code)
 
 
 - ```Analysis - Manual : You can select speific target class and methods to hook. soFrida+ will automatically generate hooking script based on your choice.```
-<img src = 'static/README_Images/select_class.png'>
+<img src = 'static/README_Images/select_class.png'>`
 
 <img src = 'static/README_Images/select_method.png'>
 
