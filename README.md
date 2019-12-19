@@ -28,12 +28,15 @@
 
 
 ## Table of Contents
-- [How to install and run soFrida+](#installation)
+- [How to install and run soFrida+]
   * [Requirements for Analysis](#requirements)
-  * [Installing soFrida+](#installation)
-  * [Guides and tutorials](#guides) - Available soon.
+  * [Installing soFrida+](#installing-sofrida)
+  * [Guides and tutorials]
     * [Video tutorials](#video-tutorials)
-- [Main Features](#main-features)
+- [Main Features]
+    * [Main Features > Getting Ready](#main-features--getting-ready)
+    * [Main Features > Analysis of Vulnerabilities (Android App)](#main-features--analysis-of-vulnerabilities-android-app)
+    * [Main Features > Analysis of Vulnerabilities (iOS App)](#main-features--analysis-of-vulnerabilities-ios-app)
 - [Authors](#authors)
 - [Disclaimer](#disclaimer)
 - [LICENSE](#license)
@@ -64,7 +67,7 @@ You can change port by modifying app.py (End of the code)
 [![soFrida Video Tutorials](https://img.youtube.com/vi/l8B3vrJg7zk/0.jpg)](https://youtu.be/l8B3vrJg7zk "Click on to watch tutorials")
 
 
-## Main Features - Getting Ready
+## Main Features > Getting Ready
 - ```Select Device : Select a target device. soFrida+ automatically detects devices.```
 <img src = 'static/README_Images/select_device.png'>
 
@@ -77,17 +80,25 @@ You can change port by modifying app.py (End of the code)
 <img src = 'static/README_Images/pull_device.png'>
 
 
-## Main Features - Analysis of Vulnerabilities
+## Main Features > Analysis of Vulnerabilities (Android App)
 - ```Analysis - Cloud : Automated analysis for cloud SDK misconfiguration. Select a target appliation and click on "Analyze" button.```
 <img src = 'static/README_Images/analysis_cloud_select.png'>
 
 
-- ```Analysis - Manual : You can select speific target class and method to hook. soFrida+ will automatically generate hooking script based on your choice```
+- ```Analysis - Manual : You can select speific target class and methods to hook. soFrida+ will automatically generate hooking script based on your choice.```
 <img src = 'static/README_Images/select_class.png'>
 
 <img src = 'static/README_Images/select_method.png'>
 
 <img src = 'static/README_Images/code_modification.png'>
+
+## Main Features > Analysis of Vulnerabilities (iOS App)
+- ```Analysis - iOS Manual : You can select speific target object and methods to hook. soFrida+ will automatically generate hooking script based on your choice.```
+<img src = 'static/README_Images/iOS_Manual.png'>
+
+<img src = 'static/README_Images/iOS_Object.png'>
+
+<img src = 'static/README_Images/iOS_hook.png'>
 
 
 ## Authors
