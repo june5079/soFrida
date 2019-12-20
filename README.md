@@ -1,7 +1,7 @@
 
 <p align="center">
   <img src="static/README_Images/newlogo.png" width=100%>
-  <p align="center">soFrida+ is a GUI framework powered by Frida(https://frida.re) and provides special features to find cloud credentials from mobile applications. The upgraded soFrdia+ not only supports hooking to various cloud SDK functions but also provides powerful customizations for hacking mobile apps. soFrida+ recognizes the mobile operating system of the connected device and automatically generates hooking scripts based on it. Security analysts can track the parameters and return values of common functions as well as cloud SDKs in real-time and reduce the time spent analyzing vulnerabilities.<P>
+  <p>soFrida+ is a GUI framework powered by Frida(https://frida.re) and provides special features to find cloud credentials from mobile applications. The upgraded soFrdia+ not only supports hooking to various cloud SDK functions but also provides powerful customizations for hacking mobile apps. soFrida+ recognizes the mobile operating system of the connected device and automatically generates hooking scripts based on it. Security analysts can track the parameters and return values of common functions as well as cloud SDKs in real-time and reduce the time spent analyzing vulnerabilities.<P>
 <p align="center">To see our research, please visit: https://sofrida.github.io<P>
 
 
