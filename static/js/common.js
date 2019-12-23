@@ -141,11 +141,9 @@ function select_device(){
     socket.emit("devices", function(){});*/
 }
 function device_after_table(serial){
-    console.log(serial);
     //uri = "/"+"installed_list"+"/" or "/"+"ios_process_list"+"/"
     var uri = document.baseURI.substring(document.baseURI.lastIndexOf('/')+1);
     uri = uri.replace("#","");
-    console.log(uri);
     if(!uri.startsWith("installed") && !uri.startsWith("ios_process")){
         set_serial(serial);
         if(document.baseURI.indexOf("/dex/")){
@@ -191,7 +189,6 @@ function device_connect(mode){
             if(mode.startsWith("installed")){
                 device_after_table(devices[0].serial);
             }else if(mode.startsWith("ios_process")){
-                console.log(devices[0].serial);
                 device_after_table(devices[0].serial);
             }else{
                 set_serial(devices[0].serial);
@@ -225,7 +222,6 @@ function current_serial(){
     $("#devicesModal").modal();
 }*/
 function select_pid(pid){
-    console.log(pid)
     $.ajax({
         url:"/process/"+pid,
         type:"GET",
