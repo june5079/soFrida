@@ -98,7 +98,6 @@ Classes From Memory
 						type:"GET",
 						success:function(res){
 							$("#code_card .card-body").html(res);
-							//finish_load_code();
 							process_socket = finish_load_code();
 							hook.init();
 						}
@@ -124,7 +123,8 @@ Classes From Memory
 						data:JSON.stringify({"list":checked_list}),
 						success:function(res){
 							$("#code_card .card-body").html(res);
-							finish_load_code();
+							process_socket = finish_load_code();
+							hook.init();
 						}
 					});
 					$("#code_card").removeClass("d-none");
