@@ -5,6 +5,7 @@ var hook = new function(){
         $("#clear_button").on("click",function(){ hook.clear(); });
         hook.onclickload();
         hook.backtrace();
+        hook.scripts();
         hook.set_ul();
     }
     this.set_ul = function(){
@@ -136,4 +137,40 @@ var hook = new function(){
     this.on_backtrace = function(){
         return $("#backtrace_button").hasClass("btn-info");
     }
+    this.saved = function(){
+        
+    }
+    this.scripts = function(){
+        $("#modal_save_button").off().on("click",function(){
+            $.ajax({
+                url:"/save",
+                type:"POST",
+                data: JSON.stringify({"code": $("#code").text(), "name":$("#saveModal input").val()}),
+                success:function(res){
+                    if(res.result == "success"){
+                        $("#saveModal").modal('hide');
+                    }else{
+                        $("#saveModal p").addClass("text-danger");
+                        $("#saveModal p").text(res.msg);
+                    }
+                }
+            });
+            
+        });
+        $("#save_button").off().on("click",function(){
+            //hook.saved();
+            $("#saveModal").modal();
+
+        });
+        /*$.ajax({
+            url:"/save",
+            type:"POST",
+            data: JSON.stringify({"code": hook.code, "package_name":hook.package_name}),
+            success:function(res){
+            }
+        });*/
+        
+        // $("#saveModal").modal('hide');
+    }
+
 }

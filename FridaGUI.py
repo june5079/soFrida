@@ -65,11 +65,9 @@ class FridaGUI:
         apk_path = "%s%s.apk" % (self.apk_dir, pkg)
         os.remove(apk_path)
     def get_ios_process_list(self, serial):
-        print("serial", serial)
         if serial == "":
             return []
         self.serial = serial
-        print("serial", self.serial)
         self.frida_device = frida.get_device(self.serial)
         if self.frida_device != "":
             process_list = []
@@ -131,7 +129,6 @@ class FridaGUI:
             if "payload" in message:
                 for method in message['payload']:
                     methods.append(method)
-                    print(method)
                 self.loaded = False
         self.load(self.pid, js, callback)
         method_names = []
@@ -152,7 +149,6 @@ class FridaGUI:
             else:
                 return None
         self.frida_device = frida.get_device(self.serial)
-        print(self.frida_device)
         if self.frida_device != "":
             process_list = []
             for app in self.frida_device.enumerate_processes():

@@ -17,7 +17,6 @@ function uniqBy(array, key)
 }
 function get_classes(){
     var classes = Object.keys(ObjC.classes);
-    console.log("Got "+classes.length+" classes");
     send(classes);
 }
 function get_methods(cls){
