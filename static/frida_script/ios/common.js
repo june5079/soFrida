@@ -24,12 +24,14 @@ function get_methods(cls){
     var methods = trace("*["+cls+" *]");
     methods.forEach(function(method) {
         var matched = method.name.match(/([+-]+)\[(.*) (.*)\]/);
-        var method_name = matched[1]+" "+matched[3];
-        var dict = {};
-        dict.method = method_name;
-        dict.args = ObjC.classes[cls][dict.method].argumentTypes;
-        dict.ret = ObjC.classes[cls][dict.method].returnType;
-        method_list.push(dict);
+        if(matched[2] == cls){
+            var method_name = matched[1]+" "+matched[3];
+            var dict = {};
+            dict.method = method_name;
+            dict.args = ObjC.classes[cls][dict.method].argumentTypes;
+            dict.ret = ObjC.classes[cls][dict.method].returnType;
+            method_list.push(dict);
+        }
     });
     send(method_list);
 }

@@ -61,24 +61,6 @@ function non_filter_search_form(card_name){
         }
     });
 }
-/*function non_filter_search_form(card_name, search_url, no_input_function){
-    $("#"+card_name+" #search_form").off().on("keyup", function(e){
-        if(e.keyCode == 13){
-            var curVal = $(this).val().toUpperCase();
-            if($(this).val() == ""){
-                no_input_function();
-            }else{
-                $.ajax({
-                    url:search_url+curVal,
-                    type:"GET",
-                    success:function(res){
-                        $("#"+card_name+" tbody").html(res);
-                    }
-                });
-            }
-        }
-    });
-}*/
 function check_all(card_name){
     $("thead input").off();
     $("#"+card_name+" thead input").off().on("change", function(){
@@ -107,12 +89,8 @@ function checkbox_change(card_name){
         });
     }
 }
-function finish_load_table(card_name, filter_on=true){
-    if(filter_on == true){
-        filter_search_form(card_name);
-    }else{
-        non_filter_search_form(card_name);
-    }
+function finish_load_table(card_name){
+    filter_search_form(card_name);
     $('#'+card_name+' .custom-control-input').prop('checked',false);
     $('#'+card_name+' .custom-control-input-item').off().on('change', function(){
         button_change(card_name);
@@ -277,8 +255,8 @@ function get_process(){
     });
     return socket_process;
 }
-function finish_load_code(){
-    $("#code").on("paste", function(e){
+function finish_load_code(code_card){
+    $("#"+code_card+" code").on("paste", function(e){
         e.preventDefault();
         var pastedData = e.originalEvent.clipboardData.getData('text');
         e.target.ownerDocument.execCommand("insertText", false, pastedData);
@@ -286,9 +264,9 @@ function finish_load_code(){
         hljs.highlightBlock(code_snif);
         rangy.restoreSelection(savedSel);
     });
-    var code_snif = document.getElementById("code");
+    var code_snif = $("#"+code_card+" code")[0];
     hljs.highlightBlock(code_snif);
-    $("#code").on('keydown', function(e){
+    $("#"+code_card+" code").on('keydown', function(e){
         if(e.keyCode == 9){
             document.execCommand('insertHTML', false, '&#009');
             if(e.preventDefault){
@@ -296,13 +274,11 @@ function finish_load_code(){
             }
         }
     });
-    $("#code").on('keyup', function(e){
+    $("#"+code_card+" code").on('keyup', function(e){
         if(e.keyCode == 13 || e.keyCode == 32){
             let savedSel = rangy.saveSelection();
             hljs.highlightBlock(code_snif);
             rangy.restoreSelection(savedSel);
         }
-    });
-    return get_process();
-    
+    });    
 }

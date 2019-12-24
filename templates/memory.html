@@ -98,8 +98,8 @@ Classes From Memory
 						type:"GET",
 						success:function(res){
 							$("#code_card .card-body").html(res);
-							//finish_load_code();
-							process_socket = finish_load_code();
+							finish_load_code("code_card");
+							process_socket = get_process();
 							hook.init();
 						}
 					});
@@ -124,7 +124,9 @@ Classes From Memory
 						data:JSON.stringify({"list":checked_list}),
 						success:function(res){
 							$("#code_card .card-body").html(res);
-							finish_load_code();
+							finish_load_code("code_card");
+							process_socket = get_process();
+							hook.init();
 						}
 					});
 					$("#code_card").removeClass("d-none");
@@ -232,6 +234,52 @@ Classes From Memory
 					</div>
 				</div>
 				<p></p>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="presetModal" tabindex="-1" role="dialog" aria-labelledby="PresetModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="PresetModalLabel">Preset Scripts</h5>
+				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="input-group">
+					<input type="text" class="form-control" placeholder="Input Search Text" spellcheck="false" id="search_form">
+				</div>
+				<div style="margin-top:20px;" class="table-responsive" id="preset_list">
+					<table class="table" id="preset_table">
+						<thead>
+							<th>NAME</th>
+							<th>SET</th>
+							<th>VIEW</th>
+							<th>DELETE</th>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-labelledby="ViewModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="ViewModalLabel">View Scripts</h5>
+				<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<pre style="tab-size:4;" class="mb-0">
+					<code id="view_script" class="javascript rounded" contentEditable="true" spellcheck="false"></code>
+				</pre>
 			</div>
 		</div>
 	</div>

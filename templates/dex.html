@@ -108,7 +108,8 @@ Classes From Dex
 						type:"GET",
 						success:function(res){
 							$("#code_card .card-body").html(res);
-							process_socket = finish_load_code();
+							finish_load_code("code_card");
+							process_socket = get_process();
 							hook.init();
 						}
 					});
@@ -133,7 +134,8 @@ Classes From Dex
 						data:JSON.stringify({"list":checked_list}),
 						success:function(res){
 							$("#code_card .card-body").html(res);
-							process_socket = finish_load_code();
+							finish_load_code("code_card");
+							process_socket = get_process();
 							hook.init();
 						}
 					});

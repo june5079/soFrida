@@ -137,8 +137,103 @@ var hook = new function(){
     this.on_backtrace = function(){
         return $("#backtrace_button").hasClass("btn-info");
     }
-    this.saved = function(){
-        
+    this.content_search_form = function(){
+        $("#presetModal #search_form").off().on("keyup", function(e){
+            if(e.keyCode == 13){
+                var search_text = $(this).val();
+                $.ajax({
+                    url:"/content_search",
+                    type:"POST",
+                    data: JSON.stringify({"text": search_text}),
+                    success: function(res){
+                        $("#presetModal tbody").html(res);
+                    }
+                });
+            }
+        });
+    }
+    this.set_click = function(){
+        $("#presetModal .set").off().on("click",function(){
+            var button = $(this);
+            $.ajax({
+                url:"/set_script",
+                type:"POST",
+                data:JSON.stringify({"name": $(this).parents("tr").children()[0].innerText, "doset":true}),
+                success:function(res){
+                    if(res.result == "success"){
+                        button.removeClass("btn-outline-info set");
+                        button.addClass("btn-info setted");
+                        button.text("SETTED");
+                        hook.setted_click();
+                    }else{
+                        alert("fail set script");
+                    }
+                }
+            });
+        });   
+    }
+    this.setted_click = function(){
+        $("#presetModal .setted").off().on("click",function(){
+            var button = $(this);
+            $.ajax({
+                url:"/set_script",
+                type:"POST",
+                data:JSON.stringify({"name": $(this).parents("tr").children()[0].innerText, "doset":false}),
+                success:function(res){
+                    if(res.result == "success"){
+                        button.removeClass("btn-info setted");
+                        button.addClass("btn-outline-info set");
+                        button.text("SET");
+                        hook.set_click();
+                    }else{
+                        alert("fail set script");
+                    }
+                }
+            });
+        });
+    }
+    this.delete_click = function(){
+        $("#presetModal .delete").off().on("click",function(){
+            var button = $(this);
+            $.ajax({
+                url:"/delete_script",
+                type:"POST",
+                data:JSON.stringify({"name": $(this).parents("tr").children()[0].innerText}),
+                success:function(res){
+                    if(res.result == "success"){
+                        button.parents("tr").remove();
+                    }else{
+                        alert("fail delete script");
+                    }
+                }
+            });
+        });
+    }
+    this.view_click = function(){
+        $("#presetModal .view").off().on("click",function(){
+            var button = $(this);
+            $.ajax({
+                url:"/view_script",
+                type:"POST",
+                data:JSON.stringify({"name": $(this).parents("tr").children()[0].innerText}),
+                success:function(res){
+                    if(res.result == "success"){
+                        $("#view_script").html(res.code);
+                        finish_load_code("viewModal");
+                        $("#viewModal").modal();
+                    }else{
+                        alert("fail view script");
+                    }
+                }
+            });
+        });
+    }
+    this.finish_load_preset_table = function(){
+        hook.content_search_form();
+        hook.set_click();
+        hook.setted_click();
+        hook.delete_click();
+        hook.view_click();
     }
     this.scripts = function(){
         $("#modal_save_button").off().on("click",function(){
@@ -158,19 +253,19 @@ var hook = new function(){
             
         });
         $("#save_button").off().on("click",function(){
-            //hook.saved();
             $("#saveModal").modal();
 
         });
-        /*$.ajax({
-            url:"/save",
-            type:"POST",
-            data: JSON.stringify({"code": hook.code, "package_name":hook.package_name}),
-            success:function(res){
-            }
-        });*/
-        
-        // $("#saveModal").modal('hide');
+        $("#preset_button").off().on("click", function(){
+            $.ajax({
+                url:"/saved",
+                type:"GET",
+                success: function(res){
+                    $("#presetModal tbody").html(res);
+                    hook.finish_load_preset_table();
+                    $("#presetModal").modal();
+                }
+            });
+        });
     }
-
 }

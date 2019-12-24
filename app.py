@@ -21,8 +21,8 @@ from FridaGUI import FridaGUI
 from PresetScript import PresetScript
 
 app = Flask(__name__)
-fg = FridaGUI()
 ps = PresetScript()
+fg = FridaGUI(ps)
 app.secret_key = "secret"
 socketio = SocketIO(app, async_mode="threading", engineio_logger=True)
 BASE_URI = os.path.dirname(__file__)
@@ -373,7 +373,7 @@ def ios_process_list_layout(serial):
 #scripts
 @app.route("/saved")
 def saved():
-  return render_template("card/saved_table.html", result=ps.saved_list())
+  return render_template("modal/saved_table.html", result=ps.saved_list())
 @app.route("/save", methods=["POST"])
 def save():
   data = request.get_json(force=True)
@@ -393,6 +393,53 @@ def save():
     return jsonify(
       result="fail",
       msg=ps.msg
+    )
+@app.route("/content_search", methods=["POST"])
+def content_search():
+  data = request.get_json(force=True)
+  text = data['text']
+  return render_template("modal/saved_table.html", result=ps.search(text))
+
+@app.route("/set_script", methods=["POST"])
+def set_script():
+  data = request.get_json(force=True)
+  name = data['name']
+  doset = data['doset']
+  if ps.set_script(name, doset):
+    return jsonify(
+      result="success"
+    )
+  else:
+    return jsonify(
+      result="fail"
+    )
+
+@app.route("/delete_script", methods=["POST"])
+def delete_script():
+  data = request.get_json(force=True)
+  name = data['name']
+  if ps.delete_script(name):
+    return jsonify(
+      result="success"
+    )
+  else:
+    return jsonify(
+      result="fail"
+    )
+
+@app.route("/view_script", methods=["POST"])
+def view_script():
+  data = request.get_json(force=True)
+  name = data['name']
+  code = ps.view_script(name) 
+  if code != None:
+    return jsonify(
+      result="success",
+      code=code
+    )
+  else:
+    return jsonify(
+      result="fail"
     )
 
 

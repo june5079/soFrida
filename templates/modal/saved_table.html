@@ -1,0 +1,12 @@
+{% for item in result %}
+<tr>
+    <td><div>{{ item['name'] }}</div></td>
+    {% if item['setted']  %}
+        <td><button class="btn btn-sm btn-info setted">SETTED</button></td>
+    {% else %}
+        <td><button class="btn btn-sm btn-outline-info set">SET</button></td>
+    {% endif %}
+    <td><button class="btn btn-sm btn-danger view">VIEW</button></td>
+    <td><button class="btn btn-sm btn-danger delete">DELETE</button></td>
+</tr>
+{% endfor %}
