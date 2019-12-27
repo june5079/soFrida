@@ -379,21 +379,22 @@ def save():
   data = request.get_json(force=True)
   code = data['code']
   name = data['name']
-  if ps.check_name(name):
-    if ps.save(code, name):
+  over = data['overwrite']
+  if over:
+    if ps.save(code, name, over):
       return jsonify(
         result="success"
       )
-    else:
-      return jsonify(
-        result="fail",
-        msg=ps.msg
-      )
   else:
-    return jsonify(
-      result="fail",
-      msg=ps.msg
-    )
+    if ps.check_name(name):
+      if ps.save(code, name, over):
+        return jsonify(
+          result="success"
+        )
+  return jsonify(
+    result="fail",
+    msg=ps.msg
+  )
 @app.route("/content_search", methods=["POST"])
 def content_search():
   data = request.get_json(force=True)

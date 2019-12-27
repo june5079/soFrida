@@ -26,13 +26,14 @@ class PresetScript:
             else:
                 return True
     
-    def save(self, code, name):
+    def save(self, code, name, overwrite):
         if name[-3:] != ".js":
             name += ".js"
         try:
             with open(self.dir+name, "w") as f:
                 f.write(code)
-                self.saved_file_list.append({"name":name, "setted":False})
+                if not overwrite:
+                    self.saved_file_list.append({"name":name, "setted":False})
             return True
         except Exception as e:
             self.msg = str(e)

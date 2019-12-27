@@ -19,7 +19,7 @@ var hook = new function(){
         var m = process.match(re);
         hook.pid = m[2];
         hook.package_name = m[1];
-        hook.code = $("#code").text();
+        hook.code = hook.code_editor.getValue();
         //if(hook.state == "reload"){
             hook.unload();
             hook.clear();
@@ -71,7 +71,6 @@ var hook = new function(){
             if("type" in msg){
                 var tmp = "<p class='text-success'>"+msg.class+" <b>"+msg.method+"</b></p>";
                 if(hook.on_backtrace()){
-                    console.log(msg.backtrace);
                     tmp += "<p class='text-info'>";
                     msg.backtrace.forEach(e =>{
                         if(e.file == "native"){
@@ -212,20 +211,27 @@ var hook = new function(){
     this.view_click = function(){
         $("#presetModal .view").off().on("click",function(){
             var button = $(this);
+            var name = $(this).parents("tr").children()[0].innerText;
             $.ajax({
                 url:"/view_script",
                 type:"POST",
-                data:JSON.stringify({"name": $(this).parents("tr").children()[0].innerText}),
+                data:JSON.stringify({"name": name}),
                 success:function(res){
                     if(res.result == "success"){
-                        $("#view_script").html(res.code);
-                        finish_load_code("viewModal");
+                        hook.view_script.setValue(res.code);
+                        hook.view_script.gotoLine(1);
+                        $("#viewModal h5").text(name);
                         $("#viewModal").modal();
                     }else{
                         alert("fail view script");
                     }
                 }
             });
+        });
+        $("#edit_save_button").off().on("click",function(){
+            var name = $("#viewModal h5").text();
+            var code = ace.edit("view_script").getValue();
+            hook.save(code, name, true);
         });
     }
     this.finish_load_preset_table = function(){
@@ -235,23 +241,29 @@ var hook = new function(){
         hook.delete_click();
         hook.view_click();
     }
-    this.scripts = function(){
-        $("#modal_save_button").off().on("click",function(){
-            $.ajax({
-                url:"/save",
-                type:"POST",
-                data: JSON.stringify({"code": $("#code").text(), "name":$("#saveModal input").val()}),
-                success:function(res){
-                    if(res.result == "success"){
-                        $("#saveModal").modal('hide');
-                    }else{
-                        $("#saveModal p").addClass("text-danger");
-                        $("#saveModal p").text(res.msg);
-                    }
+    this.save = function(code, name, overwrite){
+        $.ajax({
+            url:"/save",
+            type:"POST",
+            data: JSON.stringify({"code": code, "name": name, "overwrite":overwrite}),
+            success:function(res){
+                if(res.result == "success"){
+                    $("#saveModal").modal('hide');
+                }else{
+                    $("#saveModal p").addClass("text-danger");
+                    $("#saveModal p").text(res.msg);
                 }
-            });
-            
+            }
         });
+    }
+    this.modal_save = function(editor){
+        $("#modal_save_button").off().on("click",function(){
+            var code = editor.getValue();
+            hook.save(code, $("#saveModal input").val(), false);
+        });
+    }
+    this.scripts = function(){
+        hook.modal_save(hook.code_editor);
         $("#save_button").off().on("click",function(){
             $("#saveModal").modal();
 

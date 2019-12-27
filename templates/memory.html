@@ -7,6 +7,7 @@ Classes From Memory
     $(function(){
 		$(document).ready(function(){
 			current_serial();
+			hook.view_script = set_editor("view_script");
 			//device_connect();
 			let socket = io.connect("http://" + document.domain + ":" + location.port + "/dex");
 			$(window).on('beforeunload', function(){
@@ -86,9 +87,6 @@ Classes From Memory
 			$("#method_card .card-header").on("click", function(){
                 collapse_show_method();
 			});
-            socket.on("trace_res", function(data){
-
-            });
 			function hook_start(){
 				$(".hook").off().on("click", function(){
 					var method = $(this).parents("tr").children()[1].innerText;
@@ -98,7 +96,7 @@ Classes From Memory
 						type:"GET",
 						success:function(res){
 							$("#code_card .card-body").html(res);
-							finish_load_code("code_card");
+							hook.code_editor = set_editor("code");
 							process_socket = get_process();
 							hook.init();
 						}
@@ -124,7 +122,7 @@ Classes From Memory
 						data:JSON.stringify({"list":checked_list}),
 						success:function(res){
 							$("#code_card .card-body").html(res);
-							finish_load_code("code_card");
+							hook.code_editor = set_editor("code");
 							process_socket = get_process();
 							hook.init();
 						}
@@ -277,9 +275,11 @@ Classes From Memory
 				</button>
 			</div>
 			<div class="modal-body">
-				<pre style="tab-size:4;" class="mb-0">
-					<code id="view_script" class="javascript rounded" contentEditable="true" spellcheck="false"></code>
+				<pre id="view_script" class="my_ace_editor">
 				</pre>
+				<div align="right">
+					<button type="button" id="edit_save_button" class="btn btn-danger">Save</button>
+				</div>
 			</div>
 		</div>
 	</div>

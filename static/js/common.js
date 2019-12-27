@@ -255,30 +255,10 @@ function get_process(){
     });
     return socket_process;
 }
-function finish_load_code(code_card){
-    $("#"+code_card+" code").on("paste", function(e){
-        e.preventDefault();
-        var pastedData = e.originalEvent.clipboardData.getData('text');
-        e.target.ownerDocument.execCommand("insertText", false, pastedData);
-        let savedSel = rangy.saveSelection();
-        hljs.highlightBlock(code_snif);
-        rangy.restoreSelection(savedSel);
-    });
-    var code_snif = $("#"+code_card+" code")[0];
-    hljs.highlightBlock(code_snif);
-    $("#"+code_card+" code").on('keydown', function(e){
-        if(e.keyCode == 9){
-            document.execCommand('insertHTML', false, '&#009');
-            if(e.preventDefault){
-                e.preventDefault();
-            }
-        }
-    });
-    $("#"+code_card+" code").on('keyup', function(e){
-        if(e.keyCode == 13 || e.keyCode == 32){
-            let savedSel = rangy.saveSelection();
-            hljs.highlightBlock(code_snif);
-            rangy.restoreSelection(savedSel);
-        }
-    });    
+function set_editor(code_id){
+    var editor = ace.edit(code_id);
+    editor.setTheme("ace/theme/dracula");
+    editor.session.setMode("ace/mode/javascript");
+    editor.session.setUseWrapMode(true);
+    return editor;
 }
