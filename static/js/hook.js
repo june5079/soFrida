@@ -5,6 +5,7 @@ var hook = new function(){
         $("#clear_button").on("click",function(){ hook.clear(); });
         hook.onclickload();
         hook.backtrace();
+        hook.scripts();
         hook.set_ul();
     }
     this.set_ul = function(){
@@ -18,7 +19,7 @@ var hook = new function(){
         var m = process.match(re);
         hook.pid = m[2];
         hook.package_name = m[1];
-        hook.code = $("#code").text();
+        hook.code = hook.code_editor.getValue();
         //if(hook.state == "reload"){
             hook.unload();
             hook.clear();
@@ -70,7 +71,6 @@ var hook = new function(){
             if("type" in msg){
                 var tmp = "<p class='text-success'>"+msg.class+" <b>"+msg.method+"</b></p>";
                 if(hook.on_backtrace()){
-                    console.log(msg.backtrace);
                     tmp += "<p class='text-info'>";
                     msg.backtrace.forEach(e =>{
                         if(e.file == "native"){
@@ -135,5 +135,149 @@ var hook = new function(){
     }
     this.on_backtrace = function(){
         return $("#backtrace_button").hasClass("btn-info");
+    }
+    this.content_search_form = function(){
+        $("#presetModal #search_form").off().on("keyup", function(e){
+            if(e.keyCode == 13){
+                var search_text = $(this).val();
+                $.ajax({
+                    url:"/content_search",
+                    type:"POST",
+                    data: JSON.stringify({"text": search_text}),
+                    success: function(res){
+                        $("#presetModal tbody").html(res);
+                    }
+                });
+            }
+        });
+    }
+    this.set_click = function(){
+        $("#presetModal .set").off().on("click",function(){
+            var button = $(this);
+            $.ajax({
+                url:"/set_script",
+                type:"POST",
+                data:JSON.stringify({"name": $(this).parents("tr").children()[0].innerText, "doset":true}),
+                success:function(res){
+                    if(res.result == "success"){
+                        button.removeClass("btn-outline-info set");
+                        button.addClass("btn-info setted");
+                        button.text("SETTED");
+                        hook.setted_click();
+                    }else{
+                        alert("fail set script");
+                    }
+                }
+            });
+        });   
+    }
+    this.setted_click = function(){
+        $("#presetModal .setted").off().on("click",function(){
+            var button = $(this);
+            $.ajax({
+                url:"/set_script",
+                type:"POST",
+                data:JSON.stringify({"name": $(this).parents("tr").children()[0].innerText, "doset":false}),
+                success:function(res){
+                    if(res.result == "success"){
+                        button.removeClass("btn-info setted");
+                        button.addClass("btn-outline-info set");
+                        button.text("SET");
+                        hook.set_click();
+                    }else{
+                        alert("fail set script");
+                    }
+                }
+            });
+        });
+    }
+    this.delete_click = function(){
+        $("#presetModal .delete").off().on("click",function(){
+            var button = $(this);
+            $.ajax({
+                url:"/delete_script",
+                type:"POST",
+                data:JSON.stringify({"name": $(this).parents("tr").children()[0].innerText}),
+                success:function(res){
+                    if(res.result == "success"){
+                        button.parents("tr").remove();
+                    }else{
+                        alert("fail delete script");
+                    }
+                }
+            });
+        });
+    }
+    this.view_click = function(){
+        $("#presetModal .view").off().on("click",function(){
+            var button = $(this);
+            var name = $(this).parents("tr").children()[0].innerText;
+            $.ajax({
+                url:"/view_script",
+                type:"POST",
+                data:JSON.stringify({"name": name}),
+                success:function(res){
+                    if(res.result == "success"){
+                        hook.view_script.setValue(res.code);
+                        hook.view_script.gotoLine(1);
+                        $("#viewModal h5").text(name);
+                        $("#viewModal").modal();
+                    }else{
+                        alert("fail view script");
+                    }
+                }
+            });
+        });
+        $("#edit_save_button").off().on("click",function(){
+            var name = $("#viewModal h5").text();
+            var code = ace.edit("view_script").getValue();
+            hook.save(code, name, true);
+        });
+    }
+    this.finish_load_preset_table = function(){
+        hook.content_search_form();
+        hook.set_click();
+        hook.setted_click();
+        hook.delete_click();
+        hook.view_click();
+    }
+    this.save = function(code, name, overwrite){
+        $.ajax({
+            url:"/save",
+            type:"POST",
+            data: JSON.stringify({"code": code, "name": name, "overwrite":overwrite}),
+            success:function(res){
+                if(res.result == "success"){
+                    $("#saveModal").modal('hide');
+                }else{
+                    $("#saveModal p").addClass("text-danger");
+                    $("#saveModal p").text(res.msg);
+                }
+            }
+        });
+    }
+    this.modal_save = function(editor){
+        $("#modal_save_button").off().on("click",function(){
+            var code = editor.getValue();
+            hook.save(code, $("#saveModal input").val(), false);
+        });
+    }
+    this.scripts = function(){
+        hook.modal_save(hook.code_editor);
+        $("#save_button").off().on("click",function(){
+            $("#saveModal").modal();
+
+        });
+        $("#preset_button").off().on("click", function(){
+            $.ajax({
+                url:"/saved",
+                type:"GET",
+                success: function(res){
+                    $("#presetModal tbody").html(res);
+                    hook.finish_load_preset_table();
+                    $("#presetModal").modal();
+                }
+            });
+        });
     }
 }

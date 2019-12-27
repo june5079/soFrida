@@ -61,24 +61,6 @@ function non_filter_search_form(card_name){
         }
     });
 }
-/*function non_filter_search_form(card_name, search_url, no_input_function){
-    $("#"+card_name+" #search_form").off().on("keyup", function(e){
-        if(e.keyCode == 13){
-            var curVal = $(this).val().toUpperCase();
-            if($(this).val() == ""){
-                no_input_function();
-            }else{
-                $.ajax({
-                    url:search_url+curVal,
-                    type:"GET",
-                    success:function(res){
-                        $("#"+card_name+" tbody").html(res);
-                    }
-                });
-            }
-        }
-    });
-}*/
 function check_all(card_name){
     $("thead input").off();
     $("#"+card_name+" thead input").off().on("change", function(){
@@ -107,12 +89,8 @@ function checkbox_change(card_name){
         });
     }
 }
-function finish_load_table(card_name, filter_on=true){
-    if(filter_on == true){
-        filter_search_form(card_name);
-    }else{
-        non_filter_search_form(card_name);
-    }
+function finish_load_table(card_name){
+    filter_search_form(card_name);
     $('#'+card_name+' .custom-control-input').prop('checked',false);
     $('#'+card_name+' .custom-control-input-item').off().on('change', function(){
         button_change(card_name);
@@ -141,11 +119,9 @@ function select_device(){
     socket.emit("devices", function(){});*/
 }
 function device_after_table(serial){
-    console.log(serial);
     //uri = "/"+"installed_list"+"/" or "/"+"ios_process_list"+"/"
     var uri = document.baseURI.substring(document.baseURI.lastIndexOf('/')+1);
     uri = uri.replace("#","");
-    console.log(uri);
     if(!uri.startsWith("installed") && !uri.startsWith("ios_process")){
         set_serial(serial);
         if(document.baseURI.indexOf("/dex/")){
@@ -191,7 +167,6 @@ function device_connect(mode){
             if(mode.startsWith("installed")){
                 device_after_table(devices[0].serial);
             }else if(mode.startsWith("ios_process")){
-                console.log(devices[0].serial);
                 device_after_table(devices[0].serial);
             }else{
                 set_serial(devices[0].serial);
@@ -225,7 +200,6 @@ function current_serial(){
     $("#devicesModal").modal();
 }*/
 function select_pid(pid){
-    console.log(pid)
     $.ajax({
         url:"/process/"+pid,
         type:"GET",
@@ -281,32 +255,10 @@ function get_process(){
     });
     return socket_process;
 }
-function finish_load_code(){
-    $("#code").on("paste", function(e){
-        e.preventDefault();
-        var pastedData = e.originalEvent.clipboardData.getData('text');
-        e.target.ownerDocument.execCommand("insertText", false, pastedData);
-        let savedSel = rangy.saveSelection();
-        hljs.highlightBlock(code_snif);
-        rangy.restoreSelection(savedSel);
-    });
-    var code_snif = document.getElementById("code");
-    hljs.highlightBlock(code_snif);
-    $("#code").on('keydown', function(e){
-        if(e.keyCode == 9){
-            document.execCommand('insertHTML', false, '&#009');
-            if(e.preventDefault){
-                e.preventDefault();
-            }
-        }
-    });
-    $("#code").on('keyup', function(e){
-        if(e.keyCode == 13 || e.keyCode == 32){
-            let savedSel = rangy.saveSelection();
-            hljs.highlightBlock(code_snif);
-            rangy.restoreSelection(savedSel);
-        }
-    });
-    return get_process();
-    
+function set_editor(code_id){
+    var editor = ace.edit(code_id);
+    editor.setTheme("ace/theme/dracula");
+    editor.session.setMode("ace/mode/javascript");
+    editor.session.setUseWrapMode(true);
+    return editor;
 }

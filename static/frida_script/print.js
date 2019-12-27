@@ -48,7 +48,6 @@ function caller_equal(bt, data){
     var caller = bt[1];
     var target = caller_json(data);
     if(target != null){
-        console.log(data);
         if(caller.path != target.path) return false;
         if(caller.file != target.file) return false;
         if(target.file != "native"){

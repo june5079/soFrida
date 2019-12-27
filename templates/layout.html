@@ -23,17 +23,14 @@
         <script type='text/javascript' src="{{ url_for('static', filename='js/hook.js') }}"></script>
         <script type='text/javascript' src="{{ url_for('static', filename='js/pagination.js') }}"></script>
         <script type='text/javascript' src="{{ url_for('static', filename='js/common.js') }}"></script>
-        <script type='text/javascript' src="{{ url_for('static', filename='js/highlight.pack.js') }}"></script>
-        <script type='text/javascript' src="{{ url_for('static', filename='js/highlightjs-line-numbers.min.js') }}"></script>
-        <script type='text/javascript' src="{{ url_for('static', filename='js/rangy-core.js') }}"></script>
-        <script type='text/javascript' src="{{ url_for('static', filename='js/rangy-textrange.js') }}"></script>
-        <script type='text/javascript' src="{{ url_for('static', filename='js/rangy-selectionsaverestore.js') }}"></script>    
+        <script type='text/javascript' src="{{ url_for('static', filename='js/ace.js') }}"></script>
 
         <!-- Custom scripts for all pages-->
         <script type='text/javascript' src="{{ url_for('static', filename='js/sb-admin.min.js') }}"></script>
         <script type='text/javascript' src="{{ url_for('static', filename='js/download.js') }}"></script>
         <script type='text/javascript' src="{{ url_for('static', filename='js/analyze.js') }}"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+        <script type='text/javascript' src="{{ url_for('static', filename='js/socket.io.js') }}"></script>
+        <!--<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>-->
         <script type='text/javascript'>
             $(function(){
                 $(document).ready(function(){
@@ -43,6 +40,15 @@
                 });
             });
         </script>
+        <style type="text/css" media="screen">
+            .my_ace_editor {
+                position: relative !important;
+                border: 1px solid lightgray;
+                height: 300px;
+                font-size: 13px;
+                border-radius: 0.25rem !important;
+            }
+        </style>
     </head>
     <body id="page-top">
 

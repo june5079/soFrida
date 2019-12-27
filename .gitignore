@@ -6,5 +6,6 @@ test.py
 selenium/
 __pycache__/
 apk/
+scripts/
 assets.db
 .DS_Store

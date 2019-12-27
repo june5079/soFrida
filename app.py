@@ -18,9 +18,11 @@ from soFrida import soFrida
 from awstester import awsTester
 
 from FridaGUI import FridaGUI
+from PresetScript import PresetScript
 
 app = Flask(__name__)
-fg = FridaGUI()
+ps = PresetScript()
+fg = FridaGUI(ps)
 app.secret_key = "secret"
 socketio = SocketIO(app, async_mode="threading", engineio_logger=True)
 BASE_URI = os.path.dirname(__file__)
@@ -65,13 +67,10 @@ def set_serial(serial):
 @socketio.on("connect", namespace="/device")
 def installed_connect():
   if fg.serial != "":
-    print(fg.serial)
     device = fg.get_current_device()
     socketio.emit("device", {"devices":[device]}, namespace="/device")
   else:
-    print("no serial")
     devices = fg.get_device_list()
-    print(devices)
     socketio.emit("device", {"devices":devices}, namespace="/device") 
 
 #installed
@@ -151,9 +150,7 @@ def code(class_name, index):
   return render_template("card/code.html", code=code)
 @app.route("/codes/<class_name>", methods=["POST"])
 def codes(class_name):
-  print(class_name)
   index_list = request.get_json(force=True)['list']
-  print(index_list)
   code = ""
   for index in index_list:
     code += fg.intercept_code(class_name, index)+"\n"
@@ -166,11 +163,7 @@ def load():
   code = data['code']
   pid = int(data['pid'])
   package_name = data['package_name']
-  print(code)
-  print(pid)
-  print(package_name)
   def callback(message, data):
-    print(message)
     if "payload" in message:
       socketio.emit("load_result", message['payload'], namespace="/load")
     else:
@@ -187,12 +180,8 @@ def spawn():
   code = data['code']
   package_name = data['package_name']
   process = fg.spawn()
-  print(process['pid'])
-  print(code)
-  print(package_name)
   socketio.emit("process", {"processes":[process]}, namespace="/process")
   def callback(message, data):
-    print(message)
     if "payload" in message:
       socketio.emit("load_result", message['payload'], namespace="/load")
     else:
@@ -204,19 +193,7 @@ def spawn():
 @socketio.on("script_unload", namespace="/load")
 def unload():
   fg.loaded = False
-@app.route("/reload", methods=["POST"])
-def reload():
-  fg.loaded = False
-  data = request.get_json(force=True)
-  code = data['code']
-  pid = int(data['pid'])
-  package_name = data['package_name']
-  print(code)
-  print(pid)
-  print(package_name)
-  return jsonify(
-      result = "success"
-  )
+
 @socketio.on("connect", namespace="/process")
 def connect_process():
   process_list = fg.get_process()
@@ -247,7 +224,6 @@ def downfile_check(package_name):
     
 @socketio.on("search", namespace="/apk_download")
 def search(data):
-  print("Getlists(\"%s\", \"%s\", \"%s\")" % (data['mode'].lower().strip(), data['text'].strip(), data['locale'].split("_")[1]))
   downloader.set_locale(data['locale'])
   
   getlist.init_request(data['mode'].lower().strip(), data['text'], data['locale'].split("_")[1])
@@ -272,7 +248,6 @@ def google_login():
       result="success"
     )
   else:
-    print("login fail")
     return jsonify(
       result="fail"
     )
@@ -329,9 +304,7 @@ def import_file_result(msg):
     socketio.emit("log", {"type": "log","data":"("+str(i)+"/"+str(len(msg['pkg_list']))+")" +pkg_id+ " pkgid info loaded."}, namespace="/apk_download")
     i+=1
   getlist.result = get_list
-  socketio.emit("exit", {}, namespace="/apk_download", callback=test_func)
-def test_func():
-  print("exit emit")
+  socketio.emit("exit", {}, namespace="/apk_download")
 
 @socketio.on('soFrida_start', namespace="/analyze")
 def soFrida_start(message):
@@ -396,6 +369,79 @@ def ios_process_list_layout(serial):
   process_list = fg.get_ios_process_list(serial)
   return render_template("card/ios_process.html", result=process_list)
 
+
+#scripts
+@app.route("/saved")
+def saved():
+  return render_template("modal/saved_table.html", result=ps.saved_list())
+@app.route("/save", methods=["POST"])
+def save():
+  data = request.get_json(force=True)
+  code = data['code']
+  name = data['name']
+  over = data['overwrite']
+  if over:
+    if ps.save(code, name, over):
+      return jsonify(
+        result="success"
+      )
+  else:
+    if ps.check_name(name):
+      if ps.save(code, name, over):
+        return jsonify(
+          result="success"
+        )
+  return jsonify(
+    result="fail",
+    msg=ps.msg
+  )
+@app.route("/content_search", methods=["POST"])
+def content_search():
+  data = request.get_json(force=True)
+  text = data['text']
+  return render_template("modal/saved_table.html", result=ps.search(text))
+
+@app.route("/set_script", methods=["POST"])
+def set_script():
+  data = request.get_json(force=True)
+  name = data['name']
+  doset = data['doset']
+  if ps.set_script(name, doset):
+    return jsonify(
+      result="success"
+    )
+  else:
+    return jsonify(
+      result="fail"
+    )
+
+@app.route("/delete_script", methods=["POST"])
+def delete_script():
+  data = request.get_json(force=True)
+  name = data['name']
+  if ps.delete_script(name):
+    return jsonify(
+      result="success"
+    )
+  else:
+    return jsonify(
+      result="fail"
+    )
+
+@app.route("/view_script", methods=["POST"])
+def view_script():
+  data = request.get_json(force=True)
+  name = data['name']
+  code = ps.view_script(name) 
+  if code != None:
+    return jsonify(
+      result="success",
+      code=code
+    )
+  else:
+    return jsonify(
+      result="fail"
+    )
 
 
 if __name__ == '__main__':

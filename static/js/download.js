@@ -6,7 +6,6 @@ var download = new function(){
                 package_list.push($(this).attr('id'));});
         download.socket.emit("download", {"list":package_list});
         download.socket.on("download_step", function(data){
-            console.log(data);
             download.log_start(data);
         });
     };

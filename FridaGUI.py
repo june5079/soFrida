@@ -9,7 +9,7 @@ from ScriptMaker import ScriptMaker, ScriptMaker_IOS
 from assets import Assets
     
 class FridaGUI:
-    def __init__(self):
+    def __init__(self, ps):
         print("[+] FridaGUI __init__")
         self.apk_dir = os.path.join("./apk/")
         self.js_dir = os.path.join("./static/frida_script/")
@@ -17,6 +17,7 @@ class FridaGUI:
         self.package_name = ""
         self.frida_device = ""
         self.is_ios = False
+        self.ps = ps
         if not os.path.exists(self.apk_dir):
             os.mkdir(self.apk_dir)
     def get_device_list(self):
@@ -65,11 +66,9 @@ class FridaGUI:
         apk_path = "%s%s.apk" % (self.apk_dir, pkg)
         os.remove(apk_path)
     def get_ios_process_list(self, serial):
-        print("serial", serial)
         if serial == "":
             return []
         self.serial = serial
-        print("serial", self.serial)
         self.frida_device = frida.get_device(self.serial)
         if self.frida_device != "":
             process_list = []
@@ -126,12 +125,13 @@ class FridaGUI:
     def get_ios_methods(self, cls):
         js = self.get_common_script("common")
         js += """get_methods("{0}");""".format(cls)
+        print(js)
         methods = []
         def callback(message, data):
             if "payload" in message:
                 for method in message['payload']:
-                    methods.append(method)
                     print(method)
+                    methods.append(method)
                 self.loaded = False
         self.load(self.pid, js, callback)
         method_names = []
@@ -152,7 +152,6 @@ class FridaGUI:
             else:
                 return None
         self.frida_device = frida.get_device(self.serial)
-        print(self.frida_device)
         if self.frida_device != "":
             process_list = []
             for app in self.frida_device.enumerate_processes():
@@ -185,15 +184,12 @@ class FridaGUI:
         js = open(tmp_dir+script_name+".js").read()
         return js
 
-    def get_custom_script(self, script_names):
-        tmp_dir = self.js_dir+"custom/"
-        js = ""
-        for script_name in script_names:
-            js =+ open(tmp_dir+script_name+".js").read()+"\n"
-        return js
+    def get_custom_script(self):
+        return 
         
     def load_and_resume(self, pid, js, callback):
         js += self.get_common_script("send")
+        js += self.ps.get_setted_code()
         session = self.frida_device.attach(pid)
         script = session.create_script(js)
         script.on("message", callback)
@@ -208,6 +204,7 @@ class FridaGUI:
 
     def load(self, pid, js, callback):
         js += self.get_common_script("send")
+        js += self.ps.get_setted_code()
         session = self.frida_device.attach(pid)
         script = session.create_script(js)
         script.on("message", callback)
