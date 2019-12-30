@@ -23,8 +23,7 @@ class PresetScript:
             if sf['name'] == name:
                 self.msg = "File exists!"
                 return False
-            else:
-                return True
+        return True
     
     def save(self, code, name, overwrite):
         if name[-3:] != ".js":
