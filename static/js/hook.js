@@ -73,10 +73,14 @@ var hook = new function(){
                 if(hook.on_backtrace()){
                     tmp += "<p class='text-info'>";
                     msg.backtrace.forEach(e =>{
-                        if(e.file == "native"){
-                            tmp+=e.path+"("+e.file+")<br>";
+                        if(msg.os == "android"){
+                            if(e.file == "native"){
+                                tmp+=e.path+"("+e.file+")<br>";
+                            }else{
+                                tmp+=e.path+"("+e.file+":"+e.line+")<br>";
+                            }
                         }else{
-                            tmp+=e.path+"("+e.file+":"+e.line+")<br>";
+                            tmp+=e.address+":"+e.moduleName+"("+e.name+")<br>";
                         }
                     });
                     tmp += "</p>";
