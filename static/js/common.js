@@ -124,7 +124,7 @@ function device_after_table(serial){
     uri = uri.replace("#","");
     if(!uri.startsWith("installed") && !uri.startsWith("ios_process")){
         set_serial(serial);
-        if(document.baseURI.indexOf("/dex/")){
+        if(document.baseURI.indexOf("/dex/") != -1){
             get_process();
         }else{
             location.reload(true);

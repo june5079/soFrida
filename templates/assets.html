@@ -116,7 +116,7 @@ Assets
 						<th>POPULAR</th>
 						<th>CATEGORY</th>
 						<th>STATUS</th>
-						<th>EXIST_SDK</th>
+						<th>CLOUD</th>
 						<th>ANALYZE</th>
 					</thead>
 					<tbody>
@@ -132,16 +132,10 @@ Assets
 							<td>{{ "{:,}".format(info['popular']) }}</td>
 							<td>{{ info['category'] }}</td>
 							<td>{{ info['status'] }}</td>
-							{% if info['exist_sdk'] == 1 %}
-							<td>True</td>
+							<td>{{ info['cloud_code'] }}</td>
 							<td><a  class="btn btn-success" href="/analyze/{{ info['package_name'] }}">Analyze</a></td>
-							{% elif info['exist_sdk'] == 0 %}
-							<td>False</td>
-							<td><button class="btn btn-danger" id="{{ info['package_name'] }}">Remove</button></td>
-							{% else %}
 							<td></td>
 							<td></td>
-							{% endif %}
 						</tr>
 						{% endfor %}
 					</tbody>

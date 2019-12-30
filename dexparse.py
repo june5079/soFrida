@@ -98,14 +98,17 @@ class DexParse:
             if method_name in self.names[class_name]:
                 return self.names[class_name][method_name]
         return None
-if __name__ == "__main__":
-    dp = DexParse("../apk/com.happylabs.hps.apk")
-    #dp.dex_parse()
-    for cls, methods in dp.dex_parse().items():
-        #print(cls)
-        for method, over in methods.items():
-            #print(method)
-            for proto in over:
-                ret = proto[0]
-                params = proto[1]
-                #print(ret+" ["+", ".join(params)+"]")
+    def cloud_detector(self):
+        print ("Calling cloud detector")
+        class_list = []
+        for c in self.get_classes():
+            class_list.append(c)
+        # Start Detecting
+        SDK_Keywords = {"AMZ":'com.amazonaws.auth', "ALB":'com.alibaba.sdk', "AZU":'com.microsoft.azure.storage'}
+        cloud_code = None
+        for code,key in SDK_Keywords.items():
+            for c in class_list:
+                if key in c:
+                    cloud_code = code
+                    break
+        return cloud_code

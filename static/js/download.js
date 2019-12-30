@@ -23,11 +23,7 @@ var download = new function(){
             $(tr[i].children[5]).html("<i class=\"fa fa-circle-notch fa-spin\"></i>");
         }
         else if(data.step == "result"){
-            if(data.sdk){
-                tr[i].children[5].innerText = "SDK_EXIST";
-            }else{
-                tr[i].children[5].innerText = "SDK_NOT_EXIST";
-            }
+            tr[i].children[5].innerText = data.sdk;
         }else if(data.step == "error"){
             tr[i].children[5].innerText = "ERROR";
             alert("if you have custom ca, execute \"python3 cert.py [pem file path] and retry download\"");

@@ -261,10 +261,10 @@ class FridaGUI:
             return code
         
     def is_AWSSDK(self, pkgid):
-        asset = Assets()
         apkfinal_path = os.path.join("./apk/") + pkgid + '.apk'
-        if re.search(b'(?i)aws-android-sdk', open(apkfinal_path,"rb").read()):
-            if asset.exist(pkgid) == False:
-                asset.add(pkgid, "", 0, "")
-            asset.exist_sdk(pkgid, True)
-            return True
+        dp = DexParse(apkfinal_path)
+        cloud_code = dp.cloud_detector()
+        asset = Assets()
+        if asset.exist(pkgid) == False:
+            asset.add(pkgid, "", 0, "")
+        asset.set_cloud(pkgid, cloud_code)

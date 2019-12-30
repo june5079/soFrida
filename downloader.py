@@ -2,6 +2,7 @@ from gpapi.googleplay import GooglePlayAPI, RequestError, SecurityCheckError
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from assets import Assets
+from dexparse import DexParse
 
 import requests
 import sys, os, time
@@ -130,13 +131,31 @@ class Downloader:
     def check_aws_sdk_common(self, pkgid):
         print('[+] Checking AWS_SDK')
         apkfinal_path = self.apkfile_path + pkgid + '.apk'
-        
-        if re.search(b'(?i)aws-android-sdk', open(apkfinal_path,"rb").read()):
-            print ("[!] This Application use AWS_SDK")
-            self.asset.exist_sdk(pkgid, True)
-            self.emit("download_step", {"step":"result","package":self.pkgid, "sdk":True})
-            pass
-        else:
-            print ("[!] NO AWS_SDK FOUND")
-            self.asset.exist_sdk(pkgid, False)
-            self.emit("download_step", {"step":"result","package":self.pkgid, "sdk":False})
+        dp = DexParse(apkfinal_path)
+        cloud_code = dp.cloud_detector()
+        if not self.asset.exist(pkgid):
+            self.asset.add(pkgid, "", 0, "")
+        self.asset.set_cloud(pkgid, cloud_code)
+        self.emit("download_step", {"step":"result","package":self.pkgid, "sdk":cloud_code})
+
+    def cloud_detector(self, pkgid):
+        print ("Calling cloud detector")
+        self.is_ios = False
+        apkfinal_path = self.apkfile_path + pkgid + '.apk'
+        self.dp = DexParse(apkfinal_path)
+        dpcls = self.dp.get_classes()
+        class_list = []
+        print (type(dpcls))
+        for c in dpcls:
+            class_list.append(c)
+        # Start Detecting
+        SDK_Keywords = {"AMZ":'com.amazonaws.auth', "ALB":'com.alibaba.sdk', "AZU":'com.microsoft.azure.storage'}
+        try:      
+            for code,key in SDK_Keywords.items():
+                for c in class_list:
+                    if key in c:
+                        print ("{0} is exist in pkg".format(key))
+                        print (code)
+                        break
+        except:
+            print ("ERROR")

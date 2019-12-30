@@ -16,7 +16,7 @@ class Assets:
             popular integer,
             category text,
             status text,
-            exist_sdk integer,
+            cloud_code text,
             access_key_id text,
             secret_key_id text,
             session_token text,
@@ -24,7 +24,7 @@ class Assets:
             service text,
             bucket text,
             vulnerable integer)''')
-        self.columns = ['package_name', 'title', 'popular','category','status','exist_sdk', 'access_key_id', 'secret_key_id','session_token','region','service','bucket', 'vulnerable']
+        self.columns = ['package_name', 'title', 'popular','category','status', 'cloud_code', 'access_key_id', 'secret_key_id','session_token','region','service','bucket', 'vulnerable']
         self.con.commit()
 
     def exist(self, package_name):
@@ -54,7 +54,7 @@ class Assets:
         return package_list
     def get_exist_sdk(self):
         package_list = []
-        for row in self.cur.execute('''select * from assets where exist_sdk=1'''):
+        for row in self.cur.execute('''select * from assets where cloud_code<>"None"'''):
             package = dict()
             for i in range(len(self.columns)):
                 if row[i] == None:
@@ -101,8 +101,9 @@ class Assets:
                         %("service", "bucket", "region","access_key_id", "secret_key_id","session_token"),
                         (','.join(keys['service']), keys['bucket'], keys['region'], keys['accesskeyid'], keys['secretkeyid'], keys['sessiontoken'], package_name,))
             self.con.commit()
-    def exist_sdk(self, package_name, tf):
-        self.update_one(package_name, "exist_sdk", (1 if tf else 0))
+    def set_cloud(self, package_name, code):
+        #self.update_one(package_name, "exist_sdk", (1 if code != None else 0))
+        self.update_one(package_name, "cloud_code", str(code))
     def delete_one(self, package_name):
         try:
             self.cur.execute('''delete from assets where package_name=?;''', (package_name,))
@@ -116,7 +117,6 @@ class Assets:
 if __name__ == "__main__":
     ast = Assets()
     ast.select_all()
-    ast.get("com.mingle.asianmingle")
 
 
 
