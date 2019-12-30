@@ -99,6 +99,12 @@ You can change port by modifying app.py (End of the code)
 <img src = 'static/README_Images/iOS_hook.png'>
 
 
+## Make Your Own Preset
+- ```You can save and load a hooking script. Once you SET a preset script, it will be loaded in the background. This will be very useful when you try bypass security mitigations.```
+<img src = 'static/README_Images/preset_save.png'>
+
+<img src = 'static/README_Images/preset_load.png'>
+
 ## Authors
 **Hyunjun Park** - Hyunjun Park is a senior engineer of Samsung SDS in South Korea and a graduate student of SANE Lab in Korea University (Supervisor : Seungjoo Gabriel Kim). His daily job is pentesting a broad range of Samsung products including smart phone, smart TV, wearable devices, etc. He also serves as a main staff of Kimchicon Security Conference in South Korea.
 
