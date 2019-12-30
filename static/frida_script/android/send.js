@@ -1,10 +1,10 @@
 function send_arg(cls, method, args){
     var bt = backtrace();
-    send({"type":"args", "value":args, "class":cls, "method":method, "backtrace":bt}); 
+    send({"type":"args", "value":args, "class":cls, "method":method, "backtrace":bt, "os":"android"}); 
 }
 function send_ret(cls, method, type, value){
     var bt = backtrace();
-    send({"type":"ret", "value":{"type":type, "value":value}, "class":cls, "method":method, "backtrace":bt});
+    send({"type":"ret", "value":{"type":type, "value":value}, "class":cls, "method":method, "backtrace":bt, "os":"android"});
 }
 function trim(s){
     return ( s || '' ).replace( /^\s+|\s+$/g, '' );
