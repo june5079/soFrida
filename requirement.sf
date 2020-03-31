@@ -12,3 +12,4 @@ tqdm
 pathos
 google-api-python-client
 protobuf
+cryptography
